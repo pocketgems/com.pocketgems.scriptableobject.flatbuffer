@@ -1,0 +1,24 @@
+FlatBuffers release 2.0.0
+
+These binaries were downlaoded from:
+https://github.com/google/flatbuffers/releases/tag/v2.0.0
+
+
+TO UPDATE TO LATER VERSION/RELEASE:
+
+
+Find the desired release on git hub and download the following:
+	Mac.flatc.binary.zip
+	Windows.flatc.binary.zip
+	Source code.zip
+
+
+Unzip the to binary files into the current directory and run the following permission commands:
+	chmod a+x flatc
+	chmod a+x flatc.exe
+
+Unzip the contents of the Source Code zip and copy the contents of the zip
+	from unzipped directory:
+		net/FlatBuffers/
+	to package directory:
+		Runtime/Parameters/ThirdParty/FlatBuffers/

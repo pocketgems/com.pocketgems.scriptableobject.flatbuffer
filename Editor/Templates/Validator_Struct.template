@@ -1,0 +1,20 @@
+using PocketGems.Parameters;
+using PocketGems.Parameters.Validation;
+
+namespace Parameters.Validation
+{
+    public class {{className}} : BaseDataValidatorStruct<{{interfaceName}}>
+    {
+        protected override void ValidateStruct(IParameterManager parameterManager, {{interfaceName}} structObj)
+        {
+            /*
+            Add validation code here.
+            Delete these comments & examples after modifying this file.
+
+            EXAMPLE:
+            if (structObj.IsPremiumCurrency && string.IsNullOrEmpty(structObj.PremiumCurrencyIconSprite.AssetGUID))
+               Error(nameof(IRewardStruct.PremiumCurrencyIconSprite), "required for premium currency");
+            */
+        }
+    }
+}

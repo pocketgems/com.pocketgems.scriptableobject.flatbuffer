@@ -1,0 +1,329 @@
+using System.Collections.Generic;
+using System.IO;
+using PocketGems.Parameters.Interface;
+using PocketGems.Parameters.Models;
+using PocketGems.Parameters.Util;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.TestTools;
+
+namespace PocketGems.Parameters.Editor
+{
+    /// <summary>
+    /// The editor drawer for ParameterReferences<> so that parameter Scriptable Objects can be dragged directly onto
+    /// an Object Field.
+    ///
+    /// Behind the scenes, only a guid is serialized and the Scriptable Object itself is not referenced directly
+    /// on devices.
+    /// </summary>
+    [ExcludeFromCoverage]
+    [CustomPropertyDrawer(typeof(ParameterReference<>), true)]
+    public class ParameterReferenceDrawer : PropertyDrawer
+    {
+        /*
+         * Only allow the fold out to be at the top most depth.
+         * Unity starts getting real buggy visually when nesting too many GUI layers
+         * (low ROI to handle all depths & corner cases).
+         */
+        private static int s_depthCounter = 0;
+        private const int MaxDepth = 1;
+
+        /*
+         * This is needed so we do not attempt to work around a Unity issue.
+         *
+         * When attempting to draw one Property Field of an array with the same property name as the inner array, Unity
+         * crashes. From briefly looking at their source code, the GUI reordered list seems to index based on property
+         * name and other values which seem to be conflicting when trying to draw one within another.
+         *
+         * Example:
+         *
+         * ScriptableObjectA
+         *      ScriptableObjectB[] _rewards
+         *
+         * ScriptableObjectB
+         *      int[] _rewards
+         *
+         * In this example, attempting to render ScriptableObjectA will cause issues.  It'll try to render _rewards
+         * with in inner list also called _rewards.  The recursive calls to to EditorGUI.PropertyField and
+         * EditorGUI.GetPropertyHeight cause issues.
+         *
+         * This was identified in LTS2020 (TBD if it's still an issue in newer editor versions)
+         */
+        private static readonly Stack<string> s_arrayPropertyNames = new Stack<string>();
+
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            var paramProperty = new ParamProperty(fieldInfo, property);
+
+            bool objectChanged = DrawGUI(position, property, paramProperty, label, out ParameterScriptableObject newObject);
+
+            if (!objectChanged)
+                return;
+
+            if (newObject == null)
+            {
+                paramProperty.GUID = null;
+                return;
+            }
+
+            if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(newObject, out string guid, out long localId))
+            {
+                if (paramProperty.InterfaceType.IsInstanceOfType(newObject))
+                {
+                    paramProperty.GUID = guid;
+                }
+                else
+                {
+                    ParameterDebug.LogError($"Can only assign Parameter Scriptable Objects of type {paramProperty.InterfaceType}");
+                }
+            }
+            else
+            {
+                ParameterDebug.LogError($"Unable to fetch GUID for {newObject}");
+            }
+        }
+
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        {
+            s_depthCounter++;
+            var paramProperty = new ParamProperty(fieldInfo, property);
+            if (paramProperty.ElementPosition.HasValue)
+                s_arrayPropertyNames.Push(property.propertyPath.Split('.')[0]);
+
+            // first single line for the label and object field
+            float height = EditorGUIUtility.singleLineHeight;
+
+            // allocate space for a error Help Box if needed
+            if (paramProperty.Error != null)
+            {
+                // add spacing between first line & help box
+                height += EditorGUIUtility.standardVerticalSpacing;
+                // help box height
+                height += HelpBoxHeight(paramProperty);
+            }
+
+            height += InnerInspectorHeight(paramProperty, property);
+
+            if (paramProperty.ElementPosition.HasValue)
+                s_arrayPropertyNames.Pop();
+            s_depthCounter--;
+            return height;
+        }
+
+        private float HelpBoxHeight(ParamProperty property)
+        {
+            /*
+             * This is just an approximation.
+
+             * There doesn't seem to be a great way to determine this from the GetPropertyHeight function and
+             * there isn't enough information about where this view will be nested.
+             */
+
+            // start with the current full view width
+            var approximateWidth = EditorGUIUtility.currentViewWidth;
+            // utilize the depth and
+            approximateWidth -= property.Property.depth * 15f * 2;
+            // additional buffer
+            approximateWidth -= 60;
+
+            return EditorStyles.helpBox.CalcHeight(new GUIContent(property.Error), approximateWidth);
+        }
+
+        private float InnerInspectorHeight(ParamProperty paramProperty, SerializedProperty property)
+        {
+            if (s_depthCounter > MaxDepth)
+                return 0;
+            if (!ParameterPrefs.ExpandableDrawer || paramProperty.ScriptableObject == null || !property.isExpanded)
+                return 0;
+
+            float height = 0;
+            var serializedObject = new SerializedObject(paramProperty.ScriptableObject);
+            var prop = serializedObject.GetIterator();
+            bool children = true;
+            while (prop.NextVisible(children))
+            {
+                children = false;
+                // don't draw class file
+                if (prop.name == "m_Script") continue;
+                if (prop.isArray && s_arrayPropertyNames.Contains(prop.propertyPath))
+                    height += EditorGUIUtility.singleLineHeight;
+                else
+                    height += EditorGUI.GetPropertyHeight(prop, new GUIContent(prop.displayName), true);
+                height += EditorGUIUtility.standardVerticalSpacing;
+            }
+            serializedObject.Dispose();
+            return height;
+        }
+
+        private bool DrawGUI(Rect position, SerializedProperty property, ParamProperty paramProperty, GUIContent label, out ParameterScriptableObject
+            newObject)
+        {
+            s_depthCounter++;
+            if (paramProperty.ElementPosition.HasValue)
+                s_arrayPropertyNames.Push(property.propertyPath.Split('.')[0]);
+
+            // update the text if field is an element in a list or array
+            if (paramProperty.ElementPosition.HasValue)
+                label.text = $"Element {paramProperty.ElementPosition.Value}";
+
+            // draw the label and object field on the first line
+            position.height = EditorGUIUtility.singleLineHeight;
+            // utilize the resulting position for the object field & new button
+            var objectFieldPosition = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
+            const int newButtonWidth = 40;
+            var buttonRect = new Rect(objectFieldPosition.x + objectFieldPosition.width - newButtonWidth,
+                objectFieldPosition.y, newButtonWidth, objectFieldPosition.height);
+            objectFieldPosition.width -= newButtonWidth;
+
+            /*
+             * The ObjectField can take an interface as a required type, however this results in the search box in
+             * the object field not showing any assets to choose from.
+             *
+             * For the time being, filter on ParameterScriptableObject which all the parameter scriptable objects will
+             * be subclass from.
+             *
+             * For a future version, we can create our own search box similar to how the Addressable AssetReferenceDrawer
+             * does.
+             */
+            EditorGUI.BeginChangeCheck();
+            bool objectChanged = false;
+            newObject = null;
+            // object field
+            var scriptableObject = paramProperty.ScriptableObject;
+            var fieldObject = EditorGUI.ObjectField(objectFieldPosition, scriptableObject, typeof(ParameterScriptableObject), false);
+            if (EditorGUI.EndChangeCheck())
+            {
+                // this means the user interacted and set the value on the field
+                // this helps determine if the user deliberately an object or nulled the field.
+                objectChanged = true;
+                newObject = fieldObject as ParameterScriptableObject;
+                scriptableObject = newObject;
+            }
+
+            if (GUI.Button(buttonRect, "New"))
+            {
+                var parameterInterface = new ParameterInfo(paramProperty.InterfaceType);
+
+                var rootDirectory = ParameterConstants.ScriptableObject.Dir;
+                if (!Directory.Exists(rootDirectory)) Directory.CreateDirectory(rootDirectory);
+                var baseFolderName = parameterInterface.BaseName;
+                if (baseFolderName.EndsWith("Info"))
+                    baseFolderName = baseFolderName.Substring(0, baseFolderName.Length - 4);
+                var subDirectory = Path.Combine(rootDirectory, baseFolderName);
+                if (!Directory.Exists(subDirectory)) Directory.CreateDirectory(subDirectory);
+
+                // determine new filename
+                string filename = null;
+                int counter = 0;
+                do
+                {
+                    var suffix = counter > 0 ? $" {counter}" : "";
+                    counter++;
+                    var tempFilename = $"{parameterInterface.BaseName}{suffix}.asset";
+                    var filePath = Path.Combine(subDirectory, tempFilename);
+                    if (!File.Exists(filePath))
+                        filename = tempFilename;
+                } while (filename == null);
+                string savePath = EditorUtility.SaveFilePanelInProject("Save New Asset",
+                    filename, "asset", "Save New Asset", subDirectory);
+                if (!string.IsNullOrEmpty(savePath))
+                {
+                    var createdObject = ScriptableObject.CreateInstance(parameterInterface.ScriptableObjectType());
+                    AssetDatabase.CreateAsset(createdObject, savePath);
+                    objectChanged = true;
+                    scriptableObject = createdObject;
+                    newObject = createdObject as ParameterScriptableObject;
+                }
+            }
+
+            bool canExpandDrawer = ParameterPrefs.ExpandableDrawer && s_depthCounter <= MaxDepth &&
+                                   scriptableObject != null;
+
+            // fold out
+            // Only allow the fold out to show for the top most parameter reference in the tree, any children below it
+            // cannot be expanded.
+            // Unity starts getting real buggy in those situations (low ROI to investigate why).
+            if (canExpandDrawer)
+            {
+                var foldoutRect = new Rect(position.x, position.y, EditorGUIUtility.labelWidth,
+                    EditorGUIUtility.singleLineHeight);
+                property.isExpanded = EditorGUI.Foldout(foldoutRect, property.isExpanded, new GUIContent(), true);
+            }
+            position.y += position.height + EditorGUIUtility.standardVerticalSpacing;
+
+            // display error if any
+            if (paramProperty.Error != null)
+            {
+                var helpBoxHeight = HelpBoxHeight(paramProperty);
+                position.height = helpBoxHeight;
+                EditorGUI.HelpBox(position, paramProperty.Error, MessageType.Error);
+                position.y += helpBoxHeight;
+            }
+            else if (canExpandDrawer && property.isExpanded)
+            {
+                var serializedObject = new SerializedObject(scriptableObject);
+                var prop = serializedObject.GetIterator();
+                EditorGUI.indentLevel++;
+                bool children = true;
+                while (prop.NextVisible(children))
+                {
+                    children = false;
+                    // don't draw class file
+                    if (prop.name == "m_Script") continue;
+                    float height;
+                    var propLabel = new GUIContent(prop.displayName);
+                    if (prop.isArray && s_arrayPropertyNames.Contains(prop.propertyPath))
+                    {
+                        height = EditorGUIUtility.singleLineHeight;
+                        var style = new GUIStyle(GUI.skin.label);
+                        style.fontStyle = FontStyle.Bold;
+                        style.normal.textColor = Color.red;
+                        position.height = height;
+                        var content = new GUIContent("CANNOT DISPLAY", "A Unity bug prevents this from being displayed without crashing. " +
+                                                                       "(see code for more details)");
+                        EditorGUI.LabelField(position, propLabel, content, style);
+                    }
+                    else
+                    {
+                        height = EditorGUI.GetPropertyHeight(prop, propLabel, true);
+                        position.height = height;
+                        DrawExpandedField(serializedObject, position, prop, propLabel);
+                    }
+                    position.y += height + EditorGUIUtility.standardVerticalSpacing;
+                }
+                EditorGUI.indentLevel--;
+
+                /*
+                 * Checking for GUI.changed is more reliable than checking the result of
+                 * serializedObject.ApplyModifiedProperties().
+                 *
+                 * If the serialized property is an array, modifications in it doesn't seem to trigger
+                 * a true result from calls to serializedObject.ApplyModifiedProperties
+                 */
+                if (GUI.changed)
+                {
+                    serializedObject.ApplyModifiedProperties();
+                    InspectorAutoSave.DispatchDelayedSave();
+                }
+                serializedObject.Dispose();
+            }
+
+            if (paramProperty.ElementPosition.HasValue)
+                s_arrayPropertyNames.Pop();
+            s_depthCounter--;
+            return objectChanged;
+        }
+
+        /// <summary>
+        /// Allows subclasses to override various expanded properties for custom fields.
+        /// </summary>
+        /// <param name="serializedObject">Main object that the field is drawing for.</param>
+        /// <param name="position">Position to draw within.</param>
+        /// <param name="property">Property to draw GUI for.</param>
+        /// <param name="label">Label that can be used.</param>
+        protected virtual void DrawExpandedField(SerializedObject serializedObject, Rect position, SerializedProperty property, GUIContent label)
+        {
+            EditorGUI.PropertyField(position, property, label, true);
+        }
+    }
+}

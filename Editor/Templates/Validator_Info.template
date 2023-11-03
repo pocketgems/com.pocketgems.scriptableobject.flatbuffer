@@ -1,0 +1,38 @@
+using PocketGems.Parameters;
+using PocketGems.Parameters.Validation;
+
+namespace Parameters.Validation
+{
+    public class {{className}} : BaseDataValidator<{{interfaceName}}>
+    {
+        protected override void ValidateInfo(IParameterManager parameterManager, {{interfaceName}} info)
+        {
+            /*
+            Add validation code here.
+            Delete these comments & examples after modifying this file.
+
+            EXAMPLE:
+            if (info.IsPremiumCurrency && string.IsNullOrEmpty(info.PremiumCurrencyIconSprite.AssetGUID))
+               Error(nameof(ICurrencyInfo.PremiumCurrencyIconSprite), "required for premium currency");
+            */
+        }
+
+        protected override void ValidateParameters(IParameterManager parameterManager)
+        {
+            /*
+            Add validation code that analyzes the infos holistically.
+            Delete these comments & examples after modifying this file.
+
+            EXAMPLE:
+            HashSet<Color> seenColors = new HashSet<Color>();
+            foreach (var info in parameterManager.Get<ICurrencyInfo>())
+            {
+                if (seenColors.Contains(info.CurrencyColor))
+                    Error($"Colors must be unique, the color {info.CurrencyColor} is used more than once.");
+                else
+                    seenColors.Add(info.CurrencyColor);
+            }
+            */
+        }
+    }
+}
