@@ -1,0 +1,24 @@
+{
+  "name": "com.pocketgems.scriptableobject.flatbuffer",
+  "version": "3.3.1",
+  "displayName": "Scriptable Object - FlatBuffer",
+  "description": "Seamless syncing between Scriptable Objects and CSVs.  Scriptable Object data built to Google FlatBuffers for optimal runtime loading & access.",
+  "unity": "2021.3",
+  "keywords": [
+    "flatbuffer",
+    "csv",
+    "Scriptable Object",
+    "parameters",
+    "game data",
+    "data"
+  ],
+  "author": {
+    "name": "Andrew Nguyen",
+    "url": "https://www.pocketgems.com/"
+  },
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "2.0.2",
+    "com.unity.testtools.codecoverage": "1.2.4",
+    "com.unity.test-framework": "1.1.31"
+  }
+}

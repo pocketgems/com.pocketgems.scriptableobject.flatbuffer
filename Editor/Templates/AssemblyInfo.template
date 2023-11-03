@@ -1,0 +1,6 @@
+// Assembly Info to expose internals of generated parameter code to game specific editor tools
+// DO NOT EXPOSE INTERNALS TO RUNTIME CODE!
+
+// EXAMPLE
+// using System.Runtime.CompilerServices;
+// [assembly: InternalsVisibleTo("ASSEMBLY GOES HERE")]
