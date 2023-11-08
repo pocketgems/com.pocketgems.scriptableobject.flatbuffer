@@ -181,6 +181,15 @@ string TheTranslation(string inputString)
 ParameterLocalizationHandler.GlobalTranslateStringDelegate = TheTranslation;
 ```
 
+### Date & Time
+```C#
+TimeSpan Duration { get; }
+IReadOnlyList<TimeSpan> Durations { get; }
+
+DateTime Birthday { get; }
+IReadOnlyList<DateTime> Birthdays { get; }
+```
+
 ### Unity Types
 ```C#
 Color TextColor { get; }

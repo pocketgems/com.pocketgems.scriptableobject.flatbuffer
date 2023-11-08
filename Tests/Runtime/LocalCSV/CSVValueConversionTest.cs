@@ -101,6 +101,79 @@ namespace PocketGems.Parameters.LocalCSV
         }
 
         [Test]
+        [TestCase(true, "2020.10.05.03.02.01", 2020, 10, 5, 3, 2, 1)] // padded
+        [TestCase(true, "2020.10.5.3.2.1", 2020, 10, 5, 3, 2, 1)] // non padded
+        [TestCase(true, "2020.1.1.0.0.0", 2020, 1, 1)]
+        [TestCase(true, "", 1, 1, 1)]
+        [TestCase(true, null, 1, 1, 1)]
+        [TestCase(false, "2021.0.0.0.0")] // missing digit
+        [TestCase(false, "2021.0-0.0.0.0")] // bad format
+        [TestCase(false, "2021.0.0.0.0.0")] // not a real date
+        public void DateTimeFromString(bool success, string value, int y = 0, int m = 0, int d = 0, int h = 0, int min = 0, int s = 0)
+        {
+            if (success)
+            {
+                var dateTime = CSVValueConverter.DateTime.FromString(value);
+                Assert.AreEqual(y, dateTime.Year);
+                Assert.AreEqual(m, dateTime.Month);
+                Assert.AreEqual(d, dateTime.Day);
+                Assert.AreEqual(h, dateTime.Hour);
+                Assert.AreEqual(min, dateTime.Minute);
+                Assert.AreEqual(s, dateTime.Second);
+            }
+            else
+            {
+                Assert.Catch(() => CSVValueConverter.DateTime.FromString(value));
+            }
+        }
+
+        [Test]
+        [TestCase("0001.01.01.00.00.00", 1, 1, 1)]
+        [TestCase("2020.10.05.03.02.10", 2020, 10, 5, 3, 2, 10)]
+        public void DateTimeToString(string expected, int y = 0, int m = 0, int d = 0, int h = 0, int min = 0,
+            int s = 0)
+        {
+            var dateTime = new DateTime(y, m, d, h, min, s);
+            Assert.AreEqual(expected, CSVValueConverter.DateTime.ToString(dateTime));
+        }
+
+        [Test]
+
+        [TestCase(true, "010.09.08.07.006", 10, 9, 8, 7, 6)] // padded
+        [TestCase(true, "10.9.8.7.6", 10, 9, 8, 7, 6)] // non padded
+        [TestCase(true, "")]
+        [TestCase(true, null)]
+        [TestCase(false, "10.9.8.7")] // missing digit
+        [TestCase(false, "10.9.8.7.6.5")] // too many digits
+        [TestCase(false, "10.9.8.7.a")] // non int
+        public void TimeSpanFromString(bool success, string value, int d = 0, int h = 0, int m = 0, int s = 0, int ms = 0)
+        {
+            if (success)
+            {
+                var dateTime = CSVValueConverter.TimeSpan.FromString(value);
+                Assert.AreEqual(d, dateTime.Days);
+                Assert.AreEqual(h, dateTime.Hours);
+                Assert.AreEqual(m, dateTime.Minutes);
+                Assert.AreEqual(s, dateTime.Seconds);
+                Assert.AreEqual(ms, dateTime.Milliseconds);
+            }
+            else
+            {
+                Assert.Catch(() => CSVValueConverter.TimeSpan.FromString(value));
+            }
+        }
+
+        [Test]
+        [TestCase("1.01.01.00.000", 1, 1, 1)]
+        [TestCase("1.02.03.04.005", 1, 2, 3, 4, 5)]
+        [TestCase("20.10.30.40.500", 20, 10, 30, 40, 500)]
+        public void TimeSpanToString(string expected, int d = 0, int h = 0, int m = 0, int s = 0, int ms = 0)
+        {
+            var dateTime = new TimeSpan(d, h, m, s, ms);
+            Assert.AreEqual(expected, CSVValueConverter.TimeSpan.ToString(dateTime));
+        }
+
+        [Test]
         [TestCase(true, "", new int[] { })]
         [TestCase(true, "1,2", new int[] { 1, 2 })]
         [TestCase(true, "1,2|3,4", new int[] { 1, 2, 3, 4 })]

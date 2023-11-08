@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using PocketGems.Parameters.Interface;
@@ -107,6 +108,49 @@ namespace PocketGems.Parameters.LocalCSV
                     int.Parse(splitValues[0]),
                     int.Parse(splitValues[1]),
                     int.Parse(splitValues[2]));
+            }
+        }
+
+        public static class DateTime
+        {
+            public static string ToString(System.DateTime value) => value.ToString("yyyy.MM.dd.HH.mm.ss");
+
+            public static System.DateTime FromString(string value)
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    return new System.DateTime();
+                return System.DateTime.ParseExact(value, "yyyy.M.d.H.m.s", CultureInfo.InvariantCulture);
+            }
+        }
+
+        public static class TimeSpan
+        {
+            public static string ToString(System.TimeSpan value)
+            {
+                return string.Format("{0}.{1:D2}.{2:D2}.{3:D2}.{4:D3}",
+                    value.Days,
+                    value.Hours,
+                    value.Minutes,
+                    value.Seconds,
+                    value.Milliseconds);
+            }
+
+            public static System.TimeSpan FromString(string value)
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    return new System.TimeSpan();
+                string[] parts = value.Split('.');
+                if (parts.Length == 5)
+                {
+                    int days = int.Parse(parts[0]);
+                    int hours = int.Parse(parts[1]);
+                    int minutes = int.Parse(parts[2]);
+                    int seconds = int.Parse(parts[3]);
+                    int milliseconds = int.Parse(parts[4]);
+                    return new System.TimeSpan(days, hours, minutes, seconds, milliseconds);
+                }
+
+                throw new ArgumentException("Timespan not the correct format day.hour.minute.second.ms");
             }
         }
 

@@ -65,6 +65,12 @@ namespace PocketGems.Parameters.PropertyTypes
             IReadOnlyList<Vector3> MyVector3s { get; }
             IReadOnlyList<Vector3Int> MyVector3Ints { get; }
 
+            // date & time
+            DateTime MyDateTime { get; }
+            IReadOnlyList<DateTime> MyDateTimes { get; }
+            TimeSpan MyTimeSpan { get; }
+            IReadOnlyList<TimeSpan> MyTimeSpans { get; }
+
             string MyString { get; }
             IReadOnlyList<string> MyStrings { get; }
 
@@ -206,6 +212,10 @@ namespace PocketGems.Parameters.PropertyTypes
         [TestCase(nameof(ITestInfo.MyVector2Ints))]
         [TestCase(nameof(ITestInfo.MyVector3s))]
         [TestCase(nameof(ITestInfo.MyVector3Ints))]
+        [TestCase(nameof(ITestInfo.MyDateTime), true)]
+        [TestCase(nameof(ITestInfo.MyDateTimes))]
+        [TestCase(nameof(ITestInfo.MyTimeSpan), true)]
+        [TestCase(nameof(ITestInfo.MyTimeSpans))]
         [TestCase(nameof(ITestInfo.MyString))]
         [TestCase(nameof(ITestInfo.MyStrings))]
         [TestCase(nameof(ITestInfo.MyLocString))]

@@ -56,7 +56,7 @@ namespace PocketGems.Parameters.PropertyTypes
             schemaBuilder.DefineField(tableName, FlatBufferStructPropertyName, _fieldType);
         }
 
-        private string FromStringCode(string variableName)
+        protected virtual string FromStringCode(string variableName)
         {
             var conversionClass = _typeKeyword == "bool" ? "Bool" : $"Numeric<{_typeKeyword}>";
             return $"{nameof(CSVValueConverter)}.{conversionClass}.FromString({variableName})";

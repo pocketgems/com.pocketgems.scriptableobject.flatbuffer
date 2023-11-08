@@ -86,6 +86,16 @@ namespace PocketGems.Parameters.PropertyTypes
             if (propertyType == typeof(IReadOnlyList<ulong>))
                 return new StandardListPropertyType(propertyInfo, "ulong", FlatBufferFieldType.ULong);
 
+            // time types
+            if (propertyType == typeof(DateTime))
+                return new DateTimePropertyType(propertyInfo);
+            if (propertyType == typeof(IReadOnlyList<DateTime>))
+                return new DateTimeListPropertyType(propertyInfo);
+            if (propertyType == typeof(TimeSpan))
+                return new TimeSpanPropertyType(propertyInfo);
+            if (propertyType == typeof(IReadOnlyList<TimeSpan>))
+                return new TimeSpanListPropertyType(propertyInfo);
+
             // parameter reference types
             if (ParameterReferencePropertyType.IsReferenceType(propertyInfo, out genericType))
                 return new ParameterReferencePropertyType(propertyInfo, genericType);
