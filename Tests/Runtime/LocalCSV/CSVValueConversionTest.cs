@@ -101,6 +101,46 @@ namespace PocketGems.Parameters.LocalCSV
         }
 
         [Test]
+        [TestCase(true, "", new int[] { })]
+        [TestCase(true, "1,2", new int[] { 1, 2 })]
+        [TestCase(true, "1,2|3,4", new int[] { 1, 2, 3, 4 })]
+        [TestCase(false, "a,b", null)]
+        [TestCase(false, ",", null)]
+        [TestCase(false, "1", null)]
+        public void ArrayFuncMapperFromString(bool success, string value, int[] expected)
+        {
+            if (success)
+            {
+                const int valueCount = 2;
+                var vectors = CSVValueConverter.ArrayFuncMapper<Vector2Int>.FromString(value, CSVValueConverter.Vector2Int.FromString);
+                Assert.AreEqual(expected.Length / valueCount, vectors.Length);
+                for (int i = 0; i < vectors.Length; i++)
+                {
+                    Assert.AreEqual(expected[i * valueCount], vectors[i].x);
+                    Assert.AreEqual(expected[i * valueCount + 1], vectors[i].y);
+                }
+            }
+            else
+            {
+                Assert.Catch(() => CSVValueConverter.ArrayFuncMapper<Vector2Int>.FromString(value, CSVValueConverter.Vector2Int.FromString));
+            }
+        }
+
+        [Test]
+        [TestCase(new int[] { }, "")]
+        [TestCase(new int[] { 1, 2 }, "1,2")]
+        [TestCase(new int[] { 1, 2, 3, 4 }, "1,2|3,4")]
+        public void ArrayFuncMapperToString(int[] input, string expected)
+        {
+            const int valueCount = 2;
+            var length = input.Length / valueCount;
+            Vector2Int[] vectors = new Vector2Int[length];
+            for (int i = 0; i < length; i++)
+                vectors[i] = new Vector2Int(input[i * valueCount], input[i * valueCount + 1]);
+            Assert.AreEqual(expected, CSVValueConverter.ArrayFuncMapper<Vector2Int>.ToString(vectors, CSVValueConverter.Vector2Int.ToString));
+        }
+
+        [Test]
         [TestCase(true, "10,-5", 10, -5)]
         [TestCase(true, "0,100", 0, 100)]
         [TestCase(true, " 0 , 100 , ", 0, 100)]

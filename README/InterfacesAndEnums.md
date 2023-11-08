@@ -184,12 +184,19 @@ ParameterLocalizationHandler.GlobalTranslateStringDelegate = TheTranslation;
 ### Unity Types
 ```C#
 Color TextColor { get; }
+IReadOnlyList<Color> TextColors { get; }
 
-Vector2 Boundry { get; }
+Vector2 Boundary { get; }
+IReadOnlyList<Vector2> Boundaries { get; }
+
 Vector2Int GridFootprint { get; }
+IReadOnlyList<Vector2Int> GridFootprints { get; }
 
 Vector3 StartingLocation { get; }
-Vector3Int Dimensions { get; }
+IReadOnlyList<Vector3> StartingLocations { get; }
+
+Vector3Int Dimension { get; }
+IReadOnlyList<Vector3Int> Dimensions { get; }
 ```
 
 ### Enums

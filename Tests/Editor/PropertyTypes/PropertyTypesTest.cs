@@ -40,11 +40,6 @@ namespace PocketGems.Parameters.PropertyTypes
             ushort MyUShort { get; }
             uint MyUInt { get; }
             ulong MyULong { get; }
-            Color MyColor { get; }
-            Vector2 MyVector2 { get; }
-            Vector2Int MyVector2Int { get; }
-            Vector3 Vector3 { get; }
-            Vector3Int Vector3Int { get; }
             MyEnum MyEnum { get; }
 
             // supported but has additional flat buffer data prep
@@ -57,6 +52,18 @@ namespace PocketGems.Parameters.PropertyTypes
             IReadOnlyList<uint> MyUInts { get; }
             IReadOnlyList<ulong> MyULongs { get; }
             IReadOnlyList<MyEnum> MyEnums { get; }
+
+            // unity types
+            Color MyColor { get; }
+            Vector2 MyVector2 { get; }
+            Vector2Int MyVector2Int { get; }
+            Vector3 MyVector3 { get; }
+            Vector3Int MyVector3Int { get; }
+            IReadOnlyList<Color> MyColors { get; }
+            IReadOnlyList<Vector2> MyVector2s { get; }
+            IReadOnlyList<Vector2Int> MyVector2Ints { get; }
+            IReadOnlyList<Vector3> MyVector3s { get; }
+            IReadOnlyList<Vector3Int> MyVector3Ints { get; }
 
             string MyString { get; }
             IReadOnlyList<string> MyStrings { get; }
@@ -179,11 +186,6 @@ namespace PocketGems.Parameters.PropertyTypes
         [TestCase(nameof(ITestInfo.MyUShort), true)]
         [TestCase(nameof(ITestInfo.MyUInt), true)]
         [TestCase(nameof(ITestInfo.MyULong), true)]
-        [TestCase(nameof(ITestInfo.MyColor), true)]
-        [TestCase(nameof(ITestInfo.MyVector2), true)]
-        [TestCase(nameof(ITestInfo.MyVector2Int), true)]
-        [TestCase(nameof(ITestInfo.Vector3), true)]
-        [TestCase(nameof(ITestInfo.Vector3Int), true)]
         [TestCase(nameof(ITestInfo.MyEnum), true)]
         [TestCase(nameof(ITestInfo.MyBools))]
         [TestCase(nameof(ITestInfo.MyShorts))]
@@ -194,6 +196,16 @@ namespace PocketGems.Parameters.PropertyTypes
         [TestCase(nameof(ITestInfo.MyUInts))]
         [TestCase(nameof(ITestInfo.MyULongs))]
         [TestCase(nameof(ITestInfo.MyEnums))]
+        [TestCase(nameof(ITestInfo.MyColor), true)]
+        [TestCase(nameof(ITestInfo.MyVector2), true)]
+        [TestCase(nameof(ITestInfo.MyVector2Int), true)]
+        [TestCase(nameof(ITestInfo.MyVector3), true)]
+        [TestCase(nameof(ITestInfo.MyVector3Int), true)]
+        [TestCase(nameof(ITestInfo.MyColors))]
+        [TestCase(nameof(ITestInfo.MyVector2s))]
+        [TestCase(nameof(ITestInfo.MyVector2Ints))]
+        [TestCase(nameof(ITestInfo.MyVector3s))]
+        [TestCase(nameof(ITestInfo.MyVector3Ints))]
         [TestCase(nameof(ITestInfo.MyString))]
         [TestCase(nameof(ITestInfo.MyStrings))]
         [TestCase(nameof(ITestInfo.MyLocString))]

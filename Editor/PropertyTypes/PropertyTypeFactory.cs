@@ -36,19 +36,19 @@ namespace PocketGems.Parameters.PropertyTypes
             if (propertyType == typeof(string))
                 return new StringPropertyType(propertyInfo);
             if (propertyType == typeof(IReadOnlyList<string>))
-                return new ListStringPropertyType(propertyInfo);
+                return new StringListPropertyType(propertyInfo);
 
             // localized strings
             if (propertyType == typeof(LocalizedString))
                 return new LocalizedStringPropertyType(propertyInfo);
             if (propertyType == typeof(IReadOnlyList<LocalizedString>))
-                return new ListLocalizedStringPropertyType(propertyInfo);
+                return new LocalizedStringListPropertyType(propertyInfo);
 
             // enum
             if (propertyType.IsEnum)
                 return new EnumPropertyType(propertyInfo);
-            if (ListEnumPropertyType.IsListEnumType(propertyInfo, out Type genericType))
-                return new ListEnumPropertyType(propertyInfo, genericType);
+            if (EnumListPropertyType.IsListEnumType(propertyInfo, out Type genericType))
+                return new EnumListPropertyType(propertyInfo, genericType);
 
             // scalars
             if (propertyType == typeof(bool))
@@ -70,60 +70,70 @@ namespace PocketGems.Parameters.PropertyTypes
 
             // scalar lists
             if (propertyType == typeof(IReadOnlyList<bool>))
-                return new ListStandardPropertyType(propertyInfo, "bool", FlatBufferFieldType.Bool);
+                return new StandardListPropertyType(propertyInfo, "bool", FlatBufferFieldType.Bool);
             if (propertyType == typeof(IReadOnlyList<short>))
-                return new ListStandardPropertyType(propertyInfo, "short", FlatBufferFieldType.Short);
+                return new StandardListPropertyType(propertyInfo, "short", FlatBufferFieldType.Short);
             if (propertyType == typeof(IReadOnlyList<int>))
-                return new ListStandardPropertyType(propertyInfo, "int", FlatBufferFieldType.Int);
+                return new StandardListPropertyType(propertyInfo, "int", FlatBufferFieldType.Int);
             if (propertyType == typeof(IReadOnlyList<long>))
-                return new ListStandardPropertyType(propertyInfo, "long", FlatBufferFieldType.Long);
+                return new StandardListPropertyType(propertyInfo, "long", FlatBufferFieldType.Long);
             if (propertyType == typeof(IReadOnlyList<float>))
-                return new ListStandardPropertyType(propertyInfo, "float", FlatBufferFieldType.Float);
+                return new StandardListPropertyType(propertyInfo, "float", FlatBufferFieldType.Float);
             if (propertyType == typeof(IReadOnlyList<ushort>))
-                return new ListStandardPropertyType(propertyInfo, "ushort", FlatBufferFieldType.UShort);
+                return new StandardListPropertyType(propertyInfo, "ushort", FlatBufferFieldType.UShort);
             if (propertyType == typeof(IReadOnlyList<uint>))
-                return new ListStandardPropertyType(propertyInfo, "uint", FlatBufferFieldType.UInt);
+                return new StandardListPropertyType(propertyInfo, "uint", FlatBufferFieldType.UInt);
             if (propertyType == typeof(IReadOnlyList<ulong>))
-                return new ListStandardPropertyType(propertyInfo, "ulong", FlatBufferFieldType.ULong);
+                return new StandardListPropertyType(propertyInfo, "ulong", FlatBufferFieldType.ULong);
 
             // parameter reference types
             if (ParameterReferencePropertyType.IsReferenceType(propertyInfo, out genericType))
                 return new ParameterReferencePropertyType(propertyInfo, genericType);
-            if (ListParameterReferencePropertyType.IsListReferenceType(propertyInfo, out genericType))
-                return new ListParameterReferencePropertyType(propertyInfo, genericType);
+            if (ParameterReferenceListPropertyType.IsListReferenceType(propertyInfo, out genericType))
+                return new ParameterReferenceListPropertyType(propertyInfo, genericType);
 
             // parameter struct reference types
             if (ParameterStructReferencePropertyType.IsReferenceType(propertyInfo, out genericType))
                 return new ParameterStructReferencePropertyType(propertyInfo, genericType);
-            if (ListParameterStructReferencePropertyType.IsListReferenceType(propertyInfo, out genericType))
-                return new ListParameterStructReferencePropertyType(propertyInfo, genericType);
+            if (ParameterStructReferenceListPropertyType.IsListReferenceType(propertyInfo, out genericType))
+                return new ParameterStructReferenceListPropertyType(propertyInfo, genericType);
 
             // unity types
             if (propertyType == typeof(Color))
                 return new ColorPropertyType(propertyInfo);
+            if (propertyType == typeof(IReadOnlyList<Color>))
+                return new ColorListPropertyType(propertyInfo);
             if (propertyType == typeof(Vector3Int))
                 return new Vector3IntPropertyType(propertyInfo);
+            if (propertyType == typeof(IReadOnlyList<Vector3Int>))
+                return new Vector3IntListPropertyType(propertyInfo);
             if (propertyType == typeof(Vector3))
                 return new Vector3PropertyType(propertyInfo);
+            if (propertyType == typeof(IReadOnlyList<Vector3>))
+                return new Vector3ListPropertyType(propertyInfo);
             if (propertyType == typeof(Vector2Int))
                 return new Vector2IntPropertyType(propertyInfo);
+            if (propertyType == typeof(IReadOnlyList<Vector2Int>))
+                return new Vector2IntListPropertyType(propertyInfo);
             if (propertyType == typeof(Vector2))
                 return new Vector2PropertyType(propertyInfo);
+            if (propertyType == typeof(IReadOnlyList<Vector2>))
+                return new Vector2ListPropertyType(propertyInfo);
 
 #if ADDRESSABLE_PARAMS
             // addressable references
             if (propertyType == typeof(AssetReference))
                 return new AssetReferencePropertyType(propertyInfo);
             if (propertyType == typeof(IReadOnlyList<AssetReference>))
-                return new ListAssetReferencePropertyType(propertyInfo);
+                return new AssetReferenceListPropertyType(propertyInfo);
             if (propertyType == typeof(AssetReferenceSprite))
                 return new AssetReferenceSpritePropertyType(propertyInfo);
             if (propertyType == typeof(IReadOnlyList<AssetReferenceSprite>))
-                return new ListAssetReferenceSpritePropertyType(propertyInfo);
+                return new AssetReferenceListSpritePropertyType(propertyInfo);
             if (propertyType == typeof(AssetReferenceAtlasedSprite))
                 return new AssetReferenceAtlasedSpritePropertyType(propertyInfo);
             if (propertyType == typeof(IReadOnlyList<AssetReferenceAtlasedSprite>))
-                return new ListAssetReferenceAtlasedSpritePropertyType(propertyInfo);
+                return new AtlasedSpriteAssetReferenceListPropertyType(propertyInfo);
 #endif
 
             error = $"property {propertyType} is not supported";

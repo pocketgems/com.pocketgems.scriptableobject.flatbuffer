@@ -5,7 +5,7 @@ using PocketGems.Parameters.LocalCSV;
 
 namespace PocketGems.Parameters.PropertyTypes
 {
-    internal class ListParameterReferencePropertyType : ListStringPropertyType
+    internal class ParameterReferenceListPropertyType : StringListPropertyType
     {
         private readonly Type _genericType;
 
@@ -27,7 +27,7 @@ namespace PocketGems.Parameters.PropertyTypes
             return false;
         }
 
-        public ListParameterReferencePropertyType(PropertyInfo propertyInfo, Type genericType) : base(propertyInfo)
+        public ParameterReferenceListPropertyType(PropertyInfo propertyInfo, Type genericType) : base(propertyInfo)
         {
             _genericType = genericType;
         }

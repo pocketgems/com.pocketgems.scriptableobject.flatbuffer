@@ -4,12 +4,12 @@ using PocketGems.Parameters.Util;
 
 namespace PocketGems.Parameters.PropertyTypes
 {
-    internal class ListStandardPropertyType : BasePropertyType, IPropertyType
+    internal class StandardListPropertyType : BasePropertyType, IPropertyType
     {
         protected readonly string _typeKeyword;
         protected readonly FlatBufferFieldType _fieldType;
 
-        public ListStandardPropertyType(PropertyInfo propertyInfo, string typeKeyword, FlatBufferFieldType fieldType) : base(propertyInfo)
+        public StandardListPropertyType(PropertyInfo propertyInfo, string typeKeyword, FlatBufferFieldType fieldType) : base(propertyInfo)
         {
             _typeKeyword = typeKeyword;
             _fieldType = fieldType;
@@ -20,7 +20,7 @@ namespace PocketGems.Parameters.PropertyTypes
 
         public override string ScriptableObjectPropertyImplementationCode() =>
             $"public IReadOnlyList<{_typeKeyword}> {PropertyName} => {FieldName};";
-        
+
         public override string FlatBufferFieldDefinitionCode() =>
             $"private {_typeKeyword}[] {OverrideFieldName};";
 
