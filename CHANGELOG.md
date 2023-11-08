@@ -4,6 +4,21 @@ All package updates & migration steps will be listed in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.4.0] - 2023-11-08
+### Added
+- `IReadOnlyList` support for:
+  - `Color`
+  - `Vector2`
+  - `Vector2Int`
+  - `Vector3`
+  - `Vector3Int`
+- Support for `DateTime` and `TimeSpan` properties in interfaces
+- Check to prevent invalid keyword property name usage in interface
+### Changed
+- Rename internal class names.
+### Fixed
+- Corner case in Color CSV syncing
+
 ## [3.3.2] - 2023-11-03
 ### Changed
 - Update Author in `package.json`
