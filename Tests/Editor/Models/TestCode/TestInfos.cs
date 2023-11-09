@@ -52,6 +52,12 @@ public interface IDuplicatePropertyInfo : IBaseInfo
 #pragma warning restore CS0108 // use the new keyword
 }
 
+// bad: uses reserved keyword in property name
+public interface IKeywordPropertyInfo : IBaseInfo
+{
+    string Int { get; }
+}
+
 // bad: implements a non supported property type
 public interface INonSupportedTypeInfo : IBaseInfo
 {

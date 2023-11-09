@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using PocketGems.Parameters.Models;
@@ -133,6 +134,8 @@ namespace PocketGems.Parameters
 
             public static string PropertyNameRegexString = @"^[A-Z]+[A-Za-z0-9]*$";
             public static readonly Regex PropertyNameRegex = new Regex(PropertyNameRegexString, RegexOptions.Compiled);
+
+            public static HashSet<string> InvalidReservedPropertyNames = new HashSet<string> { "short", "int", "long", "float", "ushort", "uint", "ulong", "bool", "enum" };
         }
 
         public static class FlatBufferBuilderClass
