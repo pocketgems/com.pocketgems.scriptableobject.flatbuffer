@@ -1,4 +1,6 @@
 using System;
+using System.Globalization;
+using System.Linq;
 using System.Text;
 using PocketGems.Parameters.Interface;
 using UnityEngine.TestTools;
@@ -29,7 +31,7 @@ namespace PocketGems.Parameters.LocalCSV
         {
             public static string ToString(UnityEngine.Color value)
             {
-                return $"{value.r * 255}{ValueDelimiter}{value.g * 255}{ValueDelimiter}{value.b * 255}{ValueDelimiter}{value.a * 255}";
+                return $"{(int)(value.r * 255)}{ValueDelimiter}{(int)(value.g * 255)}{ValueDelimiter}{(int)(value.b * 255)}{ValueDelimiter}{(int)(value.a * 255)}";
             }
 
             public static UnityEngine.Color FromString(string value)
@@ -106,6 +108,49 @@ namespace PocketGems.Parameters.LocalCSV
                     int.Parse(splitValues[0]),
                     int.Parse(splitValues[1]),
                     int.Parse(splitValues[2]));
+            }
+        }
+
+        public static class DateTime
+        {
+            public static string ToString(System.DateTime value) => value.ToString("yyyy.MM.dd.HH.mm.ss");
+
+            public static System.DateTime FromString(string value)
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    return new System.DateTime();
+                return System.DateTime.ParseExact(value, "yyyy.M.d.H.m.s", CultureInfo.InvariantCulture);
+            }
+        }
+
+        public static class TimeSpan
+        {
+            public static string ToString(System.TimeSpan value)
+            {
+                return string.Format("{0}.{1:D2}.{2:D2}.{3:D2}.{4:D3}",
+                    value.Days,
+                    value.Hours,
+                    value.Minutes,
+                    value.Seconds,
+                    value.Milliseconds);
+            }
+
+            public static System.TimeSpan FromString(string value)
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    return new System.TimeSpan();
+                string[] parts = value.Split('.');
+                if (parts.Length == 5)
+                {
+                    int days = int.Parse(parts[0]);
+                    int hours = int.Parse(parts[1]);
+                    int minutes = int.Parse(parts[2]);
+                    int seconds = int.Parse(parts[3]);
+                    int milliseconds = int.Parse(parts[4]);
+                    return new System.TimeSpan(days, hours, minutes, seconds, milliseconds);
+                }
+
+                throw new ArgumentException("Timespan not the correct format day.hour.minute.second.ms");
             }
         }
 
@@ -266,24 +311,11 @@ namespace PocketGems.Parameters.LocalCSV
 
         public static class NumericArray<T>
         {
-            public static string ToString(T[] value)
-            {
-                if (value == null)
-                    return "";
-                return string.Join(ListDelimiter.ToString(), value);
-            }
+            public static string ToString(T[] value) =>
+                ArrayFuncMapper<T>.ToString(value, Numeric<T>.ToString);
 
-            public static T[] FromString(string value)
-            {
-                // must return a non null value so we can detect overriding of properties by checking non null
-                if (string.IsNullOrWhiteSpace(value))
-                    return Array.Empty<T>();
-                var stringValues = value.Split(ListDelimiter);
-                var values = new T[stringValues.Length];
-                for (int i = 0; i < stringValues.Length; i++)
-                    values[i] = Numeric<T>.FromString(stringValues[i]);
-                return values;
-            }
+            public static T[] FromString(string value) =>
+                ArrayFuncMapper<T>.FromString(value, Numeric<T>.FromString);
         }
 
         public static class StringArray
@@ -331,6 +363,27 @@ namespace PocketGems.Parameters.LocalCSV
                 for (int i = 0; i < strings.Length; i++)
                     assetRefs[i] = ParameterReference.FromString<T>(strings[i]);
                 return assetRefs;
+            }
+        }
+
+        public static class ArrayFuncMapper<T>
+        {
+            public static string ToString(T[] value, Func<T, string> converter)
+            {
+                if (value == null)
+                    return "";
+                return string.Join(ListDelimiter, value.Select(converter));
+            }
+
+            public static T[] FromString(string value, Func<string, T> converter)
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    return Array.Empty<T>();
+                var splitValues = value.Split(ListDelimiter);
+                var values = new T[splitValues.Length];
+                for (int i = 0; i < splitValues.Length; i++)
+                    values[i] = converter(splitValues[i]);
+                return values;
             }
         }
     }

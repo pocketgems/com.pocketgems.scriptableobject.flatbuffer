@@ -6,9 +6,9 @@ using UnityEngine.AddressableAssets;
 
 namespace PocketGems.Parameters.PropertyTypes
 {
-    internal class ListAssetReferencePropertyType : BasePropertyType, IPropertyType
+    internal class AssetReferenceListPropertyType : BasePropertyType, IPropertyType
     {
-        public ListAssetReferencePropertyType(PropertyInfo propertyInfo) : base(propertyInfo)
+        public AssetReferenceListPropertyType(PropertyInfo propertyInfo) : base(propertyInfo)
         {
         }
 

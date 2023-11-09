@@ -90,6 +90,8 @@ namespace PocketGems.Parameters.Models
                     errors.Add($"Property [{propertyName}] in interface [{_type.Name}] must follow naming pattern {EditorParameterConstants.Interface.PropertyNameRegexString}.");
                 if (propertyNames.Contains(propertyName))
                     errors.Add($"Duplicate property [{propertyName}] in interface [{_type.Name}].");
+                if (EditorParameterConstants.Interface.InvalidReservedPropertyNames.Contains(propertyName.ToLower()))
+                    errors.Add($"Property name [{propertyName}] is invalid & reserved.  It cannot be used in interface [{_type.Name}].");
                 propertyNames.Add(propertyName);
             }
 

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using PocketGems.Parameters.Models;
@@ -17,7 +18,7 @@ namespace PocketGems.Parameters
         /// Ideally it would be the most convenient to use the package version but that requires file I/O to
         /// the package.json which can be costly if we're doing it all of the time.
         /// </summary>
-        public const string InterfaceHashSalt = "72093d96-3088-45bf-b6ad-443451a46eee";
+        public const string InterfaceHashSalt = "206d26c7-eaf9-4d6f-ad01-77187cc981a2";
 
         public static string SanitizedDataPath()
         {
@@ -133,6 +134,8 @@ namespace PocketGems.Parameters
 
             public static string PropertyNameRegexString = @"^[A-Z]+[A-Za-z0-9]*$";
             public static readonly Regex PropertyNameRegex = new Regex(PropertyNameRegexString, RegexOptions.Compiled);
+
+            public static HashSet<string> InvalidReservedPropertyNames = new HashSet<string> { "short", "int", "long", "float", "ushort", "uint", "ulong", "bool", "enum" };
         }
 
         public static class FlatBufferBuilderClass

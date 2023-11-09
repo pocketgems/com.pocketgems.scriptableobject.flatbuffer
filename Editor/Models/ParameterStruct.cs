@@ -97,7 +97,7 @@ namespace PocketGems.Parameters.Models
         {
             if (ParameterStructReferencePropertyType.IsReferenceType(propertyInfo, out Type genericType))
                 return genericType;
-            if (ListParameterStructReferencePropertyType.IsListReferenceType(propertyInfo, out genericType))
+            if (ParameterStructReferenceListPropertyType.IsListReferenceType(propertyInfo, out genericType))
                 return genericType;
             return null;
         }

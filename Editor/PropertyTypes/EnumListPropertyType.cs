@@ -5,9 +5,9 @@ using PocketGems.Parameters.Util;
 
 namespace PocketGems.Parameters.PropertyTypes
 {
-    internal class ListEnumPropertyType : ListStandardPropertyType
+    internal class EnumListPropertyType : StandardListPropertyType
     {
-        public ListEnumPropertyType(PropertyInfo propertyInfo, Type genericType) :
+        public EnumListPropertyType(PropertyInfo propertyInfo, Type genericType) :
             base(propertyInfo, genericType.Name, FlatBufferFieldType.Long)
         {
         }

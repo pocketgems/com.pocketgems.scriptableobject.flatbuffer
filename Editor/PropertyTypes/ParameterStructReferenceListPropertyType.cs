@@ -6,7 +6,7 @@ using PocketGems.Parameters.Util;
 
 namespace PocketGems.Parameters.PropertyTypes
 {
-    internal class ListParameterStructReferencePropertyType : ListStringPropertyType
+    internal class ParameterStructReferenceListPropertyType : StringListPropertyType
     {
         private readonly Type _genericType;
 
@@ -28,7 +28,7 @@ namespace PocketGems.Parameters.PropertyTypes
             return false;
         }
 
-        public ListParameterStructReferencePropertyType(PropertyInfo propertyInfo, Type genericType) : base(propertyInfo)
+        public ParameterStructReferenceListPropertyType(PropertyInfo propertyInfo, Type genericType) : base(propertyInfo)
         {
             _genericType = genericType;
         }

@@ -3,9 +3,9 @@ using PocketGems.Parameters.Types;
 
 namespace PocketGems.Parameters.PropertyTypes
 {
-    internal class ListLocalizedStringPropertyType : ListStringPropertyType
+    internal class LocalizedStringListPropertyType : StringListPropertyType
     {
-        public ListLocalizedStringPropertyType(PropertyInfo propertyInfo) : base(propertyInfo)
+        public LocalizedStringListPropertyType(PropertyInfo propertyInfo) : base(propertyInfo)
         {
         }
 

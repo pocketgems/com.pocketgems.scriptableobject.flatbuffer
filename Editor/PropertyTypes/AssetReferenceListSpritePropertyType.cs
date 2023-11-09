@@ -4,9 +4,9 @@ using UnityEngine.AddressableAssets;
 
 namespace PocketGems.Parameters.PropertyTypes
 {
-    internal class ListAssetReferenceSpritePropertyType : ListAssetReferencePropertyType
+    internal class AssetReferenceListSpritePropertyType : AssetReferenceListPropertyType
     {
-        public ListAssetReferenceSpritePropertyType(PropertyInfo propertyInfo) : base(propertyInfo)
+        public AssetReferenceListSpritePropertyType(PropertyInfo propertyInfo) : base(propertyInfo)
         {
         }
 
