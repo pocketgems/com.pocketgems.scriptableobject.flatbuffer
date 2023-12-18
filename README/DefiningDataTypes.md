@@ -114,12 +114,16 @@ To rename a property, we must ensure that the serialized Scriptable Object saves
 
 **Example**
 - Lets say we'd like to rename this property `int InitialAmount { get; }` to `int StartingAmount { get; }` in `ICurrencyInfo`.
-- Find the Scriptable Object file for the interface `Assets/Parameters/GeneratedCode/Editor/ScriptableObjects/CurrencyInfoScriptableObject.cs`.
+- This works for both Scriptable Objects & Structs:
+  - For **Scriptable Object**
+    - Find the Scriptable Object file for the interface `Assets/Parameters/GeneratedCode/Editor/ScriptableObjects/CurrencyInfoScriptableObject.cs`.
+  - For **Struct**
+    - Find the Struct file for the interface `Assets/Parameters/GeneratedCode/Editor/Structs/CurrencyStruct.cs.cs`.
 - Find the field that's mapped to that interface `int _initialAmount`.
-- Rename it utilizing `FormerlySerializedAs`.  It should look like this: `[FormerlySerializedAs("_initialAmount")] public int _startingAmount;`.
+- Utilize your IDE's "refactor" feature to rename the field.  Add `FormerlySerializedAs` to the field if your IDE doesn't automatically add that for you.  It should look like this: `[FormerlySerializedAs("_initialAmount")] public int _startingAmount;`.
 - Go to the Parameters config window under `Pocket Gems` -> `Config Panel`.  Press the `Re-save All Scriptable Objects`.  This will re-save all Scriptable Objects under the new field.
 - Go to the `ICurrencyInfo.cs` and utilize your IDE's "refactor" feature to rename the property from `InitialAmount` to `StartingAmount`.  This should rename all references to this interface across the code base.
-- Upon compilation, the correct code in `Assets/Parameters/GeneratedCode` will be generated.
+- Upon compilation, the correct code in `Assets/Parameters/GeneratedCode` will be generated.  The `[FormerlySerializedAs]` that was added will be removed and no longer needed since fields have been re-serialized to the correct new name.
 - Commit `.asset` and code changes.
 
 # Other
