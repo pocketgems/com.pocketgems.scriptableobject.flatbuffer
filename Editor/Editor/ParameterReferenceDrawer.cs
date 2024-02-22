@@ -1,8 +1,13 @@
+using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
+using ParameterInfo = PocketGems.Parameters.Models.ParameterInfo;
 using PocketGems.Parameters.Interface;
 using PocketGems.Parameters.Models;
 using PocketGems.Parameters.Util;
+using Type = System.Type;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -174,23 +179,12 @@ namespace PocketGems.Parameters.Editor
             var buttonRect = new Rect(objectFieldPosition.x + objectFieldPosition.width - newButtonWidth,
                 objectFieldPosition.y, newButtonWidth, objectFieldPosition.height);
             objectFieldPosition.width -= newButtonWidth;
-
-            /*
-             * The ObjectField can take an interface as a required type, however this results in the search box in
-             * the object field not showing any assets to choose from.
-             *
-             * For the time being, filter on ParameterScriptableObject which all the parameter scriptable objects will
-             * be subclass from.
-             *
-             * For a future version, we can create our own search box similar to how the Addressable AssetReferenceDrawer
-             * does.
-             */
             EditorGUI.BeginChangeCheck();
             bool objectChanged = false;
             newObject = null;
             // object field
             var scriptableObject = paramProperty.ScriptableObject;
-            var fieldObject = EditorGUI.ObjectField(objectFieldPosition, scriptableObject, typeof(ParameterScriptableObject), false);
+            var fieldObject = EditorGUI.ObjectField(objectFieldPosition, scriptableObject, GetImplementingType(paramProperty.InterfaceType), false);
             if (EditorGUI.EndChangeCheck())
             {
                 // this means the user interacted and set the value on the field
@@ -324,6 +318,51 @@ namespace PocketGems.Parameters.Editor
         protected virtual void DrawExpandedField(SerializedObject serializedObject, Rect position, SerializedProperty property, GUIContent label)
         {
             EditorGUI.PropertyField(position, property, label, true);
+        }
+
+        /// <summary>
+        /// Helper method to find the implementing class of a param interface derived from IBaseInfo
+        /// This allows restricting the editor object field to only the parameter objects of the relevant type
+        /// </summary>
+        /// <param name="interfaceType">Interface type of the parameter</param>
+        private Type GetImplementingType(Type interfaceType)
+        {
+            Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == EditorParameterConstants.GeneratedCode.AssemblyName);
+
+            Type[] types = assembly.GetTypes();
+            int implementingTypes = 0;
+            Type implementingType = null;
+            foreach (var type in types)
+            {
+                if (interfaceType.IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract &&
+                    typeof(ParameterScriptableObject).IsAssignableFrom(type))
+                {
+                    implementingType = type;
+                    implementingTypes++;
+                }
+            }
+            if (implementingTypes == 1)
+            {
+                return implementingType;
+            }
+            /*
+             * The objectField GUI element this gets used in can only take one Type,
+             * so if there are more than one Scriptable Object classes implementing the interface
+             * we chose to default to showing all ParamterScriptableObjects for this v1 version
+             *
+             * In the future, we'll build a custom inspector/drawer that handles this case
+             * and shows the precise list of scriptable objects i.e. objects of all types that
+             * implement the interface
+             */
+            else if (implementingTypes > 1)
+            {
+                return typeof(ParameterScriptableObject);
+            }
+            else
+            {
+                ParameterDebug.LogError($"Can't find implementations of type {interfaceType}");
+                return null;
+            }
         }
     }
 }
