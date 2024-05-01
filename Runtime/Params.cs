@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using PocketGems.Parameters.Interface;
 using UnityEngine;
@@ -21,6 +22,8 @@ namespace PocketGems.Parameters
         public static T Get<T>(string identifier) where T : class, IBaseInfo => s_parameterManager.Get<T>(identifier);
 
         public static T GetWithGUID<T>(string guid) where T : class, IBaseInfo => s_parameterManager.GetWithGUID<T>(guid);
+
+        public static IBaseInfo Get(string identifier, Type type) => s_parameterManager.Get(identifier, type);
 
         public static IEnumerable<T> Get<T>() where T : class, IBaseInfo => s_parameterManager.Get<T>();
 

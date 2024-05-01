@@ -1,4 +1,4 @@
-#if ADDRESSABLE_PARAMS
+#if ADDRESSABLE_PARAMS && UNITY_2021_3_OR_NEWER
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;

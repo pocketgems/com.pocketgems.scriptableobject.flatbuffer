@@ -22,18 +22,20 @@ namespace PocketGems.Parameters.AssetLoader
         public static IParameterAssetLoader CreateParameterAssetLoader()
         {
 #if UNITY_EDITOR
-    #if ADDRESSABLE_PARAMS
+#if ADDRESSABLE_PARAMS
             RunningHotLoader = new EditorAddressablesParameterAssetLoader();
-    #else
-            RunningHotLoader = new EditorResourcesParameterAssetLoader();
-    #endif
-            return RunningHotLoader;
 #else
-    #if ADDRESSABLE_PARAMS
+            RunningHotLoader = new EditorResourcesParameterAssetLoader();
+#endif
+            return RunningHotLoader;
+#elif UNITY_2021_3_OR_NEWER
+#if ADDRESSABLE_PARAMS
             return new AddressablesParameterAssetLoader();
-    #else
+#else
             return new ResourcesParameterAssetLoader();
-    #endif
+#endif
+#else
+            return new FilePathAssetLoader();
 #endif
         }
     }

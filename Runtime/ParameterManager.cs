@@ -256,6 +256,12 @@ namespace PocketGems.Parameters
             guidDict[guid] = parameter;
         }
 
+        public IBaseInfo Get(string identifier, Type type)
+        {
+            CheckGet();
+            return (IBaseInfo)Get(type, identifier);
+        }
+
         private IMutableParameter Get(Type type, string identifier)
         {
             if (type == typeof(IBaseInfo))
