@@ -54,9 +54,13 @@ namespace PocketGems.Parameters
         {
             Assert.IsNull(_pm.Get<IMySpecialInfo>(SpecialId));
             Assert.IsNull(_pm.Get<IMyVerySpecialInfo>(SpecialId));
+            Assert.IsNull(_pm.Get(SpecialId, typeof(IMySpecialInfo)));
+            Assert.IsNull(_pm.Get(SpecialId, typeof(IMyVerySpecialInfo)));
 
             Assert.IsNull(_pm.Get<IMySpecialInfo>(VerySpecialId));
             Assert.IsNull(_pm.Get<IMyVerySpecialInfo>(VerySpecialId));
+            Assert.IsNull(_pm.Get(VerySpecialId, typeof(IMySpecialInfo)));
+            Assert.IsNull(_pm.Get(VerySpecialId, typeof(IMyVerySpecialInfo)));
 
             LogAssert.Expect(LogType.Error, new Regex(".*"));
             Assert.IsNull(_pm.GetWithGUID<IMySpecialInfo>(SpecialGuid));
@@ -79,8 +83,12 @@ namespace PocketGems.Parameters
             LoadInfos();
 
             Assert.AreEqual(_mockMySpecialInfo, _pm.Get<IMySpecialInfo>(SpecialId));
+            Assert.AreEqual(_mockMySpecialInfo, _pm.Get(SpecialId, typeof(IMySpecialInfo)));
             Assert.IsNull(_pm.Get<IMyVerySpecialInfo>(SpecialId));
+            Assert.IsNull(_pm.Get(SpecialId, typeof(IMyVerySpecialInfo)));
 
+            Assert.AreEqual(_mockMyVerySpecialInfo, _pm.Get(VerySpecialId, typeof(IMySpecialInfo)));
+            Assert.AreEqual(_mockMyVerySpecialInfo, _pm.Get(VerySpecialId, typeof(IMyVerySpecialInfo)));
             Assert.AreEqual(_mockMyVerySpecialInfo, _pm.Get<IMySpecialInfo>(VerySpecialId));
             Assert.AreEqual(_mockMyVerySpecialInfo, _pm.Get<IMyVerySpecialInfo>(VerySpecialId));
 
@@ -179,6 +187,7 @@ namespace PocketGems.Parameters
             LoadInfos();
 
             Assert.AreEqual(_mockMyVerySpecialInfo, _pm.Get<IMySpecialInfo>(VerySpecialId));
+            Assert.AreEqual(_mockMyVerySpecialInfo, _pm.Get(VerySpecialId, typeof(IMySpecialInfo)));
             Assert.AreEqual(_mockMyVerySpecialInfo, _pm.GetWithGUID<IMySpecialInfo>(VerySpecialGuid));
             Assert.AreEqual(_mockKeyValueStruct, _pm.GetStructWithGuid<IKeyValueStruct>(StructGuid));
 
@@ -192,6 +201,7 @@ namespace PocketGems.Parameters
             _pm.Load<IKeyValueStruct, MockKeyValueStruct>(newStruct, StructGuid);
 
             Assert.AreEqual(newInfo, _pm.Get<IMySpecialInfo>(VerySpecialId));
+            Assert.AreEqual(newInfo, _pm.Get(VerySpecialId, typeof(IMySpecialInfo)));
             Assert.AreEqual(newInfo, _pm.GetWithGUID<IMySpecialInfo>(VerySpecialGuid));
             Assert.AreEqual(newStruct, _pm.GetStructWithGuid<IKeyValueStruct>(StructGuid));
 
@@ -434,6 +444,9 @@ namespace PocketGems.Parameters
             LogAssert.Expect(LogType.Error, regex);
             Assert.IsNull(_pm.Get<IMySpecialInfo>(SpecialId));
             Assert.IsTrue(_pm.HasGetBeenCalled);
+
+            LogAssert.Expect(LogType.Error, regex);
+            Assert.IsNull(_pm.Get(SpecialId, typeof(IMySpecialInfo)));
 
             LogAssert.Expect(LogType.Error, regex);
             Assert.IsEmpty(_pm.Get<IMySpecialInfo>());

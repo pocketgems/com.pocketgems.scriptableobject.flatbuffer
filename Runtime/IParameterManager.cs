@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using PocketGems.Parameters.Interface;
 
@@ -15,6 +16,14 @@ namespace PocketGems.Parameters
         /// <typeparam name="T">type to query</typeparam>
         /// <returns>the parameter if it exists</returns>
         T Get<T>(string identifier) where T : class, IBaseInfo;
+
+        /// <summary>
+        /// Get a particular parameter object by identifier.
+        /// </summary>
+        /// <param name="type">type of object to return. This is expected to be a subinterface of IBaseInfo</param>
+        /// <param name="identifier">identifier to query</param>
+        /// <returns>object of type IBaseInfo, and implicitly of type Type</returns>
+        IBaseInfo Get(string identifier, Type type);
 
         /// <summary>
         /// Get a particular parameter object by guid.

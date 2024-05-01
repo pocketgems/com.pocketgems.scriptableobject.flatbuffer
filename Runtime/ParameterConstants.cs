@@ -32,6 +32,11 @@ namespace PocketGems.Parameters
         /// </summary>
         public const string GeneratedResourceDirectory = "GeneratedParameterData";
 
+        /// <summary>
+        /// File type used to store the FlatBuffer byte file.  Used at both runtime & in the editor assembly.
+        /// </summary>
+        internal const string GeneratedParameterAssetFileExtension = ".bytes";
+
 #if ADDRESSABLE_PARAMS
         public static class Addressables
         {
@@ -53,11 +58,6 @@ namespace PocketGems.Parameters
             public static string Dir => Path.Combine(Folders);
         }
 
-        /// <summary>
-        /// File type used to store the FlatBuffer byte file.  Used at both runtime & in the editor assembly.
-        /// </summary>
-        internal const string GeneratedParameterAssetFileExtension = ".bytes";
-
         internal static class GeneratedAsset
         {
             /// <summary>
@@ -72,11 +72,11 @@ namespace PocketGems.Parameters
             {
                 get
                 {
-    #if ADDRESSABLE_PARAMS
+#if ADDRESSABLE_PARAMS
                     const string folderName = "Assets";
-    #else
+#else
                     const string folderName = "Resources";
-    #endif
+#endif
                     var intermediateFolder = Path.Combine(RootDirectory, folderName);
                     return Path.Combine(intermediateFolder, GeneratedResourceDirectory);
                 }

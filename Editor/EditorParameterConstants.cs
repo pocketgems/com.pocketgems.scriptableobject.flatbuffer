@@ -18,7 +18,7 @@ namespace PocketGems.Parameters
         /// Ideally it would be the most convenient to use the package version but that requires file I/O to
         /// the package.json which can be costly if we're doing it all of the time.
         /// </summary>
-        public const string InterfaceHashSalt = "206d26c7-eaf9-4d6f-ad01-77187cc981a2";
+        public const string InterfaceHashSalt = "f1f48d2a-adc0-4ad8-b612-c70e076c35c9";
 
         public static string SanitizedDataPath()
         {
