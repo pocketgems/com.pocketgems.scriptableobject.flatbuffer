@@ -125,7 +125,7 @@ namespace PocketGems.Parameters.Util
         [Test]
         public void GenerateScriptableObjectFile()
         {
-            CodeGenerator.GenerateScriptableObjectFile(_mockParameterInfo1, TestDirectoryName);
+            CodeGenerator.GenerateScriptableObjectFile(_mockParameterInfo1, 0, TestDirectoryName);
 
             AssertFileCount(1);
             AssertFileExists(_mockParameterInfo1.ScriptableObjectClassName(true));
