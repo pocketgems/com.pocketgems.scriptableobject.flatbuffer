@@ -35,7 +35,7 @@ namespace PocketGems.Parameters.AssetLoader
             return new ResourcesParameterAssetLoader();
 #endif
 #else
-            return new FilePathAssetLoader();
+            return new AssemblyManifestResourceAssetLoader();
 #endif
         }
     }
