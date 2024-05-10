@@ -120,9 +120,10 @@ namespace PocketGems.Parameters.Util
         /// Generate the Scriptable Object class file that implements the interface.
         /// </summary>
         /// <param name="parameterInfo">Interface to write the class for.</param>
+        /// <param name="order">The menu order.</param>
         /// <param name="outputDirectory">Directory to write the class to.</param>
         /// <returns>filepath of the file written</returns>
-        public static string GenerateScriptableObjectFile(IParameterInfo parameterInfo, string outputDirectory)
+        public static string GenerateScriptableObjectFile(IParameterInfo parameterInfo, int order, string outputDirectory)
         {
             if (!Directory.Exists(outputDirectory))
                 Directory.CreateDirectory(outputDirectory);
@@ -149,6 +150,7 @@ namespace PocketGems.Parameters.Util
                 { "className", parameterInfo.ScriptableObjectClassName(false) },
                 { "interfaceName", parameterInfo.InterfaceName },
                 { "properties", properties },
+                { "order", order },
             };
             var fileName = parameterInfo.ScriptableObjectClassName(true);
             var filePath = Path.Combine(outputDirectory, fileName);
