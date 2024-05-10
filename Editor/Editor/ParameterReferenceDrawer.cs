@@ -26,12 +26,14 @@ namespace PocketGems.Parameters.Editor
     public class ParameterReferenceDrawer : PropertyDrawer
     {
         /*
-         * Only allow the fold out to be at the top most depth.
+         * Only allow the fold out to be at the top most depth. (MaxDepth 1)
          * Unity starts getting real buggy visually when nesting too many GUI layers
          * (low ROI to handle all depths & corner cases).
+         *
+         * Note: It was set to 1 originally but increased to 10 for now.
          */
+        private const int MaxDepth = 10;
         private static int s_depthCounter = 0;
-        private const int MaxDepth = 1;
 
         /*
          * This is needed so we do not attempt to work around a Unity issue.
