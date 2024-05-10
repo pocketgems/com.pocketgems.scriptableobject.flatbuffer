@@ -327,7 +327,7 @@ namespace PocketGems.Parameters.Editor
         /// <param name="interfaceType">Interface type of the parameter</param>
         private Type GetImplementingType(Type interfaceType)
         {
-            Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == EditorParameterConstants.GeneratedCode.AssemblyName);
+            Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == EditorParameterConstants.GeneratedCode.EditorAssemblyName);
 
             Type[] types = assembly.GetTypes();
             int implementingTypes = 0;
