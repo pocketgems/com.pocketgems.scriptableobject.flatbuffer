@@ -1,6 +1,6 @@
 {
   "name": "com.pocketgems.scriptableobject.flatbuffer",
-  "version": "3.8.1",
+  "version": "3.8.2",
   "displayName": "Scriptable Object - FlatBuffer",
   "description": "Seamless syncing between Scriptable Objects and CSVs.  Scriptable Object data built to Google FlatBuffers for optimal runtime loading & access.",
   "unity": "2021.3",
