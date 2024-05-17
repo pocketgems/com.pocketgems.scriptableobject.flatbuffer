@@ -11,6 +11,7 @@ using Type = System.Type;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
+using Object = UnityEngine.Object;
 
 namespace PocketGems.Parameters.Editor
 {
@@ -56,7 +57,8 @@ namespace PocketGems.Parameters.Editor
          *
          * This was identified in LTS2020 (TBD if it's still an issue in newer editor versions)
          */
-        private static readonly Stack<string> s_arrayPropertyNames = new Stack<string>();
+        private static readonly Stack<string> s_arrayPropertyNames = new ();
+        private static Object s_firstTargetObject;
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -165,6 +167,28 @@ namespace PocketGems.Parameters.Editor
         private bool DrawGUI(Rect position, SerializedProperty property, ParamProperty paramProperty, GUIContent label, out ParameterScriptableObject
             newObject)
         {
+            /*
+             * The s_firstTargetObject is used to keep track of the upper most target that has been traversed.
+             *
+             * Ideally, all of our DrawGUI code is called to completion on every draw so our
+             * s_depthCounter and s_arrayPropertyNames are correctly tracking.
+             *
+             * However this isn't the case if an element in the array is changed.  It causes the code to stop executing
+             * (possibly with an internal exception & catch?) and re-render from the top level.  This throws off
+             * s_depthCounter and s_arrayPropertyNames.
+             *
+             * If we detect we're re-rendering the first item again, we reset appropriately.
+             */
+            if (s_firstTargetObject == null)
+            {
+                s_firstTargetObject = property.serializedObject.targetObject;
+            }
+            else if (s_firstTargetObject == property.serializedObject.targetObject)
+            {
+                s_depthCounter = 0;
+                s_arrayPropertyNames.Clear();
+            }
+
             s_depthCounter++;
             if (paramProperty.ElementPosition.HasValue)
                 s_arrayPropertyNames.Push(property.propertyPath.Split('.')[0]);
@@ -307,6 +331,11 @@ namespace PocketGems.Parameters.Editor
             if (paramProperty.ElementPosition.HasValue)
                 s_arrayPropertyNames.Pop();
             s_depthCounter--;
+            if (s_depthCounter == 0)
+            {
+                s_firstTargetObject = null;
+            }
+
             return objectChanged;
         }
 
