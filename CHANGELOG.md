@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.8.3] - 2024-05-17
 ### Fixed
 - `ParameterReferenceDrawer` edge case where it shows "CANNOT DISPLAY" when it should be able to.
+- Internal Pocket Gems Only: dll package dependencies
 
 ## [3.8.2] - 2024-05-10
 ### Fixed
