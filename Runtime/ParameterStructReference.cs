@@ -1,5 +1,9 @@
 using PocketGems.Parameters.Interface;
 using UnityEngine;
+#if UNITY_EDITOR
+using System.Threading;
+using UnityEditor;
+#endif
 
 namespace PocketGems.Parameters
 {
@@ -24,8 +28,12 @@ namespace PocketGems.Parameters
             get
             {
 #if UNITY_EDITOR
-                if (!Application.isPlaying)
+                // We allow the Info to be used in the background at runtime.
+                // Calling Application.isPlaying causes issues in the background.
+                if (Thread.CurrentThread.ManagedThreadId == 1 && !Application.isPlaying)
+                {
                     return GetStruct(EditorParams.ParameterManager);
+                }
 #endif
                 if (Params.ParameterManager == null)
                 {
