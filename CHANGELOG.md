@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.8.6] - 2024-06-06
 ### Fixed
 - Missing `using` for `DateTime` & `TimeSpan` usage in structs
+- `DateTime` & `TimeSpan` drawer rendering when nested in structs
 
 ## [3.8.5] - 2024-05-28
 ### Fixed
