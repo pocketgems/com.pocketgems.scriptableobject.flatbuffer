@@ -28,7 +28,7 @@ namespace PocketGems.Parameters.Operations.Code
                 var soFilename = CodeGenerator.GenerateScriptableObjectFile(parameterInfo, index, scriptableObjectDir);
                 soFileRemover.UsedFile(soFilename);
 
-                var fbClassFile = CodeGenerator.GenerateFlatBufferClassFile(parameterInfo, flatBufferClassesDir);
+                var fbClassFile = CodeGenerator.GenerateFlatBufferClassFile(parameterInfo, true, flatBufferClassesDir);
                 fbFileRemover.UsedFile(fbClassFile);
                 index++;
             }
@@ -40,7 +40,7 @@ namespace PocketGems.Parameters.Operations.Code
                 var structFilename = CodeGenerator.GenerateStructFile(parameterStruct, structsDir);
                 structFileRemover.UsedFile(structFilename);
 
-                var fbClassFile = CodeGenerator.GenerateFlatBufferClassFile(parameterStruct, flatBufferClassesDir);
+                var fbClassFile = CodeGenerator.GenerateFlatBufferClassFile(parameterStruct, false, flatBufferClassesDir);
                 fbFileRemover.UsedFile(fbClassFile);
             }
 

@@ -73,7 +73,8 @@ Requirements for interfaces are as follows:
 - Interface name must follow the pattern `I[A-Z]+[A-Za-z0-9]*Info`.
 - Visbility must be `public`.
 - Must not have a namespace.
-- Must inherit from or from an interface that inherits `IBaseInfo`.
+- Must inherit from `IBaseInfo` or from an interface that inherits `IBaseInfo`.
+- May inherit from multiple other `Info` interfaces as long as property names do not collide.
 - Must NOT inherit any other external interfaces (e.g. `IEnumerable`).
 - Can only define public property getters. Methods & setters are not allowed.
 - Propery names must follow the pattern `[A-Z]+[A-Za-z0-9]*`.

@@ -32,6 +32,8 @@ namespace PocketGems.Parameters.Models
         [TestCase(typeof(IInternalPropertyInfo))] // property is defined as non public
         [TestCase(typeof(IMethodInfo))] // interface defined a method
         [TestCase(typeof(INameSpacedInfo))] // interface has a name space
+        [TestCase(typeof(IReferenceBaseInfo))] // interface has reference to base info
+        [TestCase(typeof(IListReferenceBaseInfo))] // interface has reference to base info
         public void InvalidInterface(Type interfaceType)
         {
             AssertInvalidInterface(new ParameterInfo(interfaceType));

@@ -43,6 +43,10 @@ end
             _fb = fb;
         }
 
+{{~if isInfo~}}
+        public override string ToString() => $"{{interfaceName}}:{_identifier}";
+
+{{~end~}}
         #region  property implementation
 
 {{~for propertyTypeDict in propertyTypeDicts~}}

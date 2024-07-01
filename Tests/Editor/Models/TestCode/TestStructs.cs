@@ -95,6 +95,18 @@ namespace MyNameSpace
     }
 }
 
+// bad: referencing base struct
+public interface IReferenceBaseStruct : IBaseStruct
+{
+    ParameterStructReference<IBaseStruct> MyStruct { get; }
+}
+
+// bad: referencing base struct
+public interface IListReferenceBaseStruct : IBaseStruct
+{
+    IReadOnlyList<ParameterStructReference<IBaseStruct>> MyStructs { get; }
+}
+
 /*
  * Circular Reference Testing
  */

@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Collections.Generic;
+using PocketGems.Parameters;
 using PocketGems.Parameters.Interface;
 
 // valid interface
@@ -89,4 +91,16 @@ namespace MyNameSpace
     {
         int MyInt { get; }
     }
+}
+
+// bad: referencing base info
+public interface IReferenceBaseInfo : IBaseInfo
+{
+    ParameterReference<IBaseInfo> MyInfo { get; }
+}
+
+// bad: referencing base info
+public interface IListReferenceBaseInfo : IBaseInfo
+{
+    IReadOnlyList<ParameterReference<IBaseInfo>> MyInfos { get; }
 }
