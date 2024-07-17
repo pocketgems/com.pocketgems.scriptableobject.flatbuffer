@@ -9,13 +9,13 @@ using UnityEditor;
 /// https://docs.unity3d.com/2021.3/Documentation/Manual/TreeViewAPI.html
 /// http://files.unity3d.com/mads/TreeViewExamples.zip
 /// </summary>
-namespace PocketGems.Parameters.Editor.Validation.TreeDataModel
+namespace PocketGems.Parameters.Editor.Validation.TreeDataModel.Editor
 {
     public class TreeElementUtilityTest
     {
         class TestElement : TreeElement
         {
-            public TestElement (string name, int depth)
+            public TestElement(string name, int depth)
             {
                 this.name = name;
                 this.depth = depth;
@@ -115,7 +115,7 @@ namespace PocketGems.Parameters.Editor.Validation.TreeDataModel
             list.Add(b1);
             list.Add(b2);
 
-            var c0 = new TestElement ("C", 0);
+            var c0 = new TestElement("C", 0);
             list.Add(c0);
 
             var f0 = new TestElement("F", 0);
@@ -130,15 +130,15 @@ namespace PocketGems.Parameters.Editor.Validation.TreeDataModel
 
 
             // Single element
-            TestElement[] input = {b1};
-            TestElement[] expectedResult = {b1};
+            TestElement[] input = { b1 };
+            TestElement[] expectedResult = { b1 };
             var result = TreeElementUtility.FindCommonAncestorsWithinList(input).ToArray();
             Assert.IsTrue(ArrayUtility.ArrayEquals(expectedResult, result), "Single input should return single output");
 
             // Single sub tree
-            input = new[] {b1, b2};
-            expectedResult = new[] {b1};
-            result = TreeElementUtility.FindCommonAncestorsWithinList (input).ToArray ();
+            input = new[] { b1, b2 };
+            expectedResult = new[] { b1 };
+            result = TreeElementUtility.FindCommonAncestorsWithinList(input).ToArray();
             Assert.IsTrue(ArrayUtility.ArrayEquals(expectedResult, result), "Common ancestor should only be b1 ");
 
             // Multiple sub trees

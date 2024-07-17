@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace PocketGems.Parameters.Editor
+namespace PocketGems.Parameters.Editor.Editor
 {
     /// <summary>
     /// Convenience wrapper to fetch and modify data for a SerializedProperty representing a

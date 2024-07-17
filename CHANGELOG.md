@@ -4,6 +4,17 @@ All package updates & migration steps will be listed in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2024-07-17
+### Changed
+- Editor code organization to support external code generation.
+  - Break editor assembly into smaller modular assemblies.
+  - Updated all editor namespaces.
+  - Generalized various pathing code to make it more robust.
+### Fixed
+- Code gen overwrites git conflicts in AssemblyInfo
+- Console logged parameter struct directory path after code generation
+- Disabling code gen on editor loading should still check to generate data
+
 ## [3.9.0] - 2024-07-01
 ### Added
 - Additional checks to prevent declaring references with `IBaseInfo` and `IBaseStruct`

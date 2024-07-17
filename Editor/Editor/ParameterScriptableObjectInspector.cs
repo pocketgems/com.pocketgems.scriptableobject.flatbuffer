@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using PocketGems.Parameters.Common.Editor;
+using PocketGems.Parameters.Common.Util.Editor;
 using PocketGems.Parameters.Interface;
-using PocketGems.Parameters.Util;
 using PocketGems.Parameters.Validation;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace PocketGems.Parameters.Editor
+namespace PocketGems.Parameters.Editor.Editor
 {
     [ExcludeFromCoverage]
     [CustomEditor(typeof(ParameterScriptableObject), true), CanEditMultipleObjects]

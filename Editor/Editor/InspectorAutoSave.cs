@@ -1,11 +1,11 @@
 using System;
 using System.Diagnostics;
+using PocketGems.Parameters.Common.Util.Editor;
 using PocketGems.Parameters.Interface;
-using PocketGems.Parameters.Util;
 using UnityEditor;
 using UnityEngine.TestTools;
 
-namespace PocketGems.Parameters.Editor
+namespace PocketGems.Parameters.Editor.Editor
 {
     [ExcludeFromCoverage]
     [InitializeOnLoad]

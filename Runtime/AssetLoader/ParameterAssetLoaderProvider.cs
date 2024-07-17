@@ -21,7 +21,7 @@ namespace PocketGems.Parameters.AssetLoader
         /// <returns>The loader to use.</returns>
         public static IParameterAssetLoader CreateParameterAssetLoader()
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR && UNITY_2021_3_OR_NEWER
 #if ADDRESSABLE_PARAMS
             RunningHotLoader = new EditorAddressablesParameterAssetLoader();
 #else

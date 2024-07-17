@@ -1,4 +1,4 @@
-#if (UNITY_EDITOR && ADDRESSABLE_PARAMS)
+#if (UNITY_EDITOR && ADDRESSABLE_PARAMS && UNITY_2021_3_OR_NEWER)
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Build.DataBuilders;
 using UnityEngine.TestTools;

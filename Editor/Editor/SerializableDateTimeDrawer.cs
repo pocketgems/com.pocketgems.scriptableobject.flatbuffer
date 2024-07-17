@@ -1,10 +1,10 @@
 using System;
-using PocketGems.Parameters.DataTypes;
+using PocketGems.Parameters.Common.DataTypes.Editor;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace PocketGems.Parameters.Editor
+namespace PocketGems.Parameters.Editor.Editor
 {
     [ExcludeFromCoverage]
     [CustomPropertyDrawer(typeof(SerializableDateTime))]
@@ -58,7 +58,7 @@ namespace PocketGems.Parameters.Editor
                 var second = DrawComponent("s", 2, dateTime.Second);
                 dateTime = new DateTime(year, month, day, hour, minute, second);
             }
-            catch (Exception e)
+            catch (Exception _)
             {
                 // ignored
             }

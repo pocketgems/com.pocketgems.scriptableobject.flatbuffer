@@ -6,19 +6,19 @@ using NUnit.Framework;
 /// https://docs.unity3d.com/2021.3/Documentation/Manual/TreeViewAPI.html
 /// http://files.unity3d.com/mads/TreeViewExamples.zip
 /// </summary>
-namespace PocketGems.Parameters.Editor.Validation.TreeDataModel
+namespace PocketGems.Parameters.Editor.Validation.TreeDataModel.Editor
 {
     public class TreeModelTest
     {
         [Test]
         public static void TestTreeModelCanAddElements()
         {
-            var root = new TreeElement {name = "Root", depth = -1};
+            var root = new TreeElement { name = "Root", depth = -1 };
             var listOfElements = new List<TreeElement>();
             listOfElements.Add(root);
 
             var model = new TreeModel<TreeElement>(listOfElements);
-            model.AddElement(new TreeElement { name = "Element"  }, root, 0);
+            model.AddElement(new TreeElement { name = "Element" }, root, 0);
             model.AddElement(new TreeElement { name = "Element " + root.children.Count }, root, 0);
             model.AddElement(new TreeElement { name = "Element " + root.children.Count }, root, 0);
             model.AddElement(new TreeElement { name = "Sub Element" }, root.children[1], 0);
@@ -41,7 +41,7 @@ namespace PocketGems.Parameters.Editor.Validation.TreeDataModel
             listOfElements.Add(root);
 
             var model = new TreeModel<TreeElement>(listOfElements);
-            model.AddElement(new TreeElement { name = "Element"  }, root, 0);
+            model.AddElement(new TreeElement { name = "Element" }, root, 0);
             model.AddElement(new TreeElement { name = "Element " + root.children.Count }, root, 0);
             model.AddElement(new TreeElement { name = "Element " + root.children.Count }, root, 0);
             model.AddElement(new TreeElement { name = "Sub Element" }, root.children[1], 0);

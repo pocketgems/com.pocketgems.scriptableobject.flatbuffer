@@ -1,19 +1,19 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
-using ParameterInfo = PocketGems.Parameters.Models.ParameterInfo;
+using PocketGems.Parameters.Common.Editor;
+using PocketGems.Parameters.Common.Util.Editor;
 using PocketGems.Parameters.Interface;
-using PocketGems.Parameters.Models;
-using PocketGems.Parameters.Util;
-using Type = System.Type;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 using Object = UnityEngine.Object;
+using ParameterInfo = PocketGems.Parameters.Common.Models.Editor.ParameterInfo;
+using Type = System.Type;
 
-namespace PocketGems.Parameters.Editor
+namespace PocketGems.Parameters.Editor.Editor
 {
     /// <summary>
     /// The editor drawer for ParameterReferences<> so that parameter Scriptable Objects can be dragged directly onto
@@ -57,7 +57,7 @@ namespace PocketGems.Parameters.Editor
          *
          * This was identified in LTS2020 (TBD if it's still an issue in newer editor versions)
          */
-        private static readonly Stack<string> s_arrayPropertyNames = new ();
+        private static readonly Stack<string> s_arrayPropertyNames = new();
         private static Object s_firstTargetObject;
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -358,7 +358,7 @@ namespace PocketGems.Parameters.Editor
         /// <param name="interfaceType">Interface type of the parameter</param>
         private Type GetImplementingType(Type interfaceType)
         {
-            Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == EditorParameterConstants.GeneratedCode.EditorAssemblyName);
+            Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == EditorParameterConstants.CodeGeneration.EditorAssemblyName);
 
             Type[] types = assembly.GetTypes();
             int implementingTypes = 0;

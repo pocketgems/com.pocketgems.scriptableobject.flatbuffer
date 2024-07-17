@@ -1,12 +1,15 @@
 using System.IO;
-using PocketGems.Parameters.Editor.Operation;
-using PocketGems.Parameters.Editor.Validation;
-using PocketGems.Parameters.Util;
+using PocketGems.Parameters.CodeGeneration.Operation.Editor;
+using PocketGems.Parameters.Common.Editor;
+using PocketGems.Parameters.Common.Util.Editor;
+using PocketGems.Parameters.DataGeneration.Operation.Editor;
+using PocketGems.Parameters.DataGeneration.Util.Editor;
+using PocketGems.Parameters.Editor.Validation.Editor;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace PocketGems.Parameters.Editor
+namespace PocketGems.Parameters.Editor.Editor
 {
     /// <summary>
     /// Editor window for various debug functionality & toggles.
@@ -76,7 +79,7 @@ namespace PocketGems.Parameters.Editor
             DisplayDirPath("Local CSVs:", localCSVs);
             var scriptableObjects = NamingUtil.RelativePath(ParameterConstants.ScriptableObject.Dir);
             DisplayDirPath("Scriptable Objects:", scriptableObjects);
-            var genScriptsDir = NamingUtil.RelativePath(EditorParameterConstants.GeneratedCode.RootDir);
+            var genScriptsDir = NamingUtil.RelativePath(EditorParameterConstants.CodeGeneration.RootDir);
             DisplayDirPath("Generated Source Files:", genScriptsDir);
             var genParamDir = NamingUtil.RelativePath(ParameterConstants.GeneratedAsset.SubDirectory);
             DisplayDirPath("Generated Data Files:", genParamDir);

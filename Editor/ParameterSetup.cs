@@ -1,10 +1,13 @@
 using System;
 using System.IO;
-using PocketGems.Parameters.Util;
+using PocketGems.Parameters.CodeGeneration.Util.Editor;
+using PocketGems.Parameters.Common.Editor;
+using PocketGems.Parameters.Common.Util.Editor;
+using PocketGems.Parameters.DataGeneration.Util.Editor;
 using UnityEditor;
 using UnityEngine.TestTools;
 
-namespace PocketGems.Parameters
+namespace PocketGems.Parameters.Editor
 {
     [ExcludeFromCoverage]
     internal class ParameterSetup
@@ -111,12 +114,12 @@ namespace PocketGems.Parameters
             CreateAssemblyInfo(EditorParameterConstants.Interface.AssemblyInfoPath);
 
             // generated code folders & assemblies
-            CreateFolder(EditorParameterConstants.GeneratedCode.RootDir);
-            CreateFolder(EditorParameterConstants.GeneratedCode.EditorDir);
-            CreateAssemblyInfo(EditorParameterConstants.GeneratedCode.AssemblyInfoPath);
-            CreateAssemblyInfo(EditorParameterConstants.GeneratedCode.AssemblyInfoEditorPath);
-            CreateAssembly(EditorParameterConstants.GeneratedCode.AssemblyName,
-                EditorParameterConstants.GeneratedCode.RootDir, a =>
+            CreateFolder(EditorParameterConstants.CodeGeneration.RootDir);
+            CreateFolder(EditorParameterConstants.CodeGeneration.EditorDir);
+            CreateAssemblyInfo(EditorParameterConstants.CodeGeneration.AssemblyInfoPath);
+            CreateAssemblyInfo(EditorParameterConstants.CodeGeneration.AssemblyInfoEditorPath);
+            CreateAssembly(EditorParameterConstants.CodeGeneration.AssemblyName,
+                EditorParameterConstants.CodeGeneration.RootDir, a =>
                 {
                     a.references = new[]
                     {
@@ -125,16 +128,19 @@ namespace PocketGems.Parameters
                         EditorParameterConstants.AssemblyName.Addressables
                     };
                 });
-            CreateAssembly(EditorParameterConstants.GeneratedCode.EditorAssemblyName,
-                EditorParameterConstants.GeneratedCode.EditorDir, a =>
+            CreateAssembly(EditorParameterConstants.CodeGeneration.EditorAssemblyName,
+                EditorParameterConstants.CodeGeneration.EditorDir, a =>
                 {
                     a.references = new[]
                     {
                         interfaceAssemblyName,
                         EditorParameterConstants.AssemblyName.ParametersRuntime,
                         EditorParameterConstants.AssemblyName.ParametersEditor,
+                        EditorParameterConstants.AssemblyName.ParametersEditorCommon,
+                        EditorParameterConstants.AssemblyName.ParametersEditorCodeGeneration,
+                        EditorParameterConstants.AssemblyName.ParametersEditorDataGeneration,
                         EditorParameterConstants.AssemblyName.Addressables,
-                        EditorParameterConstants.GeneratedCode.AssemblyName
+                        EditorParameterConstants.CodeGeneration.AssemblyName
                     };
                     a.includePlatforms = new[] { "Editor" };
                 });

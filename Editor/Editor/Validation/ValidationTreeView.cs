@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using PocketGems.Parameters.Editor.Validation.TreeDataModel;
+using PocketGems.Parameters.Editor.Validation.TreeDataModel.Editor;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
@@ -12,7 +12,7 @@ using UnityEngine.TestTools;
 /// https://docs.unity3d.com/2021.3/Documentation/Manual/TreeViewAPI.html
 /// http://files.unity3d.com/mads/TreeViewExamples.zip
 /// </summary>
-namespace PocketGems.Parameters.Editor.Validation
+namespace PocketGems.Parameters.Editor.Validation.Editor
 {
     [ExcludeFromCoverage]
     internal class ValidationTreeView : TreeViewWithTreeModel<ValidationTreeElement>

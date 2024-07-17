@@ -2,15 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using PocketGems.Parameters.Editor.Operation;
-using PocketGems.Parameters.Editor.Validation;
+using PocketGems.Parameters.CodeGeneration.Operation.Editor;
+using PocketGems.Parameters.CodeGeneration.Util.Editor;
+using PocketGems.Parameters.Common.Editor;
+using PocketGems.Parameters.Common.Models.Editor;
+using PocketGems.Parameters.Common.Operation.Editor;
+using PocketGems.Parameters.Common.Operations.Editor;
+using PocketGems.Parameters.Common.Util.Editor;
+using PocketGems.Parameters.DataGeneration.Operation.Editor;
+using PocketGems.Parameters.DataGeneration.Operations.Editor;
+using PocketGems.Parameters.DataGeneration.Util.Editor;
+using PocketGems.Parameters.Editor.Validation.Editor;
 using PocketGems.Parameters.Interface;
-using PocketGems.Parameters.Models;
-using PocketGems.Parameters.Operations;
-using PocketGems.Parameters.Operations.Code;
-using PocketGems.Parameters.Operations.Data;
-using PocketGems.Parameters.Processors;
-using PocketGems.Parameters.Util;
+using PocketGems.Parameters.Processors.Editor;
 using PocketGems.Parameters.Validation;
 using Unity.Profiling;
 using UnityEditor;
@@ -22,7 +26,7 @@ using UnityEditor.Compilation;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace PocketGems.Parameters
+namespace PocketGems.Parameters.Editor
 {
     /// <summary>
     /// The main public interface for interacting with parameter generation.
@@ -74,19 +78,25 @@ namespace PocketGems.Parameters
 
             SetupAssetFileWatching();
 
-            if (!ParameterPrefs.AutoGenerateCodeOnCompilation)
-                return;
+            // check to generate code if we are not using an external project to do so
+            bool isUsingExternalCodeGeneration = Directory.Exists(EditorParameterConstants.CodeGeneration.ExternalProjectDir);
+            bool isUnityCodeGenEnabled = ParameterPrefs.AutoGenerateCodeOnCompilation && !isUsingExternalCodeGeneration;
 
-            CompilationPipeline.assemblyCompilationFinished += HandleCompilationErrors;
+            if (isUnityCodeGenEnabled)
+                CompilationPipeline.assemblyCompilationFinished += HandleCompilationErrors;
 
             // This code path will reach here if the project is set up to reload assemblies upon editor play.
             // There is no need to recheck code generation in this situation.
             if (EditorApplication.isPlayingOrWillChangePlaymode)
                 return;
 
-            void DispatchCodeGeneration()
+            void DispatchGeneration()
             {
-                s_waitingGenerateCode = true;
+                if (isUnityCodeGenEnabled)
+                {
+                    s_waitingGenerateCode = true;
+                }
+
                 /* Defer generation from OnLoad() until the next update loop.  Attempting to generate upon
                  * this function through [InitializeOnLoadMethod] causes inconsistent data between the AssetDatabase
                  * and and reading the data again for validation through Resources.
@@ -99,16 +109,25 @@ namespace PocketGems.Parameters
                     // so do not check to generate code yet.
                     if (!isFocused)
                     {
-                        ParameterDebug.LogVerbose("Delaying Code Generation: Editor doesn't have focus");
-                        DispatchCodeGeneration();
+                        ParameterDebug.LogVerbose("Delaying Generation: Editor doesn't have focus");
+                        DispatchGeneration();
                         return;
                     }
-                    s_waitingGenerateCode = false;
-                    GenerateCodeFiles(GenerateCodeType.IfNeeded, generateDataType);
+
+                    if (isUnityCodeGenEnabled)
+                    {
+                        s_waitingGenerateCode = false;
+                        GenerateCodeFiles(GenerateCodeType.IfNeeded, generateDataType);
+                    }
+                    else
+                    {
+                        s_waitingGenerateData = false;
+                        GenerateData(generateDataType, out _);
+                    }
                 });
             }
 
-            DispatchCodeGeneration();
+            DispatchGeneration();
         }
 
         public static bool InitialSetup(bool force = false)
@@ -178,12 +197,12 @@ namespace PocketGems.Parameters
                 return;
 
             var dllName = Path.GetFileNameWithoutExtension(path);
-            if (dllName != EditorParameterConstants.GeneratedCode.AssemblyName)
+            if (dllName != EditorParameterConstants.CodeGeneration.AssemblyName)
                 return;
 
             bool interfaceImplementationError = false;
-            var soPath = NamingUtil.RelativePath(EditorParameterConstants.GeneratedCode.ScriptableObjectsDir);
-            var fbPath = NamingUtil.RelativePath(EditorParameterConstants.GeneratedCode.FlatBufferClassesDir);
+            var soPath = NamingUtil.RelativePath(EditorParameterConstants.CodeGeneration.ScriptableObjectsDir);
+            var fbPath = NamingUtil.RelativePath(EditorParameterConstants.CodeGeneration.FlatBufferClassesDir);
 
             for (int i = 0; i < messages.Length; i++)
             {
@@ -254,11 +273,11 @@ namespace PocketGems.Parameters
                 }
             }
 
-            TemporaryAttemptToResolveCompilationErrors(EditorParameterConstants.GeneratedCode.ScriptableObjectsDir, true);
-            TemporaryAttemptToResolveCompilationErrors(EditorParameterConstants.GeneratedCode.FlatBufferClassesDir, true);
-            TemporaryAttemptToResolveCompilationErrors(EditorParameterConstants.GeneratedCode.StructsDir, true);
-            TemporaryAttemptToResolveCompilationErrors(EditorParameterConstants.GeneratedCode.CSVBridgeDir, false);
-            TemporaryAttemptToResolveCompilationErrors(EditorParameterConstants.GeneratedCode.FlatBufferBuilderDir, false);
+            TemporaryAttemptToResolveCompilationErrors(EditorParameterConstants.CodeGeneration.ScriptableObjectsDir, true);
+            TemporaryAttemptToResolveCompilationErrors(EditorParameterConstants.CodeGeneration.FlatBufferClassesDir, true);
+            TemporaryAttemptToResolveCompilationErrors(EditorParameterConstants.CodeGeneration.StructsDir, true);
+            TemporaryAttemptToResolveCompilationErrors(EditorParameterConstants.CodeGeneration.CSVBridgeDir, false);
+            TemporaryAttemptToResolveCompilationErrors(EditorParameterConstants.CodeGeneration.FlatBufferBuilderDir, false);
 
             // generate an empty data files so it doesn't reference interfaces
             var context = new CodeOperationContext();
@@ -268,7 +287,7 @@ namespace PocketGems.Parameters
             stopwatch.Stop();
 
             ParameterDebug.LogVerbose($"{nameof(TemporaryAttemptToResolveCompilationErrors)} duration: {stopwatch.ElapsedMilliseconds}ms");
-            ParameterDebug.Log($"Commented out code in [{EditorParameterConstants.GeneratedCode.RootDir}] to assist with interface changes.");
+            ParameterDebug.Log($"Commented out code in [{EditorParameterConstants.CodeGeneration.RootDir}] to assist with interface changes.");
 
             // Refresh on next update loop so that editor detects code changes.
             // Attempting to refresh it in this call stack doesn't seem to kick it off right away.
@@ -285,32 +304,7 @@ namespace PocketGems.Parameters
             Stopwatch stopwatch = Stopwatch.StartNew();
             var profilerMarker = new ProfilerMarker($"Parameters.{nameof(GenerateCodeFiles)}");
             profilerMarker.Begin();
-            var executor = new OperationExecutor<ICodeOperationContext>();
-            var context = new CodeOperationContext();
-            context.GenerateCodeType = generateCodeType;
-            executor.ExecuteOperations(new List<IParameterOperation<ICodeOperationContext>>()
-            {
-                // populate context with assembly information & types
-                new ParseInterfaceAssemblyOperation(),
-                // validate defined interfaces, enums & properties in the interface assembly
-                new ValidateTypesOperation(),
-                // check if the operation should be canceled due to up to date generated code
-                new CheckGenerateCodeTypeOperation(),
-                // build the ParameterSchema.fbs file to be consumed by the flatbuffer flatc binary.
-                new BuildSchemaOperation(),
-                // generate the big files
-                new GenerateCodeOperation(),
-                // generate the C# structs with the schema defined in ParameterSchema.fbs
-                new GenerateFlatBufferStructsOperation(),
-                // create the FlatBuffer & ScriptableObject implementation files.
-                new GenerateImplementationFilesOperation(),
-                // create validation files if needed
-                new GenerateValidatorFilesOperation(),
-                // save the latest hash value to the assembly files
-                new SaveAssemblyHashOperation(),
-                // Delete the intermediate Schema.fbs file.
-                new DeleteAssetOperation(ParameterPrefs.DoNotDeleteSchemaFile ? null : EditorParameterConstants.GeneratedCode.SchemaFilePath),
-            }, context);
+            var executor = CodeGeneration.Editor.CodeGeneration.Generate(generateCodeType);
             profilerMarker.End();
             stopwatch.Stop();
             ParameterDebug.LogVerbose($"{nameof(GenerateCodeFiles)} duration: {stopwatch.ElapsedMilliseconds}ms");
@@ -373,7 +367,7 @@ namespace PocketGems.Parameters
                 // clean unused directories from past implementations
                 new FolderCleanupOperation(),
                 // find assembly & fetch all types
-                new ParseInterfaceAssemblyOperation(),
+                new ParseInterfaceAssemblyOperation<IDataOperationContext>(),
                 // read local CSVs if needed
                 new ReadLocalCSVOperation(),
                 // check the hash of the previous parameter generation
