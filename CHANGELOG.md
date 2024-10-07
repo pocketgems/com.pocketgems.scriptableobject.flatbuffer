@@ -4,6 +4,10 @@ All package updates & migration steps will be listed in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.1] - 2024-10-07
+### Fixed
+- Issue where validation is ran on the Scriptable Object inspector while the editor is playing and parameter manager isn't set up.
+
 ## [4.0.0] - 2024-07-17
 ### Changed
 - Editor code organization to support external code generation.
