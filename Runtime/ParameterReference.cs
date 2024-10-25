@@ -65,9 +65,21 @@ namespace PocketGems.Parameters
 
         public int CompareTo(ParameterReference<T> other)
         {
-            if (AssignedGUID != other.AssignedGUID)
-                return string.Compare(AssignedGUID, other.AssignedGUID);
-            return string.Compare(AssignedIdentifier, other.AssignedIdentifier);
+            if (!string.IsNullOrWhiteSpace(AssignedGUID) &&
+                AssignedGUID == other.AssignedGUID)
+            {
+                return 0;
+            }
+
+            var info = Info;
+            var otherInfo = other.Info;
+            if (info == otherInfo)
+                return 0;
+            if (info == null)
+                return -1;
+            if (otherInfo == null)
+                return 1;
+            return string.Compare(info.Identifier, otherInfo.Identifier);
         }
 
         public T Info

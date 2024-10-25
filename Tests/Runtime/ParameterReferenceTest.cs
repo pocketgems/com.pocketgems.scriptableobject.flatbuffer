@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using NSubstitute;
 using NSubstitute.ReturnsExtensions;
@@ -109,6 +110,63 @@ namespace PocketGems.Parameters
             Assert.IsNull(parameterReference.Info);
             LogAssert.Expect(LogType.Error, errorString);
             Assert.IsNotEmpty(parameterReference.ToString());
+        }
+
+        [Test]
+        public void Comparable()
+        {
+            ParameterReference<IBaseInfo> CreateReference(string guid, string identifier, bool refIsIdentifier)
+            {
+                var mockInfo = Substitute.For<IBaseInfo>();
+                mockInfo.Identifier.Returns(identifier);
+                _parameterManagerMock.GetWithGUID<IBaseInfo>(guid).Returns(mockInfo);
+                _parameterManagerMock.Get<IBaseInfo>(identifier).Returns(mockInfo);
+                var reference = new ParameterReference<IBaseInfo>(refIsIdentifier ? identifier : guid, refIsIdentifier);
+                Assert.AreEqual(identifier, reference.Info.Identifier);
+                if (refIsIdentifier)
+                {
+                    Assert.IsNull(reference.AssignedGUID);
+                    Assert.AreEqual(identifier, reference.AssignedIdentifier);
+                }
+                else
+                {
+                    Assert.AreEqual(guid, reference.AssignedGUID);
+                    Assert.IsNull(reference.AssignedIdentifier);
+                }
+                return reference;
+            }
+
+            var refNull = new ParameterReference<IBaseInfo>();
+            var refA = CreateReference("def", "A", true);
+            var refB = CreateReference("abc", "B", false);
+            var refC = CreateReference("aaa", "C", true);
+            var refD = CreateReference("222", "D", false);
+            var refList = new List<ParameterReference<IBaseInfo>> { refC, refB, refA, refNull, refD };
+            refList.Sort();
+
+            // sorted by identifier
+            Assert.AreEqual(refNull, refList[0]);
+            Assert.AreEqual(refA, refList[1]);
+            Assert.AreEqual(refB, refList[2]);
+            Assert.AreEqual(refC, refList[3]);
+            Assert.AreEqual(refD, refList[4]);
+
+            var ref1_1 = CreateReference("abc", "1", true);
+            var ref1_2 = CreateReference("abc", "1", true);
+            var ref1_3 = CreateReference("abc", "1", false);
+            var ref1_4 = CreateReference("abc", "1", false);
+            var ref1List = new List<ParameterReference<IBaseInfo>> { ref1_1, ref1_2, ref1_3, ref1_4 };
+            for (int i = 0; i < ref1List.Count; i++)
+            {
+                for (int j = 0; j < ref1List.Count; j++)
+                {
+                    // verify all of these combinations are equal
+                    Assert.AreEqual(0, ref1List[i].CompareTo(ref1List[j]));
+                }
+            }
+
+            // two nulls are equal
+            Assert.AreEqual(0, refNull.CompareTo(new ParameterReference<IBaseInfo>()));
         }
     }
 }
