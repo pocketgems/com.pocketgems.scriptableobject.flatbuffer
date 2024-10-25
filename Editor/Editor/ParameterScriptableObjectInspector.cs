@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using PocketGems.Parameters.Common.Editor;
 using PocketGems.Parameters.Common.Util.Editor;
 using PocketGems.Parameters.Interface;
+using PocketGems.Parameters.Interface.Attributes;
 using PocketGems.Parameters.Validation;
 using UnityEditor;
 using UnityEngine;
@@ -16,7 +18,12 @@ namespace PocketGems.Parameters.Editor.Editor
     [CustomEditor(typeof(ParameterScriptableObject), true), CanEditMultipleObjects]
     public class ParameterScriptableObjectInspector : UnityEditor.Editor
     {
-        private Dictionary<string, List<ValidationError>> _propertyToError = new Dictionary<string, List<ValidationError>>();
+        /*
+         * Maps class type -> (dict of property name -> declaring interface type)
+         */
+        private static Dictionary<Type, Dictionary<string, Type>> s_interfaceTypeByPropertyNameForClass = new();
+        private Dictionary<string, List<ValidationError>> _propertyToError = new();
+        private static Dictionary<string, bool> _foldoutToggle = new();
 
         protected void DrawParameterToolGUI()
         {
@@ -143,7 +150,7 @@ namespace PocketGems.Parameters.Editor.Editor
                 children = false;
                 // don't draw class file
                 if (serializedProp.name == "m_Script") continue;
-                var interfacePropertyGetterName = serializedProp.displayName.Replace(" ", "");
+                var interfacePropertyGetterName = GetPropertyGetterName(serializedProp);
                 string errorMessage = null;
                 if (_propertyToError.ContainsKey(interfacePropertyGetterName))
                 {
@@ -201,6 +208,12 @@ namespace PocketGems.Parameters.Editor.Editor
                 EditorGUILayout.Space();
             }
 
+            // foldout variables
+            ParameterFoldOutAttribute foldOutAttribute = null;
+            Type interfaceFoldoutAttribute = null;
+            bool isFoldoutOpen = true;
+            EditorGUI.IndentLevelScope scope = null;
+
             // draw properties & errors
             for (int i = 0; i < properties.Count; i++)
             {
@@ -209,10 +222,107 @@ namespace PocketGems.Parameters.Editor.Editor
 
                 // don't draw class file
                 if (serializedProp.name == "m_Script") continue;
-                DrawProperty(serializedProp, errorMessage);
+
+                // update foldout state
+                var newFoldOutAttribute = GetFoldOutAttribute(serializedProp, out var declaringInterface);
+                if (newFoldOutAttribute != null)
+                {
+                    if (foldOutAttribute == null || foldOutAttribute.NameText != newFoldOutAttribute.NameText)
+                    {
+                        scope?.Dispose();
+                        var foldoutKey = $"{target.GetType()}-{serializedProp.propertyPath}";
+                        var toggle = _foldoutToggle.GetValueOrDefault(foldoutKey, newFoldOutAttribute.InitialFoldout);
+                        isFoldoutOpen = EditorGUILayout.Foldout(toggle, newFoldOutAttribute.NameText, true);
+                        _foldoutToggle[foldoutKey] = isFoldoutOpen;
+                        scope = new EditorGUI.IndentLevelScope();
+                    }
+                    interfaceFoldoutAttribute = declaringInterface;
+                    foldOutAttribute = newFoldOutAttribute;
+                }
+                else if (foldOutAttribute != null && declaringInterface != interfaceFoldoutAttribute)
+                {
+                    scope.Dispose();
+                    foldOutAttribute = null;
+                }
+
+                // draw property
+                if (foldOutAttribute == null || isFoldoutOpen)
+                    DrawProperty(serializedProp, errorMessage);
             }
+            scope?.Dispose();
 
             serializedObject.ApplyModifiedProperties();
+        }
+
+        private string GetPropertyGetterName(SerializedProperty serializedProperty)
+        {
+            return serializedProperty.displayName.Replace(" ", "");
+        }
+
+        /*
+         * Returns the foldout attribute for the property if one exists.
+         */
+        private ParameterFoldOutAttribute GetFoldOutAttribute(SerializedProperty property, out Type declaringInterface)
+        {
+            Type targetType = target.GetType();
+            FieldInfo fieldInfo = targetType.GetField(property.propertyPath, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+            declaringInterface = GetDeclaringInterface(property);
+
+            var attributes = fieldInfo.GetCustomAttributes();
+            foreach (var attribute in attributes)
+            {
+                if (attribute is ParameterFoldOutAttribute foldOutAttribute)
+                {
+                    return foldOutAttribute;
+                }
+            }
+            return null;
+        }
+
+        /*
+         * Helper method to get the interface type that declares the provided property.
+         */
+        private Type GetDeclaringInterface(SerializedProperty serializedProperty)
+        {
+            var parameterType = target.GetType();
+            if (!s_interfaceTypeByPropertyNameForClass.TryGetValue(parameterType, out var interfaceTypeByPropertyName))
+            {
+                HashSet<Type> visited = new();
+                interfaceTypeByPropertyName = new();
+                s_interfaceTypeByPropertyNameForClass[parameterType] = interfaceTypeByPropertyName;
+                void MapProperties(Type type)
+                {
+                    var interfaces = type.GetInterfaces();
+                    for (int i = 0; i < interfaces.Length; i++)
+                    {
+                        var currInterface = interfaces[i];
+                        if (!visited.Add(currInterface))
+                            continue;
+                        var properties = interfaces[i].GetProperties();
+                        for (int j = 0; j < properties.Length; j++)
+                        {
+                            var property = properties[j];
+                            if (interfaceTypeByPropertyName.ContainsKey(property.Name))
+                            {
+                                Debug.LogError($"Somehow found a pre-existing mapping for {property.Name}");
+                                continue;
+                            }
+                            interfaceTypeByPropertyName[property.Name] = currInterface;
+                        }
+                        MapProperties(type);
+                    }
+                }
+                MapProperties(parameterType);
+            }
+
+            var interfaceGetter = GetPropertyGetterName(serializedProperty);
+            if (!interfaceTypeByPropertyName.TryGetValue(interfaceGetter, out var interfacetype))
+            {
+                Debug.LogError($"Unable to find mapping for type {parameterType} and propertyName {serializedProperty.name}");
+                return null;
+            }
+
+            return interfacetype;
         }
     }
 }

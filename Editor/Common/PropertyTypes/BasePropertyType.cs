@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using PocketGems.Parameters.Common.Util.Editor;
 using PocketGems.Parameters.Interface;
+using PocketGems.Parameters.Interface.Attributes;
 using UnityEngine.TestTools;
 
 namespace PocketGems.Parameters.Common.PropertyTypes.Editor
@@ -20,11 +21,11 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             List<string> attributes = null;
             foreach (var customAttribute in PropertyInfo.GetCustomAttributes())
             {
-                if (customAttribute is AttachFieldAttributeAttribute attachFieldAttribute)
+                if (customAttribute is IAttachScriptableObjectAttribute scriptableObjectAttribute)
                 {
                     if (attributes == null)
                         attributes = new List<string>();
-                    attributes.Add(attachFieldAttribute.AttributeText);
+                    attributes.Add(scriptableObjectAttribute.ScriptableObjectFieldAttributesCode);
                 }
             }
             return attributes;
