@@ -74,6 +74,11 @@ namespace PocketGems.Parameters.Editor.Editor
 
             EditorGUILayout.EndHorizontal();
 
+            GUIContent autoSaveContent = new GUIContent("Auto Save", "A toggle to disable periodic inspector auto saving.");
+            ParameterPrefs.EnableInspectorAutoSave = EditorGUILayout.Toggle(autoSaveContent, ParameterPrefs.EnableInspectorAutoSave);
+            GUIContent validateContent = new GUIContent("Validate Data", "A toggle to disable in-editor & inspector validation.");
+            ParameterPrefs.AutoValidateDataOnAssetChange = EditorGUILayout.Toggle(validateContent, ParameterPrefs.AutoValidateDataOnAssetChange);
+
             EditorGUILayout.EndVertical();
 
             EditorGUILayout.Space();
@@ -104,7 +109,8 @@ namespace PocketGems.Parameters.Editor.Editor
             DrawParameterToolGUI();
 
             ValidationError[] validationErrors = null;
-            if (Application.isPlaying && Params.ParameterManager == null)
+            if ((Application.isPlaying && Params.ParameterManager == null) ||
+                !ParameterPrefs.AutoValidateDataOnAssetChange)
             {
                 /*
                  * the game is probably still being set up so do not run validation at this time since it may
