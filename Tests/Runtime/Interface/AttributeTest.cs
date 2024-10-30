@@ -48,5 +48,15 @@ namespace PocketGems.Parameters.Interface.Attributes
             var a = new ParameterHeaderAttribute("test");
             AssertAttribute(a, "[Header(\"test\")]");
         }
+
+        [Test]
+        public void ParameterTextAreaAttribute()
+        {
+            var a = new ParameterTextAreaAttribute();
+            AssertAttribute(a, "[TextArea]");
+
+            a = new ParameterTextAreaAttribute(1, 2);
+            AssertAttribute(a, "[TextArea(1, 2)]");
+        }
     }
 }

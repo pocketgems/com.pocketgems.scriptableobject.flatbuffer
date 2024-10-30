@@ -18,6 +18,7 @@
   - [Addressable References](#addressable-references)
 - [Attributes](#attributes)
   - [ParameterHeader](#parameterheader)
+  - [ParameterTextArea](#parametertextarea)
   - [ParameterTooltip](#parametertooltip)
   - [ParameterFoldOut](#parameterfoldout)
   - [ParameterAttachFieldAttribute](#parameterattachfieldattribute)
@@ -263,6 +264,14 @@ To attach a [HeaderAttribute](https://docs.unity3d.com/ScriptReference/HeaderAtt
 [ParameterHeader("Health Settings")]
 int Health { get; }
 int MaxHealth { get; }
+```
+
+### ParameterTextArea
+To attach a [TextAreaAttribute](https://docs.unity3d.com/ScriptReference/TextAreaAttribute.html) to the generated Scriptable Object, add a `ParameterTextArea` to the interface property getter.
+
+```
+[ParameterTextArea(3, 4)]
+string Description { get; }
 ```
 
 ### ParameterTooltip

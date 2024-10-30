@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New interface attributes
   - `ParameterAttachFieldAttributeAttribute`
   - `ParameterFoldOutAttribute`
+  - `ParameterTextAreaAttribute`
   - `ParameterTooltipAttribute`
   - `ParameterHeaderAttribute`
 - Exposed editor toggles in the `ParameterScriptableObjectInspector`
