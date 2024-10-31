@@ -1,7 +1,9 @@
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using PocketGems.Parameters.Common.Editor;
+using UnityEngine.TestTools;
 
 namespace PocketGems.Parameters.Common.Util.Editor
 {
@@ -50,6 +52,19 @@ namespace PocketGems.Parameters.Common.Util.Editor
         {
             get => GetHashFromFile(_generatedDataHashPath, out int _);
             set => WriteHashToFile(value, _generatedDataHashPath, false);
+        }
+
+        public string GeneratedDataLoaderHash
+        {
+            [ExcludeFromCoverage]
+            get
+            {
+                var parameterDataLoader = EditorParams.CreateParameterDataLoader();
+                FieldInfo fieldInfo = parameterDataLoader.GetType().GetField("s_expectedParameterDataHash", BindingFlags.NonPublic | BindingFlags.Static);
+                if (fieldInfo == null)
+                    return "";
+                return (string)fieldInfo.GetValue(null);
+            }
         }
 
         private string GetHashFromFile(string path, out int index)

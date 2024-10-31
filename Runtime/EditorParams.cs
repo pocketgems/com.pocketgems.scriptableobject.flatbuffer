@@ -47,11 +47,7 @@ namespace PocketGems.Parameters
 
             // using this loader to be compatible with both addressable & resource asset locations
             IParameterHotLoader hotLoader = new EditorDirectFileParameterAssetLoader();
-
-            // find and create data loader
-            if (s_cachedParameterDataLoader == null)
-                s_cachedParameterDataLoader = FindSingleInterfaceImplementation(typeof(IParameterDataLoader));
-            IParameterDataLoader dataLoader = (IParameterDataLoader)Activator.CreateInstance(s_cachedParameterDataLoader);
+            IParameterDataLoader dataLoader = CreateParameterDataLoader();
 
             Init(parameterManager, hotLoader, dataLoader);
         }
@@ -83,6 +79,14 @@ namespace PocketGems.Parameters
         private static IMutableParameterManager s_parameterManager;
         private static IParameterHotLoader s_hotLoader;
         private static Type s_cachedParameterDataLoader;
+
+        internal static IParameterDataLoader CreateParameterDataLoader()
+        {
+            // find and create data loader
+            if (s_cachedParameterDataLoader == null)
+                s_cachedParameterDataLoader = FindSingleInterfaceImplementation(typeof(IParameterDataLoader));
+            return (IParameterDataLoader)Activator.CreateInstance(s_cachedParameterDataLoader);
+        }
 
         internal static Type FindSingleInterfaceImplementation(Type searchInterfaceType)
         {

@@ -31,6 +31,7 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
             _interfaceHashMock.AssemblyInfoHash = kAssemblyHash;
             _interfaceHashMock.AssemblyInfoEditorHash = kAssemblyHash;
             _interfaceHashMock.GeneratedDataHash = kAssemblyHash;
+            _interfaceHashMock.GeneratedDataLoaderHash.Returns(kAssemblyHash);
 
             // mock context
             _contextMock.InterfaceAssemblyHash = kAssemblyHash;
@@ -90,12 +91,36 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
         }
 
         [Test]
-        public void HashMismatch()
+        public void DataHashMismatch()
         {
             _contextMock.GenerateDataType = GenerateDataType.IfNeeded;
             _interfaceHashMock.GeneratedDataHash = "blah";
             AssertExecute(_operation, OperationState.Finished);
             Assert.AreEqual(GenerateDataType.All, _contextMock.GenerateDataType);
+        }
+
+        [Test]
+        public void GeneratedCodeMismatch_AssemblyInfoHash()
+        {
+            _contextMock.GenerateDataType = GenerateDataType.IfNeeded;
+            _interfaceHashMock.AssemblyInfoHash = "blah";
+            AssertExecute(_operation, OperationState.Error);
+        }
+
+        [Test]
+        public void GeneratedCodeMismatch_AssemblyInfoEditorHash()
+        {
+            _contextMock.GenerateDataType = GenerateDataType.IfNeeded;
+            _interfaceHashMock.AssemblyInfoEditorHash = "blah";
+            AssertExecute(_operation, OperationState.Error);
+        }
+
+        [Test]
+        public void GeneratedCodeMismatch_GeneratedDataLoaderHash()
+        {
+            _contextMock.GenerateDataType = GenerateDataType.IfNeeded;
+            _interfaceHashMock.GeneratedDataLoaderHash.Returns("blah");
+            AssertExecute(_operation, OperationState.Error);
         }
     }
 }
