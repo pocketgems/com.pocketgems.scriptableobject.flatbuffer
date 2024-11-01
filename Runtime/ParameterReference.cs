@@ -36,7 +36,7 @@ namespace PocketGems.Parameters
     }
 
     [Serializable]
-    public class ParameterReference<T> : ParameterReference where T : class, IBaseInfo
+    public class ParameterReference<T> : ParameterReference, IComparable<ParameterReference<T>> where T : class, IBaseInfo
     {
         public ParameterReference(string value = null, bool isIdentifier = false) : base(value, isIdentifier)
         {
@@ -61,6 +61,25 @@ namespace PocketGems.Parameters
                 description = $"{Info.Identifier}({guid})";
             }
             return $"{GetType().Name}<{typeof(T).Name}>: {description}";
+        }
+
+        public int CompareTo(ParameterReference<T> other)
+        {
+            if (!string.IsNullOrWhiteSpace(AssignedGUID) &&
+                AssignedGUID == other.AssignedGUID)
+            {
+                return 0;
+            }
+
+            var info = Info;
+            var otherInfo = other.Info;
+            if (info == otherInfo)
+                return 0;
+            if (info == null)
+                return -1;
+            if (otherInfo == null)
+                return 1;
+            return string.Compare(info.Identifier, otherInfo.Identifier);
         }
 
         public T Info

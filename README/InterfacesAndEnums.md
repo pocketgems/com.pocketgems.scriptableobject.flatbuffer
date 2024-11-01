@@ -10,12 +10,18 @@
   - [Strings](#strings)
   - [Localized Strings](#localized-strings)
   - [Scalars](#scalars)
+  - [Date \& Time](#date--time)
   - [Unity Types](#unity-types)
   - [Enums](#enums)
   - [Parameter References](#parameter-references)
   - [Parameter Struct References](#parameter-struct-references)
   - [Addressable References](#addressable-references)
-- [Adding Attributes](#adding-attributes)
+- [Attributes](#attributes)
+  - [ParameterHeader](#parameterheader)
+  - [ParameterTextArea](#parametertextarea)
+  - [ParameterTooltip](#parametertooltip)
+  - [ParameterFoldOut](#parameterfoldout)
+  - [ParameterAttachFieldAttribute](#parameterattachfieldattribute)
 - [Enums](#enums-1)
   - [Overview](#overview-2)
   - [Requirements](#requirements-2)
@@ -246,26 +252,64 @@ IReadOnlyList<AssetReferenceSprite> LoadingImages { get; }
 IReadOnlyList<AssetReferenceAtlasedSprite> Images { get; }
 ```
 
-## Adding Attributes
+## Attributes
 [Unity attributes](https://docs.unity3d.com/2020.3/Documentation/ScriptReference/RangeAttribute.html) are useful for facilitating content creation tooling.
 
-Since the outputed generated Scriptable Object code cannot have attributes directly from the developer, attributes for the Scriptable Object field can be defined from the interface.
+Since the outputed generated Scriptable Object code cannot have attributes added directly from the developer, attributes for the Scriptable Object field can be defined from the interface.
 
-For example, if a `Range()` and `ToolTip()` attribute is desired for the Scriptable Object field representing the `Scale` property below, utilize the `AttachFieldAttribute` in the interfacere.
+### ParameterHeader
+To attach a [HeaderAttribute](https://docs.unity3d.com/ScriptReference/HeaderAttribute.html) to the generated Scriptable Object, add a `ParameterHeader` to the interface property getter.
 
 ```
-[AttachFieldAttribute("[Range(0,10)]")]
-[AttachFieldAttribute("[Tooltip(\"My tool tip\")]")]
+[ParameterHeader("Health Settings")]
+int Health { get; }
+int MaxHealth { get; }
+```
+
+### ParameterTextArea
+To attach a [TextAreaAttribute](https://docs.unity3d.com/ScriptReference/TextAreaAttribute.html) to the generated Scriptable Object, add a `ParameterTextArea` to the interface property getter.
+
+```
+[ParameterTextArea(3, 4)]
+string Description { get; }
+```
+
+### ParameterTooltip
+To attach a [TooltipAttribute](https://docs.unity3d.com/ScriptReference/TooltipAttribute.html) to the generated Scriptable Object, add a `ParameterTooltip` to the interface property getter.
+
+```
+[ParameterTooltip("This is the starting spawn health of the hero")]
+int StartingHealth { get; }
+```
+
+### ParameterFoldOut
+To wrap a [Foldout](https://docs.unity3d.com/ScriptReference/EditorGUILayout.Foldout.html) around a group of fields, use `ParameterFoldOut` on the first field to start.
+
+The foldout will wrap all fields below it until one of the two conditions are met:
+1. The foldout reaches another `ParameterFoldOut`
+2. The next field was declared in another interface.
+
+```
+[ParameterFoldOut("Health")]
+int Health { get; }
+int MaxHealth { get; }
+
+[ParameterFoldOut("Spells")]
+int Mana { get; }
+int MaxMana { get; }
+```
+
+### ParameterAttachFieldAttribute
+There may be less common attributes that a developer may want to attach to a generated Scriptable Object.  In order to add a other attributes, use the `ParameterAttachFieldAttribute`.
+
+For example, if a [Range()](https://docs.unity3d.com/ScriptReference/RangeAttribute.html) and [TextArea](https://docs.unity3d.com/ScriptReference/TextAreaAttribute.html) attribute is desired, utilize the `ParameterAttachFieldAttribute` in the interface.
+
+```
+[ParameterAttachFieldAttribute("[Range(0,10)]")]
 int Scale { get; }
-```
 
-During Scriptable Object code generation, the attribute will be applied to the field.
-
-**Example Auto Generated Code**
-```
-[Range(0,10)]
-[Tooltip("My tool tip")
-int _scale;
+[ParameterAttachFieldAttribute("[TextArea(3)]")]
+string Description { get; }
 ```
 
 ## Enums
