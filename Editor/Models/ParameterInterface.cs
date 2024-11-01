@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using PocketGems.Parameters.Interface;
 using PocketGems.Parameters.PropertyTypes;
 using PocketGems.Parameters.Util;
 
@@ -92,6 +93,12 @@ namespace PocketGems.Parameters.Models
                     errors.Add($"Duplicate property [{propertyName}] in interface [{_type.Name}].");
                 if (EditorParameterConstants.Interface.InvalidReservedPropertyNames.Contains(propertyName.ToLower()))
                     errors.Add($"Property name [{propertyName}] is invalid & reserved.  It cannot be used in interface [{_type.Name}].");
+                if ((ParameterReferencePropertyType.IsReferenceType(propertyType.PropertyInfo, out var genericType) && genericType == typeof(IBaseInfo)) ||
+                    (ParameterReferenceListPropertyType.IsListReferenceType(propertyType.PropertyInfo, out genericType) && genericType == typeof(IBaseInfo)))
+                    errors.Add($"Cannot define {propertyName} as {nameof(ParameterReference)} with {nameof(IBaseInfo)} in {InterfaceName}.");
+                if ((ParameterStructReferencePropertyType.IsReferenceType(propertyType.PropertyInfo, out genericType) && genericType == typeof(IBaseStruct)) ||
+                    (ParameterStructReferenceListPropertyType.IsListReferenceType(propertyType.PropertyInfo, out genericType) && genericType == typeof(IBaseStruct)))
+                    errors.Add($"Cannot define {propertyName} as {nameof(ParameterStructReference)} with {nameof(IBaseStruct)} in {InterfaceName}.");
                 propertyNames.Add(propertyName);
             }
 

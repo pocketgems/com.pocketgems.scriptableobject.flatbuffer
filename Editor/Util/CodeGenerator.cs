@@ -206,7 +206,7 @@ namespace PocketGems.Parameters.Util
         /// <param name="parameterInterface">Interface to write the class for.</param>
         /// <param name="outputDirectory">Directory to write the class to.</param>
         /// <returns>filepath of the file written</returns>
-        public static string GenerateFlatBufferClassFile(IParameterInterface parameterInterface, string outputDirectory)
+        public static string GenerateFlatBufferClassFile(IParameterInterface parameterInterface, bool isInfo, string outputDirectory)
         {
             if (!Directory.Exists(outputDirectory))
                 Directory.CreateDirectory(outputDirectory);
@@ -241,6 +241,7 @@ namespace PocketGems.Parameters.Util
             var args = new Dictionary<string, object>
             {
                 { "isAddressable", IsAddressable() },
+                { "isInfo", isInfo },
                 { "disableSymbol", EditorParameterConstants.Interface.DisableImplementationSymbol },
                 { "namespace", parameterInterface.GeneratedNameSpace },
                 { "className", parameterInterface.FlatBufferClassName(false) },

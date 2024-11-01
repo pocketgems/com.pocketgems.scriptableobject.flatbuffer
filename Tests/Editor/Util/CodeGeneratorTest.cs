@@ -143,7 +143,7 @@ namespace PocketGems.Parameters.Util
         [Test]
         public void GenerateFlatBufferClassFile()
         {
-            CodeGenerator.GenerateFlatBufferClassFile(_mockParameterInfo1, TestDirectoryName);
+            CodeGenerator.GenerateFlatBufferClassFile(_mockParameterInfo1, true, TestDirectoryName);
 
             AssertFileCount(1);
             AssertFileExists(_mockParameterInfo1.FlatBufferClassName(true));
