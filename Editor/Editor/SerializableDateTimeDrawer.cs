@@ -19,10 +19,12 @@ namespace PocketGems.Parameters.Editor
             var labelWidth = EditorGUIUtility.labelWidth + 20.0f;
             rect.x = labelWidth;
 
-            const float componentLabelPadding = 4.0f;
+            const float componentLabelPadding = 2.0f;
             var floatFieldStyle = new GUIStyle(GUI.skin.textField);
             float digitWidth = EditorStyles.label.CalcSize(new GUIContent("0")).x * 1.5f;
             floatFieldStyle.alignment = TextAnchor.MiddleRight;
+            floatFieldStyle.padding = new RectOffset();
+            floatFieldStyle.margin = new RectOffset();
 
             int DrawComponent(string componentLabel, int componentDigits, int componentValue)
             {
@@ -33,7 +35,10 @@ namespace PocketGems.Parameters.Editor
 
                 var componentLabelWidth = EditorStyles.label.CalcSize(new GUIContent(componentLabel)).x;
                 rect.width = componentLabelWidth;
-                EditorGUI.LabelField(rect, componentLabel);
+                GUIStyle labelStyle = GUI.skin.label;
+                labelStyle.padding = new RectOffset();
+                labelStyle.margin = new RectOffset();
+                GUI.Label(rect, componentLabel, labelStyle);
                 rect.x += componentLabelWidth + componentLabelPadding;
 
                 return intComponentValue;
