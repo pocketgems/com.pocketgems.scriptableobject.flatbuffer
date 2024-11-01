@@ -97,14 +97,25 @@ namespace PocketGems.Parameters.Editor.Editor
             DrawParameterToolGUI();
 
             ValidationError[] validationErrors = null;
-            try
+            if (Application.isPlaying && Params.ParameterManager == null)
             {
-                validationErrors = ((ParameterScriptableObject)target).ValidationErrors();
+                /*
+                 * the game is probably still being set up so do not run validation at this time since it may
+                 * break due to missing parameter manager when accessing parameter references.
+                 */
+                EditorGUILayout.HelpBox("Validation is disabled at this time.", MessageType.Warning);
             }
-            catch (Exception e)
+            else
             {
-                // catch and report errors so that users aren't completely stuck on modifying the object
-                Debug.LogError(e);
+                try
+                {
+                    validationErrors = ((ParameterScriptableObject)target).ValidationErrors();
+                }
+                catch (Exception e)
+                {
+                    // catch and report errors so that users aren't completely stuck on modifying the object
+                    Debug.LogError(e);
+                }
             }
 
             // construct error mappings property name -> errors
