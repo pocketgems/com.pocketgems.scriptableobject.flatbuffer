@@ -1,10 +1,10 @@
 using System;
-using PocketGems.Parameters.DataTypes;
+using PocketGems.Parameters.Common.DataTypes.Editor;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace PocketGems.Parameters.Editor
+namespace PocketGems.Parameters.Editor.Editor.Editor
 {
     [ExcludeFromCoverage]
     [CustomPropertyDrawer(typeof(SerializableTimeSpan))]

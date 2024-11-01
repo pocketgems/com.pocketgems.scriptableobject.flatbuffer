@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 
-namespace PocketGems.Parameters.Processors
+namespace PocketGems.Parameters.Processors.Editor
 {
     internal delegate bool IsValidFile(string filePath);
     internal delegate void OnFilesChanged(List<string> createdOrChanged, List<string> deleted,

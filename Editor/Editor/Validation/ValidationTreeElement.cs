@@ -1,9 +1,9 @@
 using System;
-using PocketGems.Parameters.Editor.Validation.TreeDataModel;
+using PocketGems.Parameters.Editor.Validation.TreeDataModel.Editor;
 using PocketGems.Parameters.Validation;
 using UnityEngine.TestTools;
 
-namespace PocketGems.Parameters.Editor.Validation
+namespace PocketGems.Parameters.Editor.Validation.Editor
 {
     [ExcludeFromCoverage]
     internal class ValidationTreeElement : TreeElement
@@ -27,7 +27,7 @@ namespace PocketGems.Parameters.Editor.Validation
 
         private static int Depth(TreeElementType elementType)
         {
-            switch(elementType)
+            switch (elementType)
             {
                 case TreeElementType.Root:
                     return -1;

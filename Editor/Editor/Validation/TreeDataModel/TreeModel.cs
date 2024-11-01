@@ -8,7 +8,7 @@ using UnityEngine.TestTools;
 /// https://docs.unity3d.com/2021.3/Documentation/Manual/TreeViewAPI.html
 /// http://files.unity3d.com/mads/TreeViewExamples.zip
 /// </summary>
-namespace PocketGems.Parameters.Editor.Validation.TreeDataModel
+namespace PocketGems.Parameters.Editor.Validation.TreeDataModel.Editor
 {
     // The TreeModel is a utility class working on a list of serializable TreeElements where the order and the depth of each TreeElement define
     // the tree structure. Note that the TreeModel itself is not serializable (in Unity we are currently limited to serializing lists/arrays) but the

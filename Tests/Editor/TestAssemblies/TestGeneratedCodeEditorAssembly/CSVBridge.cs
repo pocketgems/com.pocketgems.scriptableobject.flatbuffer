@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using PocketGems.Parameters.Editor.LocalCSV;
-using PocketGems.Parameters.Models;
+using PocketGems.Parameters.Common.Models.Editor;
+using PocketGems.Parameters.DataGeneration.LocalCSV.Editor;
 
 namespace Parameters
 {

@@ -1,12 +1,14 @@
 using System;
-using PocketGems.Parameters.Editor.Operation;
-using PocketGems.Parameters.Util;
+using PocketGems.Parameters.Common.Operation.Editor;
+using PocketGems.Parameters.Common.Util.Editor;
+using PocketGems.Parameters.DataGeneration.Operation.Editor;
+using PocketGems.Parameters.Editor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace PocketGems.Parameters.Processors
+namespace PocketGems.Parameters.Processors.Editor
 {
     /// <summary>
     /// Regenerate all parameters into a single flat buffer prior to starting build.

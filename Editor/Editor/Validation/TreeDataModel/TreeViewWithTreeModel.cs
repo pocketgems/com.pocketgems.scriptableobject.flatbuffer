@@ -10,7 +10,7 @@ using UnityEngine.TestTools;
 /// https://docs.unity3d.com/2021.3/Documentation/Manual/TreeViewAPI.html
 /// http://files.unity3d.com/mads/TreeViewExamples.zip
 /// </summary>
-namespace PocketGems.Parameters.Editor.Validation.TreeDataModel
+namespace PocketGems.Parameters.Editor.Validation.TreeDataModel.Editor
 {
     [ExcludeFromCoverage]
     internal class TreeViewItem<T> : TreeViewItem where T : TreeElement

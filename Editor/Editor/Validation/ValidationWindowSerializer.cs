@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using PocketGems.Parameters.Util;
+using PocketGems.Parameters.Common.Util.Editor;
 using PocketGems.Parameters.Validation;
 using UnityEditor;
 using UnityEngine;
 
-namespace PocketGems.Parameters.Editor.Validation
+namespace PocketGems.Parameters.Editor.Validation.Editor
 {
     internal static class ValidationWindowSerializer
     {

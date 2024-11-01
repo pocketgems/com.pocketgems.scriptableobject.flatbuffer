@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
 
-namespace PocketGems.Parameters.Processors
+namespace PocketGems.Parameters.Processors.Editor
 {
     public class FilePostprocessorTest
     {
@@ -70,7 +70,7 @@ namespace PocketGems.Parameters.Processors
         {
             // delegate setup
             IsValidFile checkDelegate = filePath => false;
-            OnFilesChanged callback = delegate(List<string> createdOrChanged, List<string> deleted,
+            OnFilesChanged callback = delegate (List<string> createdOrChanged, List<string> deleted,
                 List<string> movedFrom, List<string> movedTo)
             { };
             FilePostprocessor.AddObserver(checkDelegate, callback);

@@ -8,7 +8,10 @@
         "UnityEditor.TestRunner",
         "UnityEngine.TestRunner",
         "Unity.Addressables",
-        "Unity.Addressables.Editor"
+        "Unity.Addressables.Editor",
+        "PocketGems.Parameters.Common.Editor",
+        "PocketGems.Parameters.DataGeneration.Editor",
+        "PocketGems.Parameters.CodeGeneration.Editor"
     ],
     "includePlatforms": [
         "Editor"
@@ -16,10 +19,7 @@
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,
-    "precompiledReferences": [
-        "CsvHelper.dll",
-        "Scriban.dll"
-    ],
+    "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [

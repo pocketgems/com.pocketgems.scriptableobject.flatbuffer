@@ -1,11 +1,12 @@
 #if ADDRESSABLE_PARAMS
 using PocketGems.Parameters.AssetLoader;
-using PocketGems.Parameters.Editor.Operation;
+using PocketGems.Parameters.DataGeneration.Operation.Editor;
+using PocketGems.Parameters.Editor;
 using UnityEditor;
 using UnityEditor.AddressableAssets.Build;
 using UnityEngine.TestTools;
 
-namespace PocketGems.Parameters.Processors
+namespace PocketGems.Parameters.Processors.Editor
 {
     [ExcludeFromCoverage]
     public static class AddressableBuildPostProcessor

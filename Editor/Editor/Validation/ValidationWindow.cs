@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using PocketGems.Parameters.Editor.Operation;
-using PocketGems.Parameters.Editor.Validation.TreeDataModel;
+using PocketGems.Parameters.Common.Editor;
+using PocketGems.Parameters.Common.Util.Editor;
+using PocketGems.Parameters.DataGeneration.Operation.Editor;
+using PocketGems.Parameters.Editor.Validation.TreeDataModel.Editor;
 using PocketGems.Parameters.Interface;
-using PocketGems.Parameters.Util;
 using PocketGems.Parameters.Validation;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
@@ -17,7 +18,7 @@ using UnityEngine.TestTools;
 /// https://docs.unity3d.com/2021.3/Documentation/Manual/TreeViewAPI.html
 /// http://files.unity3d.com/mads/TreeViewExamples.zip
 /// </summary>
-namespace PocketGems.Parameters.Editor.Validation
+namespace PocketGems.Parameters.Editor.Validation.Editor
 {
     [ExcludeFromCoverage]
     class ValidationWindow : EditorWindow

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using PocketGems.Parameters.Validation;
 
-namespace PocketGems.Parameters.Editor.Validation
+namespace PocketGems.Parameters.Editor.Validation.Editor
 {
     public class ValidationWindowSerializerTest
     {
