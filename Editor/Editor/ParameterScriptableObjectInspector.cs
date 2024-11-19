@@ -148,7 +148,9 @@ namespace PocketGems.Parameters.Editor.Editor
             }
 
             // collect properties & errors
-            List<(SerializedProperty, string)> properties = new List<(SerializedProperty, string)>();
+            List<(SerializedProperty, string)> properties = new();
+            // call to ensure the values are up to date with the target in case it was modified in another inspector/drawer
+            serializedObject.Update();
             var serializedProp = serializedObject.GetIterator();
             bool children = true;
             while (serializedProp.NextVisible(children))
