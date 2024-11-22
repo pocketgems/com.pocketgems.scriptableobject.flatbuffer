@@ -33,6 +33,8 @@ namespace PocketGems.Parameters.Editor.Validation.Editor
 
         // models
         [NonSerialized] private IReadOnlyList<ValidationError> _errors;
+        [NonSerialized] private int _errorCount;
+        [NonSerialized] private int _warningCount;
         [NonSerialized] private ValidationState _validationState = ValidationState.NoData;
         [NonSerialized] private long _executionMillis;
 
@@ -43,6 +45,8 @@ namespace PocketGems.Parameters.Editor.Validation.Editor
         [SerializeField] MultiColumnHeaderState _multiColumnHeaderState;
         SearchField _searchField;
         ValidationTreeView _treeView;
+        private bool _showErrors = true;
+        private bool _showWarnings = true;
 
         // red flickering notifier
         private bool _disableNextFlicker;
@@ -50,6 +54,11 @@ namespace PocketGems.Parameters.Editor.Validation.Editor
         private bool _isFlickerOn;
         private Stopwatch _flickerStopwatch = new Stopwatch();
         private const float s_flickerDuration = 0.25f;
+
+        // view
+        private Texture2D _errorIcon;
+        private Texture2D _warningIcon;
+        private Texture2D _infoIcon;
 
         [MenuItem(MenuItemConstants.ValidationWindowPath, false, MenuItemConstants.ValidationWindowPriority)]
         public static void OpenWindow()
@@ -72,6 +81,18 @@ namespace PocketGems.Parameters.Editor.Validation.Editor
         {
             _isDirty = true;
             _errors = errors;
+            _errorCount = 0;
+            _warningCount = 0;
+            if (_errors?.Count > 0)
+            {
+                foreach (var error in _errors)
+                {
+                    if (error.ErrorSeverity == ValidationError.Severity.Error)
+                        _errorCount++;
+                    else
+                        _warningCount++;
+                }
+            }
             _executionMillis = executionMillis;
             _validationState = errors?.Count > 0
                 ? ValidationState.NoErrors
@@ -113,6 +134,8 @@ namespace PocketGems.Parameters.Editor.Validation.Editor
             ValidationWindowSerializer.SerializeToStorage(null);
             _isDirty = true;
             _errors = null;
+            _errorCount = 0;
+            _warningCount = 0;
             _validationState = ValidationState.NoData;
         }
 
@@ -142,6 +165,11 @@ namespace PocketGems.Parameters.Editor.Validation.Editor
 
                 _searchField = new SearchField();
                 _searchField.downOrUpArrowKeyPressed += _treeView.SetFocusAndEnsureSelectedItem;
+
+                // found texture examples in AssetSettingsAnalyzeTreeView
+                _errorIcon = EditorGUIUtility.FindTexture("console.errorIcon");
+                _warningIcon = EditorGUIUtility.FindTexture("console.warnicon");
+                _infoIcon = EditorGUIUtility.FindTexture("console.infoIcon");
 
                 _isInit = true;
             }
@@ -214,9 +242,38 @@ namespace PocketGems.Parameters.Editor.Validation.Editor
             var rootElement = new ValidationTreeElement(ValidationTreeElement.TreeElementType.Root, "root", idCount++);
             elements.Add(rootElement);
 
+            List<ValidationError> filteredErrors = null;
             if (_errors != null && _errors.Count > 0)
             {
-                List<ValidationError> sortedErrors = new List<ValidationError>(_errors);
+                foreach (var error in _errors)
+                {
+                    if ((_showErrors && error.ErrorSeverity == ValidationError.Severity.Error) ||
+                        (_showWarnings && error.ErrorSeverity == ValidationError.Severity.Warning))
+                    {
+                        if (filteredErrors == null)
+                            filteredErrors = new();
+                        filteredErrors.Add(error);
+                    }
+                }
+            }
+
+            if (!_showWarnings && _warningCount > 0)
+            {
+                string status = _warningCount == 1 ? "1 warning is hidden." : $"{_warningCount} warnings are hidden.";
+                var parentElement = new ValidationTreeElement(ValidationTreeElement.TreeElementType.General, status, idCount++);
+                elements.Add(parentElement);
+            }
+
+            if (!_showErrors && _errorCount > 0)
+            {
+                string status = _errorCount == 1 ? "1 error is hidden." : $"{_errorCount} errors are hidden.";
+                var parentElement = new ValidationTreeElement(ValidationTreeElement.TreeElementType.General, status, idCount++);
+                elements.Add(parentElement);
+            }
+
+            if (filteredErrors != null && filteredErrors.Count > 0)
+            {
+                List<ValidationError> sortedErrors = new(filteredErrors);
                 int ErrorCompare(ValidationError a, ValidationError b)
                 {
                     if (a.InfoType != b.InfoType)
@@ -273,7 +330,8 @@ namespace PocketGems.Parameters.Editor.Validation.Editor
                     elements.Add(element);
                 }
             }
-            else
+
+            if (_errors == null || _errors.Count == 0)
             {
                 string status = _validationState == ValidationState.NoData ? "No Validation Results" : "No Errors";
                 var parentElement = new ValidationTreeElement(ValidationTreeElement.TreeElementType.General, status, idCount++);
@@ -324,7 +382,34 @@ namespace PocketGems.Parameters.Editor.Validation.Editor
             {
                 ClearValidationResults();
             }
-            var searchRect = new Rect(rect.x + 290, rect.y, rect.width - 290, rect.height);
+
+            // show error & warning toggle on the very right
+            var errorButton = new GUIContent(_errorCount.ToString(), _errorIcon);
+            Vector2 errorButtonSize = EditorStyles.toolbarButton.CalcSize(errorButton);
+            var errorButtonRect = new Rect(
+                rect.x + rect.width - errorButtonSize.x,
+                rect.y,
+                errorButtonSize.x,
+                errorButtonSize.y);
+            var newShowErrors = GUI.Toggle(errorButtonRect, _showErrors, errorButton, EditorStyles.toolbarButton);
+            _isDirty |= newShowErrors != _showErrors;
+            _showErrors = newShowErrors;
+
+            var warningButton = new GUIContent(_warningCount.ToString(), _warningIcon);
+            Vector2 warningButtonSize = EditorStyles.toolbarButton.CalcSize(warningButton);
+            var warningButtonRect = new Rect(
+                rect.x + rect.width - warningButtonSize.x - errorButtonSize.x,
+                rect.y,
+                warningButtonSize.x,
+                warningButtonSize.y);
+            var newShowWarnings = GUI.Toggle(warningButtonRect, _showWarnings, warningButton, EditorStyles.toolbarButton);
+            _isDirty |= newShowWarnings != _showWarnings;
+            _showWarnings = newShowWarnings;
+            var searchRect = new Rect(
+                rect.x + 290,
+                rect.y,
+                rect.width - 290 - errorButtonSize.x - warningButtonSize.x - 5,
+                rect.height);
             _treeView.searchString = _searchField.OnGUI(searchRect, _treeView.searchString);
         }
 
@@ -362,8 +447,6 @@ namespace PocketGems.Parameters.Editor.Validation.Editor
                 {
                     _treeView.CollapseAll();
                 }
-                if (_validationState != ValidationState.NoData)
-                    GUILayout.Label($"Total Errors: {_errors?.Count ?? 0}");
                 GUILayout.FlexibleSpace();
                 if (_validationState != ValidationState.NoData && _executionMillis != 0)
                     GUILayout.Label($"Validation Execution Duration: {_executionMillis}ms");

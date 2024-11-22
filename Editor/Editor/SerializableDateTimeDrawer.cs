@@ -58,7 +58,7 @@ namespace PocketGems.Parameters.Editor.Editor
                 var second = DrawComponent("s", 2, dateTime.Second);
                 dateTime = new DateTime(year, month, day, hour, minute, second);
             }
-            catch (Exception _)
+            catch
             {
                 // ignored
             }

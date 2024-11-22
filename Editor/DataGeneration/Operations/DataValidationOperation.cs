@@ -25,13 +25,23 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
             // validate assets
             var assetErrors = AssetValidator.ValidateScriptableObjects(context.ScriptableObjectMetadatas);
             for (int i = 0; i < assetErrors?.Count; i++)
-                Error(assetErrors[i]);
+            {
+                var validationError = assetErrors[i];
+                context.AllValidationErrors.Add(validationError);
+                if (validationError.ErrorSeverity == ValidationError.Severity.Error)
+                    Error(assetErrors[i]);
+            }
 
             // validate parameters
             IParameterManager parameterManager = EditorParams.ParameterManager;
             var parameterErrors = InvokeParamsValidation(context, parameterManager);
             for (int i = 0; i < parameterErrors?.Count; i++)
-                Error(parameterErrors[i]);
+            {
+                var validationError = parameterErrors[i];
+                context.AllValidationErrors.Add(validationError);
+                if (validationError.ErrorSeverity == ValidationError.Severity.Error)
+                    Error(parameterErrors[i]);
+            }
         }
 
         /// <summary>

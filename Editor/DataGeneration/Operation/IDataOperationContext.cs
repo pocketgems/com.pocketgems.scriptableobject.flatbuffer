@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using PocketGems.Parameters.Common.Models.Editor;
 using PocketGems.Parameters.Common.Operation.Editor;
 using PocketGems.Parameters.DataGeneration.LocalCSV.Editor;
+using PocketGems.Parameters.Validation;
 
 namespace PocketGems.Parameters.DataGeneration.Operation.Editor
 {
@@ -41,5 +42,10 @@ namespace PocketGems.Parameters.DataGeneration.Operation.Editor
         /// Asset files that were generated through this data generation
         /// </summary>
         List<string> GeneratedFilePaths { get; }
+
+        /// <summary>
+        /// Validation errors & warnings
+        /// </summary>
+        List<ValidationError> AllValidationErrors { get; }
     }
 }

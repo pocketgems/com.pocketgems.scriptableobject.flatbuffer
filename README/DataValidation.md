@@ -116,21 +116,22 @@ namespace Parameters.Validation
 ### ValidateInfo
 `ValidateInfo` will be called for every row of data that conforms to `ICurrencyInfo`.  More complex checks that cannot be enforced via attributes can be written here.
 
-Upon finding an error `Error` should be called with the `nameof()` the property and the error message.  The system already knows the `Identifier` of the `info` so there is no need to incooporate that as part of the error message.
+Upon finding an error or warning `Error` or `Warn` should be called respectively with the `nameof()` the property and the error message.  The system already knows the `Identifier` of the `info` so there is no need to incorporate that as part of the error message.
 ```C#
 protected override void ValidateInfo(IParameterManager parameterManager, ICurrencyInfo info)
 {
-  if (info.IsPremiumCurrency && string.IsNullOrEmpty(info.PremiumCurrencyIconSprite.AssetGUID))
-    Error(nameof(ICurrencyInfo.PremiumCurrencyIconSprite), "required for premium currency");
+    if (info.IsPremiumCurrency && string.IsNullOrEmpty(info.PremiumCurrencyIconSprite.AssetGUID))
+        Error(nameof(ICurrencyInfo.PremiumCurrencyIconSprite), "required for premium currency");
 
-  // add other checks here
+    if (info.MaxCurrency < 100)
+        Warn(nameof(ICurrencyInfo.MaxCurrency), "might be too low of a max");
 }
 ```
 
 ### ValidateParameters
 ValidateParameters will be called once.  This can be used for more holistic checks.
 
-Upon error, `Error` can be called with the error message.
+Upon error or warning, `Error` or `Warn` can be called respectively with a message.
 ```C#
 protected override void ValidateParameters(IParameterManager parameterManager)
 {
@@ -142,7 +143,8 @@ protected override void ValidateParameters(IParameterManager parameterManager)
         else
             seenColors.Add(info.CurrencyColor);
     }
-    // add other checks here
+    if (parameterManager.Get<ICurrencyInfo>().ToList().Count > 1000)
+        Warn("There may be too many currencies in the game consider reducing");
 }
 ```
 
@@ -155,9 +157,7 @@ In this validation, the code doesn't know about the context of where the data is
 ```C#
 protected override void ValidateStruct(IParameterManager parameterManager, IRewardStruct structObj)
 {
-  if (structObj.IsPremiumCurrency && string.IsNullOrEmpty(structObj.PremiumCurrencyIconSprite.AssetGUID))
-    Error(nameof(IRewardStruct.PremiumCurrencyIconSprite), "required for premium currency");
-
-  // add other checks here
+    if (structObj.IsPremiumCurrency && string.IsNullOrEmpty(structObj.PremiumCurrencyIconSprite.AssetGUID))
+        Error(nameof(IRewardStruct.PremiumCurrencyIconSprite), "required for premium currency");
 }
 ```

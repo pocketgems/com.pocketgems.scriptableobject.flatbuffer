@@ -50,6 +50,29 @@ namespace PocketGems.Parameters.Validation
             _errors.Add(error);
         }
 
+        /// <summary>
+        /// Log a warning during validation.
+        /// </summary>
+        /// <param name="propertyName">property name with the warning</param>
+        /// <param name="message">user facing message about the warning</param>
+        protected void Warn(string propertyName, string message)
+        {
+            var error = new ValidationError(typeof(T), _currentIdentifier, propertyName, message,
+                severity: ValidationError.Severity.Warning);
+            _errors.Add(error);
+        }
+
+        /// <summary>
+        /// General warning during validation.
+        /// </summary>
+        /// <param name="message">user facing message about the warning</param>
+        protected void Warn(string message)
+        {
+            var error = new ValidationError(typeof(T), _currentIdentifier, null, message,
+                severity: ValidationError.Severity.Warning);
+            _errors.Add(error);
+        }
+
         void IDataValidator.ValidateInfo(IParameterManager parameterManager, IBaseInfo info)
         {
             _currentIdentifier = info.Identifier;

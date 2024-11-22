@@ -7,6 +7,12 @@ namespace PocketGems.Parameters.Validation
     [Serializable]
     public class ValidationError
     {
+        public enum Severity
+        {
+            Error,
+            Warning
+        }
+
         public Type InfoType
         {
             get
@@ -30,6 +36,7 @@ namespace PocketGems.Parameters.Validation
         public string Message => string.IsNullOrEmpty(_message) ? null : _message;
         public string StructKeyPath => string.IsNullOrEmpty(_structKeyPath) ? null : _structKeyPath;
         public string StructProperty => string.IsNullOrEmpty(_structProperty) ? null : _structProperty;
+        public Severity ErrorSeverity => _severity;
 
         [NonSerialized] private Type _infoType;
         [NonSerialized] private bool _loadedType;
@@ -40,9 +47,10 @@ namespace PocketGems.Parameters.Validation
         [SerializeField] private string _message;
         [SerializeField] private string _structKeyPath;
         [SerializeField] private string _structProperty;
+        [SerializeField] private Severity _severity;
 
         public ValidationError(Type infoType, string infoIdentifier, string infoProperty, string message,
-            string structKeyPath = null, string structProperty = null)
+            string structKeyPath = null, string structProperty = null, Severity severity = Severity.Error)
         {
             _infoType = infoType;
             _loadedType = true;
@@ -50,9 +58,10 @@ namespace PocketGems.Parameters.Validation
                 _typeString = infoType.AssemblyQualifiedName;
             _infoIdentifier = infoIdentifier;
             _infoProperty = infoProperty;
+            _message = message;
             _structKeyPath = structKeyPath;
             _structProperty = structProperty;
-            _message = message;
+            _severity = severity;
         }
 
         public override string ToString()

@@ -57,7 +57,7 @@ namespace PocketGems.Parameters.Editor.Editor.Editor
                 newTimeSpan += TimeSpan.FromSeconds(DrawComponent("s", 2, timeSpan.Seconds));
                 newTimeSpan += TimeSpan.FromMilliseconds(DrawComponent("ms", 3, timeSpan.Milliseconds));
             }
-            catch (Exception e)
+            catch
             {
                 // ignored
             }

@@ -1,11 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using PocketGems.Parameters.Interface;
 using PocketGems.Parameters.Validation.Attributes;
-using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace PocketGems.Parameters.Validation
 {
@@ -93,6 +94,10 @@ namespace PocketGems.Parameters.Validation
         private readonly IParameterManager _parameterManager;
         private readonly List<ValidationError> _errors;
 
+        // constants
+        private const int SlowExecutingValidatorInfoMillis = 10;
+        private const int SlowExecutingValidatorMillis = 100;
+
         // built in attributes
         private readonly Func<IValidationAttribute>[] _builtInAttributesCreators;
         private readonly IValidationAttribute[] _builtInAttributesInstancePool;
@@ -105,6 +110,7 @@ namespace PocketGems.Parameters.Validation
 
         private void ValidateInfoDataValidators<T>(List<T> infos, bool recurseInterfaces, bool callValidateParameters) where T : class, IBaseInfo
         {
+            Stopwatch stopwatch = new();
             IReadOnlyList<Type> interfacesType;
             if (recurseInterfaces)
                 interfacesType = ParameterManagerValidatorCache.GetAllInterfaceTypes(typeof(T));
@@ -120,7 +126,8 @@ namespace PocketGems.Parameters.Validation
                     var dataValidators = ParameterManagerValidatorCache.GetDataValidatorMap();
                     if (!dataValidators.ContainsKey(interfaceType))
                     {
-                        var error = new ValidationError(typeof(T), null, null, $"Cannot find validator for {interfaceType}");
+                        var error = new ValidationError(typeof(T), null, null, $"Cannot find validator for {interfaceType}",
+                            severity: ValidationError.Severity.Warning);
                         _errors.Add(error);
                         continue;
                     }
@@ -135,6 +142,7 @@ namespace PocketGems.Parameters.Validation
                     _dataValidatorVerifiedParameterManagerSet.Add(dataValidator);
                     try
                     {
+                        stopwatch.Restart();
                         dataValidator.ValidateParameters(_parameterManager);
                     }
                     catch (Exception e)
@@ -142,6 +150,15 @@ namespace PocketGems.Parameters.Validation
                         var error = new ValidationError(typeof(T), null, null, $"{dataValidator.GetType().Name} threw an exception when calling {nameof(IDataValidator.ValidateParameters)}. see console.");
                         _errors.Add(error);
                         Debug.LogError(e);
+                    }
+
+                    stopwatch.Stop();
+                    if (stopwatch.ElapsedMilliseconds >= SlowExecutingValidatorMillis)
+                    {
+                        var error = new ValidationError(typeof(T), null, null,
+                            $"{dataValidator.GetType().Name}.{nameof(dataValidator.ValidateParameters)} took {stopwatch.ElapsedMilliseconds}ms to run validation.",
+                            severity:ValidationError.Severity.Warning);
+                        _errors.Add(error);
                     }
                 }
 
@@ -161,6 +178,7 @@ namespace PocketGems.Parameters.Validation
                     verifiedInfos.Add(info);
                     try
                     {
+                        stopwatch.Restart();
                         dataValidator.ValidateInfo(_parameterManager, info);
                     }
                     catch (Exception e)
@@ -169,6 +187,14 @@ namespace PocketGems.Parameters.Validation
                             $"{dataValidator.GetType().Name} threw an exception when calling {nameof(IDataValidator.ValidateInfo)}. see console.");
                         _errors.Add(error);
                         Debug.LogError(e);
+                    }
+
+                    stopwatch.Stop();
+                    if (stopwatch.ElapsedMilliseconds >= SlowExecutingValidatorInfoMillis)
+                    {
+                        var error = new ValidationError(typeof(T), info.Identifier, null, $"Took {stopwatch.ElapsedMilliseconds}ms to run info validation.",
+                            severity: ValidationError.Severity.Warning);
+                        _errors.Add(error);
                     }
                 }
             }
@@ -187,7 +213,8 @@ namespace PocketGems.Parameters.Validation
                     var dataValidators = ParameterManagerValidatorCache.GetDataValidatorMap();
                     if (!dataValidators.ContainsKey(interfaceType))
                     {
-                        var error = new ValidationError(structType, null, null, $"Cannot find validator for {interfaceType}");
+                        var error = new ValidationError(structType, null, null, $"Cannot find validator for {interfaceType}",
+                            severity: ValidationError.Severity.Warning);
                         _errors.Add(error);
                         continue;
                     }

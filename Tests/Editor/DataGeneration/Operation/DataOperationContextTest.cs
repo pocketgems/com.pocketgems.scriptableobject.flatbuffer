@@ -31,6 +31,7 @@ namespace PocketGems.Parameters.DataGeneration.Operation.Editor
 #endif
             Assert.AreEqual(0, context.ScriptableObjectMetadatas.Count);
             Assert.AreEqual(0, context.GeneratedFilePaths.Count);
+            Assert.AreEqual(0, context.AllValidationErrors.Count);
         }
     }
 }

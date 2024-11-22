@@ -452,6 +452,7 @@ namespace PocketGems.Parameters.Editor
              * output/display results
              *************************/
             DisplayExecutionResults(executor);
+            DisplayValidationResults(executor, context);
 
             s_runningGenerateData = false;
             ParameterDebug.LogVerbose($"{nameof(GenerateData)} duration: {generateDataDuration}ms");
@@ -536,32 +537,55 @@ namespace PocketGems.Parameters.Editor
                         $"There are {errorMessages.Count} parameter errors. See console for error logs.",
                         "Okay");
 
-
                 if (Application.isBatchMode)
                 {
                     for (int i = 0; i < validationErrors.Count; i++)
                         ParameterDebug.LogError(validationErrors[i].ToString());
                 }
-                else if (validationErrors.Count > 0)
+            }
+        }
+
+        private static void DisplayValidationResults(OperationExecutor<IDataOperationContext> executor, IDataOperationContext context)
+        {
+            if (executor.ExecutorState == ExecutorState.Error)
+            {
+                bool hasErrorSeverity = false;
+                foreach (var validationError in context.AllValidationErrors)
+                {
+                    if (validationError.ErrorSeverity == ValidationError.Severity.Error)
+                    {
+                        hasErrorSeverity = true;
+                        break;
+                    }
+                }
+
+                if (hasErrorSeverity)
                 {
                     ParameterDebug.LogError("Parameter errors: see Parameter Validation window");
 
-                    ValidationWindow.SerializeToStorage(validationErrors);
+                    // only force open the window on validation errors not warnings
+                    ValidationWindow.SerializeToStorage(context.AllValidationErrors);
                     var window = ValidationWindow.GetWindow(true);
-                    window.UpdateValidationResult(validationErrors, executor.ExecuteMilliseconds);
+                    window.UpdateValidationResult(context.AllValidationErrors, executor.ExecuteMilliseconds);
                 }
             }
 
             if (executor.ExecutorState == ExecutorState.Finished)
             {
-                if (typeof(T) == typeof(IDataOperationContext) && !executor.ShortCircuited &&
-                    ParameterPrefs.AutoValidateDataOnAssetChange)
+                if (!executor.ShortCircuited && ParameterPrefs.AutoValidateDataOnAssetChange)
                 {
-                    ValidationWindow.SerializeToStorage(null);
+                    if (context.AllValidationErrors.Count > 0)
+                    {
+                        ParameterDebug.LogWarning("Parameter warnings: see Parameter Validation window");
+                    }
+
+                    // update the window with the latest results if it happens to be open
+                    // if it got this far, the only errors there may have are warnings
+                    ValidationWindow.SerializeToStorage(context.AllValidationErrors);
                     if (ValidationWindow.HasOpenInstance())
                     {
                         var window = ValidationWindow.GetWindow(false);
-                        window.UpdateValidationResult(null, executor.ExecuteMilliseconds);
+                        window.UpdateValidationResult(context.AllValidationErrors, executor.ExecuteMilliseconds);
                     }
                 }
             }
