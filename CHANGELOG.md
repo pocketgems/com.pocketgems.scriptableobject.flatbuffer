@@ -4,6 +4,10 @@ All package updates & migration steps will be listed in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.3.1] - 2025-01-06
+### Fixed
+- `ReadOnlyListContainer` now throws `IndexOutOfRangeException` when accessed out of range.
+
 ## [4.3.0] - 2024-11-22
 ### Added
 - `Warning` and `Error` severity levels for `ValidatorError`
