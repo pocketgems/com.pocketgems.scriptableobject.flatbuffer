@@ -55,8 +55,10 @@ namespace PocketGems.Parameters.Editor.Editor
          * with in inner list also called _rewards.  The recursive calls to to EditorGUI.PropertyField and
          * EditorGUI.GetPropertyHeight cause issues.
          *
-         * This was identified in LTS2020 (TBD if it's still an issue in newer editor versions)
+         * This was identified in LTS2020.  In LTS2022, it appears to work without crashing.  If you find yourself
+         * crashing, re-enable this workaround by flipping this bool.
          */
+        private const bool ShouldWorkAroundRecursivePropertyNameBug = false;
         private static readonly Stack<string> s_arrayPropertyNames = new();
         private static Object s_firstTargetObject;
 
@@ -154,7 +156,8 @@ namespace PocketGems.Parameters.Editor.Editor
                 children = false;
                 // don't draw class file
                 if (prop.name == "m_Script") continue;
-                if (prop.isArray && s_arrayPropertyNames.Contains(prop.propertyPath))
+                if (ShouldWorkAroundRecursivePropertyNameBug &&
+                    prop.isArray && s_arrayPropertyNames.Contains(prop.propertyPath))
                     height += EditorGUIUtility.singleLineHeight;
                 else
                     height += EditorGUI.GetPropertyHeight(prop, new GUIContent(prop.displayName), true);
@@ -291,7 +294,8 @@ namespace PocketGems.Parameters.Editor.Editor
                     if (prop.name == "m_Script") continue;
                     float height;
                     var propLabel = new GUIContent(prop.displayName);
-                    if (prop.isArray && s_arrayPropertyNames.Contains(prop.propertyPath))
+                    if (ShouldWorkAroundRecursivePropertyNameBug &&
+                        prop.isArray && s_arrayPropertyNames.Contains(prop.propertyPath))
                     {
                         height = EditorGUIUtility.singleLineHeight;
                         var style = new GUIStyle(GUI.skin.label);
