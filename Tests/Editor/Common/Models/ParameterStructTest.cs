@@ -40,29 +40,29 @@ namespace PocketGems.Parameters.Common.Models.Editor
         }
 
         [Test]
-        public void ValidWithNoCircularReferences()
-        {
-            var parameterStruct = new ParameterStruct(typeof(IReferenceStructStruct));
-            Assert.IsTrue(parameterStruct.Validate(out IReadOnlyList<string> errors));
-            Assert.IsEmpty(errors);
-        }
+        [TestCase(typeof(ICircularAStruct))] // references B
+        [TestCase(typeof(ICircularBStruct))] // references A
+        [TestCase(typeof(ICircularCStruct))] // subclass of B
+        [TestCase(typeof(ICircularDStruct))] // references D (self)
 
-        [Test]
-        [TestCase(typeof(ICircularAStruct))]
-        [TestCase(typeof(ICircularBStruct))]
-        [TestCase(typeof(ICircularCStruct))]
-        [TestCase(typeof(ICircularDStruct))]
-        [TestCase(typeof(ICircularEStruct))]
-        [TestCase(typeof(ICircularFStruct))]
-        [TestCase(typeof(ICircularGStruct))]
-        [TestCase(typeof(ICircularHStruct))]
-        [TestCase(typeof(ICircularIStruct))]
-        [TestCase(typeof(ICircularJStruct))]
-        [TestCase(typeof(ICircularKStruct))]
-        [TestCase(typeof(ICircularAStruct))]
+        [TestCase(typeof(ICircularEStruct))] // reference F
+        [TestCase(typeof(ICircularFStruct))] // reference G
+        [TestCase(typeof(ICircularGStruct))] // reference E
         public void InvalidWithCircularReferences(Type interfaceType)
         {
             AssertInvalidInterface(new ParameterStruct(interfaceType));
+        }
+
+        [Test]
+        [TestCase(typeof(IReferenceStructStruct))]
+        [TestCase(typeof(ICircularIStruct))] // references J with list
+        [TestCase(typeof(ICircularJStruct))] // references I with list
+        [TestCase(typeof(ICircularKStruct))] // references K (self) with list
+        public void ValidListReferences(Type interfaceType)
+        {
+            var parameterStruct = new ParameterStruct(interfaceType);
+            Assert.IsTrue(parameterStruct.Validate(out IReadOnlyList<string> errors));
+            Assert.IsEmpty(errors);
         }
     }
 }
