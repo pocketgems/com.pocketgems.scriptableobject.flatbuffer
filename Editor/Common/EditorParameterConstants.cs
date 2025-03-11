@@ -40,6 +40,8 @@ namespace PocketGems.Parameters.Common.Editor
             // external codegen project
             public static string ExternalProjectDir =>
                 Path.Combine(new[] { SanitizedDataPath(), "..", "ParametersCodeGen" });
+            public static string ExternalProjectSolutionPath =>
+                Path.Combine(new[] { ExternalProjectDir, "Solutions", "CodeGen.sln" });
 
             // assembly infos
             public static string AssemblyInfoPath => Path.Combine(new[] { RootDir, AssemblyInfo.FileName });

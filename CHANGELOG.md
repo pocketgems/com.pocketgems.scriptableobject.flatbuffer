@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [4.4.0] - 2025-03-11
 ### Added
 - Support for circular references of structs if using a `IReadOnlyList`
+### Changed
+- The "Regenerate Code" menu item opens the external code gen project if available to avoid confusion.
 
 ## [4.3.2] - 2025-01-24
 - Disable the Unity LTS2020 property drawer recursive property crash workaround. It appears to work in LTS2022.
