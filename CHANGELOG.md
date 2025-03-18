@@ -4,6 +4,15 @@ All package updates & migration steps will be listed in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.5.0] - 2025-03-18
+### Added
+- `InfoExists` and `HasAssignedValue` getters added to the `ParameterReference<T>`
+- Support for `AssetReferenceGameObject`
+- Versioning for code gen.
+- Support to pass in infos to the `Error` and `Warn` methods in validators.
+### Fixed
+- Unclear error message when trying to set an incorrect scriptable object by name in a csv.
+
 ## [4.4.0] - 2025-03-11
 ### Added
 - Support for circular references of structs if using a `IReadOnlyList`
