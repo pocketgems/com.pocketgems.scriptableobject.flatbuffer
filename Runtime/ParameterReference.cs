@@ -12,13 +12,16 @@ namespace PocketGems.Parameters
     public abstract class ParameterReference
     {
         [SerializeField] protected string guid;
+        [NonSerialized] protected string _identifier;
+
+        /// <summary>
+        /// The assigned guid that is set typically from in the editor or when loaded from the parameter manager.
+        /// </summary>
+        public string AssignedGUID => guid;
 
         /// <summary>
         ///  Identifier is only set at runtime (abtesting) and not serialized in the editor.
         /// </summary>
-        [NonSerialized] protected string _identifier;
-
-        public string AssignedGUID => guid;
         public string AssignedIdentifier => _identifier;
 
         /// <summary>
@@ -82,6 +85,9 @@ namespace PocketGems.Parameters
             return string.Compare(info.Identifier, otherInfo.Identifier);
         }
 
+        /// <summary>
+        /// A getter return the parameter info.  Null if it doesn't exist.
+        /// </summary>
         public T Info
         {
             get
@@ -103,6 +109,26 @@ namespace PocketGems.Parameters
                 return GetInfo(Params.ParameterManager);
             }
         }
+
+        /// <summary>
+        /// Returns true if an info exists for the reference.
+        ///
+        /// A ParameterReference could have HasAssignedValue be true but InfoExists return false.
+        /// This could happen if the assigned guid/identifier doesn't exist in the ParameterManager
+        /// due to an incorrect assignment (validation wasn't ran or the identifier was assigned at
+        /// runtime and incorrect).
+        /// </summary>
+        public bool InfoExists => Info != null;
+
+        /// <summary>
+        /// True if this reference has been assigned a guid/identifier that might exist.
+        ///
+        /// A ParameterReference could have HasAssignedValue be true but InfoExists return false.
+        /// This could happen if the assigned guid/identifier doesn't exist in the ParameterManager
+        /// due to an incorrect assignment (validation wasn't ran or the identifier was assigned at
+        /// runtime and incorrect).
+        /// </summary>
+        public bool HasAssignedValue => !string.IsNullOrWhiteSpace(guid) || !string.IsNullOrWhiteSpace(_identifier);
 
         internal T GetInfo(IParameterManager parameterManager)
         {

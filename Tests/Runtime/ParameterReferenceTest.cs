@@ -41,47 +41,47 @@ namespace PocketGems.Parameters
         public void Init()
         {
             var parameterReference = new ParameterReference<IBaseInfo>();
-            Assert.IsNull(parameterReference.AssignedGUID);
-            Assert.IsNull(parameterReference.AssignedIdentifier);
-            Assert.IsNotEmpty(parameterReference.ToString());
+            Assert.That(parameterReference.AssignedGUID, Is.Null);
+            Assert.That(parameterReference.AssignedIdentifier, Is.Null);
+            Assert.That(parameterReference.ToString(), Is.Not.Empty);
 
             parameterReference = new ParameterReference<IBaseInfo>(kTestGuid);
-            Assert.AreEqual(kTestGuid, parameterReference.AssignedGUID);
-            Assert.IsNull(parameterReference.AssignedIdentifier);
-            Assert.IsNotEmpty(parameterReference.ToString());
+            Assert.That(parameterReference.AssignedGUID, Is.EqualTo(kTestGuid));
+            Assert.That(parameterReference.AssignedIdentifier, Is.Null);
+            Assert.That(parameterReference.ToString(), Is.Not.Empty);
 
             parameterReference = new ParameterReference<IBaseInfo>(kTestIdentifier, true);
-            Assert.IsNull(parameterReference.AssignedGUID);
-            Assert.AreEqual(kTestIdentifier, parameterReference.AssignedIdentifier);
-            Assert.IsNotEmpty(parameterReference.ToString());
+            Assert.That(parameterReference.AssignedGUID, Is.Null);
+            Assert.That(parameterReference.AssignedIdentifier, Is.EqualTo(kTestIdentifier));
+            Assert.That(parameterReference.ToString(), Is.Not.Empty);
         }
 
         [Test]
         public void GetByGuid()
         {
             var parameterReference = new ParameterReference<IBaseInfo>(kTestGuid);
-            Assert.AreEqual(_mockInfo, parameterReference.Info);
+            Assert.That(parameterReference.Info, Is.EqualTo(_mockInfo));
         }
 
         [Test]
         public void GetByIdentifier()
         {
             var parameterReference = new ParameterReference<IBaseInfo>(kTestIdentifier, true);
-            Assert.AreEqual(_mockInfo, parameterReference.Info);
+            Assert.That(parameterReference.Info, Is.EqualTo(_mockInfo));
         }
 
         [Test]
         public void GetNothing()
         {
             var parameterReference = new ParameterReference<IBaseInfo>();
-            Assert.IsNull(parameterReference.Info);
+            Assert.That(parameterReference.Info, Is.Null);
         }
 
         [Test]
         public void MissingGuidInParameterManager()
         {
             var parameterReference = new ParameterReference<IBaseInfo>("bad guid");
-            Assert.IsNull(parameterReference.Info);
+            Assert.That(parameterReference.Info, Is.Null);
         }
 
         [Test]
@@ -89,7 +89,7 @@ namespace PocketGems.Parameters
         {
             var parameterReference = new ParameterReference<IBaseInfo>("bad id", true);
             LogAssert.Expect(LogType.Error, new Regex("Cannot find.*"));
-            Assert.IsNull(parameterReference.Info);
+            Assert.That(parameterReference.Info, Is.Null);
         }
 
         [Test]
@@ -101,15 +101,15 @@ namespace PocketGems.Parameters
 
             var parameterReference = new ParameterReference<IBaseInfo>(kTestGuid);
             LogAssert.Expect(LogType.Error, errorString);
-            Assert.IsNull(parameterReference.Info);
+            Assert.That(parameterReference.Info, Is.Null);
             LogAssert.Expect(LogType.Error, errorString);
-            Assert.IsNotEmpty(parameterReference.ToString());
+            Assert.That(parameterReference.ToString(), Is.Not.Empty);
 
             parameterReference = new ParameterReference<IBaseInfo>(kTestIdentifier, true);
             LogAssert.Expect(LogType.Error, errorString);
-            Assert.IsNull(parameterReference.Info);
+            Assert.That(parameterReference.Info, Is.Null);
             LogAssert.Expect(LogType.Error, errorString);
-            Assert.IsNotEmpty(parameterReference.ToString());
+            Assert.That(parameterReference.ToString(), Is.Not.Empty);
         }
 
         [Test]
@@ -125,13 +125,13 @@ namespace PocketGems.Parameters
                 Assert.AreEqual(identifier, reference.Info.Identifier);
                 if (refIsIdentifier)
                 {
-                    Assert.IsNull(reference.AssignedGUID);
-                    Assert.AreEqual(identifier, reference.AssignedIdentifier);
+                    Assert.That(reference.AssignedGUID, Is.Null);
+                    Assert.That(reference.AssignedIdentifier, Is.EqualTo(identifier));
                 }
                 else
                 {
-                    Assert.AreEqual(guid, reference.AssignedGUID);
-                    Assert.IsNull(reference.AssignedIdentifier);
+                    Assert.That(reference.AssignedGUID, Is.EqualTo(guid));
+                    Assert.That(reference.AssignedIdentifier, Is.Null);
                 }
                 return reference;
             }
@@ -145,11 +145,11 @@ namespace PocketGems.Parameters
             refList.Sort();
 
             // sorted by identifier
-            Assert.AreEqual(refNull, refList[0]);
-            Assert.AreEqual(refA, refList[1]);
-            Assert.AreEqual(refB, refList[2]);
-            Assert.AreEqual(refC, refList[3]);
-            Assert.AreEqual(refD, refList[4]);
+            Assert.That(refList[0], Is.EqualTo(refNull));
+            Assert.That(refList[1], Is.EqualTo(refA));
+            Assert.That(refList[2], Is.EqualTo(refB));
+            Assert.That(refList[3], Is.EqualTo(refC));
+            Assert.That(refList[4], Is.EqualTo(refD));
 
             var ref1_1 = CreateReference("abc", "1", true);
             var ref1_2 = CreateReference("abc", "1", true);
@@ -161,12 +161,30 @@ namespace PocketGems.Parameters
                 for (int j = 0; j < ref1List.Count; j++)
                 {
                     // verify all of these combinations are equal
-                    Assert.AreEqual(0, ref1List[i].CompareTo(ref1List[j]));
+                    Assert.That(ref1List[i].CompareTo(ref1List[j]), Is.Zero);
                 }
             }
 
             // two nulls are equal
-            Assert.AreEqual(0, refNull.CompareTo(new ParameterReference<IBaseInfo>()));
+            Assert.That(refNull.CompareTo(new ParameterReference<IBaseInfo>()), Is.Zero);
+        }
+
+        [Test]
+        [TestCase(null, false, false, false)]
+        [TestCase(null, true, false, false)]
+        [TestCase("", false, false, false)]
+        [TestCase("", true, false, false)]
+        [TestCase(kTestGuid, false, true, true)]
+        [TestCase("blah", false, true, false)]
+        [TestCase(kTestIdentifier, true, true, true)]
+        [TestCase("blah", true, true, false)]
+        public void InfoExists_HasAssignedValue(string value, bool isIdentifier, bool expectedHasAssignedValue, bool expectedInfoExists)
+        {
+            var parameterReference = new ParameterReference<IBaseInfo>(value, isIdentifier);
+            Assert.That(parameterReference.HasAssignedValue, Is.EqualTo(expectedHasAssignedValue));
+            if (isIdentifier && expectedHasAssignedValue && !expectedInfoExists)
+                LogAssert.Expect(LogType.Error, new Regex("Cannot find info of type .*"));
+            Assert.That(parameterReference.InfoExists, Is.EqualTo(expectedInfoExists));
         }
     }
 }
