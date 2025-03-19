@@ -32,11 +32,34 @@ namespace PocketGems.Parameters.Validation
         /// <summary>
         /// Log an error during validation.
         /// </summary>
+        /// <param name="info">the info with the issue</param>
+        /// <param name="propertyName">property name with the error</param>
+        /// <param name="message">user facing message about the error</param>
+        protected void Error(T info, string propertyName, string message)
+        {
+            var error = new ValidationError(typeof(T), info.Identifier, propertyName, message);
+            _errors.Add(error);
+        }
+
+        /// <summary>
+        /// Log an error during validation.
+        /// </summary>
         /// <param name="propertyName">property name with the error</param>
         /// <param name="message">user facing message about the error</param>
         protected void Error(string propertyName, string message)
         {
             var error = new ValidationError(typeof(T), _currentIdentifier, propertyName, message);
+            _errors.Add(error);
+        }
+
+        /// <summary>
+        /// Log an error during validation.
+        /// </summary>
+        /// <param name="info">the info with the issue</param>
+        /// <param name="message">user facing message about the error</param>
+        protected void Error(T info, string message)
+        {
+            var error = new ValidationError(typeof(T), info.Identifier, null, message);
             _errors.Add(error);
         }
 
@@ -53,11 +76,36 @@ namespace PocketGems.Parameters.Validation
         /// <summary>
         /// Log a warning during validation.
         /// </summary>
+        /// <param name="info">the info with the issue</param>
+        /// <param name="propertyName">property name with the warning</param>
+        /// <param name="message">user facing message about the warning</param>
+        protected void Warn(T info, string propertyName, string message)
+        {
+            var error = new ValidationError(typeof(T), info.Identifier, propertyName, message,
+                severity: ValidationError.Severity.Warning);
+            _errors.Add(error);
+        }
+
+        /// <summary>
+        /// Log a warning during validation.
+        /// </summary>
         /// <param name="propertyName">property name with the warning</param>
         /// <param name="message">user facing message about the warning</param>
         protected void Warn(string propertyName, string message)
         {
             var error = new ValidationError(typeof(T), _currentIdentifier, propertyName, message,
+                severity: ValidationError.Severity.Warning);
+            _errors.Add(error);
+        }
+
+        /// <summary>
+        /// General warning during validation.
+        /// </summary>
+        /// <param name="info">the info with the issue</param>
+        /// <param name="message">user facing message about the warning</param>
+        protected void Warn(T info, string message)
+        {
+            var error = new ValidationError(typeof(T), info.Identifier, null, message,
                 severity: ValidationError.Severity.Warning);
             _errors.Add(error);
         }
