@@ -86,9 +86,11 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
 
 #if ADDRESSABLE_PARAMS
             AssetReference MyAsset { get; }
+            AssetReferenceGameObject MyGameObject { get; }
             AssetReferenceSprite MyAssetSprite { get; }
             AssetReferenceAtlasedSprite MyAssetAltasdSprite { get; }
             IReadOnlyList<AssetReference> MyAssets { get; }
+            IReadOnlyList<AssetReferenceGameObject> MyGameObjects { get; }
             IReadOnlyList<AssetReferenceSprite> MyAssetSprites { get; }
             IReadOnlyList<AssetReferenceAtlasedSprite> MyAssetAltasdSprites { get; }
 #endif
@@ -228,9 +230,11 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         [TestCase(nameof(ITestInfo.MyStructs))]
 #if ADDRESSABLE_PARAMS
         [TestCase(nameof(ITestInfo.MyAsset))]
+        [TestCase(nameof(ITestInfo.MyGameObject))]
         [TestCase(nameof(ITestInfo.MyAssetSprite))]
         [TestCase(nameof(ITestInfo.MyAssetAltasdSprite))]
         [TestCase(nameof(ITestInfo.MyAssets))]
+        [TestCase(nameof(ITestInfo.MyGameObjects))]
         [TestCase(nameof(ITestInfo.MyAssetSprites))]
         [TestCase(nameof(ITestInfo.MyAssetAltasdSprites))]
 #endif

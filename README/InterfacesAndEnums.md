@@ -245,9 +245,11 @@ IReadOnlyList<ParameterStructReference<ITransactionStruct>> Rewards { get; }
 Addressable asset & sprite references are supported if the [`com.unity.addressables`](https://docs.unity3d.com/Packages/com.unity.addressables@latest/index.html) package is added to the Unity project.
 ```C#
 AssetReference WorldItemPrefab { get; }
+AssetReferenceGameObject Node { get; }
 AssetReferenceSprite Icon { get; }
 AssetReferenceAtlasedSprite Image { get; }
 IReadOnlyList<AssetReference> Doobers { get; }
+IReadOnlyList<AssetReferenceGameObject> Nodes { get; }
 IReadOnlyList<AssetReferenceSprite> LoadingImages { get; }
 IReadOnlyList<AssetReferenceAtlasedSprite> Images { get; }
 ```

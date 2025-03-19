@@ -42,6 +42,40 @@ namespace PocketGems.Parameters.LocalCSV
         }
 
         [Test]
+        [TestCase("blah", "objName", "blah-objName")]
+        [TestCase("blah", "objName-", "blah-objName-")]
+        [TestCase("blah", "", "blah-")]
+        [TestCase("blah", null, "blah-")]
+        [TestCase("", null, "-")]
+        [TestCase(null, null, "-")]
+        public void AssetReferenceGameObjectToString(string guid, string subObjectName, string expected)
+        {
+            var reference = new AssetReferenceGameObject(guid);
+            if (subObjectName != null)
+                reference.SubObjectName = subObjectName;
+
+            Assert.AreEqual(expected, CSVValueConverter.AssetReferenceGameObject.ToString(reference));
+
+            if (guid == null)
+                Assert.AreEqual(expected, CSVValueConverter.AssetReferenceGameObject.ToString(null));
+        }
+
+        [Test]
+        [TestCase("blah-", "blah", null)]
+        [TestCase("blah-boo", "blah", "boo")]
+        [TestCase("blah-boo-", "blah", "boo-")]
+        [TestCase("", "", null)]
+        [TestCase(null, "", null)]
+        public void AssetReferenceGameObjectFromString(string value, string expectedGUID, string expectedSubObjectName)
+        {
+            var reference = CSVValueConverter.AssetReferenceGameObject.FromString(value);
+            Assert.IsNotNull(reference);
+            Assert.AreEqual(typeof(AssetReferenceGameObject), reference.GetType());
+            Assert.AreEqual(expectedGUID, reference.AssetGUID);
+            Assert.AreEqual(expectedSubObjectName, reference.SubObjectName);
+        }
+
+        [Test]
         public void AssetReferenceFromStringError()
         {
             Assert.Throws<Exception>(() => CSVValueConverter.AssetReference.FromString("asdf"));
@@ -67,6 +101,21 @@ namespace PocketGems.Parameters.LocalCSV
         }
 
         [Test]
+        [TestCase("blah-", "blah", null)]
+        [TestCase("blah-boo", "blah", "boo")]
+        [TestCase("blah-boo-", "blah", "boo-")]
+        [TestCase("", "", null)]
+        [TestCase(null, "", null)]
+        public void AssetReferenceSpriteFromString(string value, string expectedGUID, string expectedSubObjectName)
+        {
+            var reference = CSVValueConverter.AssetReferenceSprite.FromString(value);
+            Assert.IsNotNull(reference);
+            Assert.AreEqual(typeof(AssetReferenceSprite), reference.GetType());
+            Assert.AreEqual(expectedGUID, reference.AssetGUID);
+            Assert.AreEqual(expectedSubObjectName, reference.SubObjectName);
+        }
+
+        [Test]
         [TestCase("blah", "objName", "blah-objName")]
         [TestCase("blah", "objName-", "blah-objName-")]
         [TestCase("blah", "", "blah-")]
@@ -83,21 +132,6 @@ namespace PocketGems.Parameters.LocalCSV
 
             if (guid == null)
                 Assert.AreEqual(expected, CSVValueConverter.AssetReferenceAtlasedSprite.ToString(null));
-        }
-
-        [Test]
-        [TestCase("blah-", "blah", null)]
-        [TestCase("blah-boo", "blah", "boo")]
-        [TestCase("blah-boo-", "blah", "boo-")]
-        [TestCase("", "", null)]
-        [TestCase(null, "", null)]
-        public void AssetReferenceSpriteFromString(string value, string expectedGUID, string expectedSubObjectName)
-        {
-            var reference = CSVValueConverter.AssetReferenceSprite.FromString(value);
-            Assert.IsNotNull(reference);
-            Assert.AreEqual(typeof(AssetReferenceSprite), reference.GetType());
-            Assert.AreEqual(expectedGUID, reference.AssetGUID);
-            Assert.AreEqual(expectedSubObjectName, reference.SubObjectName);
         }
 
         [Test]
@@ -142,6 +176,46 @@ namespace PocketGems.Parameters.LocalCSV
             Assert.AreEqual(Array.Empty<AssetReference>(), CSVValueConverter.AssetReferenceArray.FromString(""));
             Assert.AreEqual(Array.Empty<AssetReference>(), CSVValueConverter.AssetReferenceArray.FromString(" "));
             var result = CSVValueConverter.AssetReferenceArray.FromString("guid-|-|-|guid2-sub");
+            Assert.AreEqual("guid", result[0].AssetGUID);
+            Assert.AreEqual(null, result[0].SubObjectName);
+            Assert.AreEqual("", result[1].AssetGUID);
+            Assert.AreEqual(null, result[1].SubObjectName);
+            Assert.AreEqual("", result[2].AssetGUID);
+            Assert.AreEqual(null, result[2].SubObjectName);
+            Assert.AreEqual("guid2", result[3].AssetGUID);
+            Assert.AreEqual("sub", result[3].SubObjectName);
+        }
+
+        [Test]
+        public void AssetReferenceGameObjectArrayToString()
+        {
+            void Test(string expected, AssetReferenceGameObject[] value)
+            {
+                Assert.AreEqual(expected, CSVValueConverter.AssetReferenceGameObjectArray.ToString(value));
+            }
+
+            var refNormal1 = new AssetReferenceGameObject("guid1");
+            var refNormal2 = new AssetReferenceGameObject("guid2");
+            refNormal2.SubObjectName = "sub";
+            var refNull = new AssetReferenceGameObject(null);
+            var refEmpty = new AssetReferenceGameObject("");
+
+            Test("", null);
+            Test("guid1-", new[] { refNormal1 });
+            Test("guid1-|-", new[] { refNormal1, refNull });
+            Test("guid1-|-|-|guid2-sub", new[] { refNormal1, refNull, refEmpty, refNormal2 });
+        }
+
+        [Test]
+        public void AssetReferenceGameObjectArrayFromString()
+        {
+            Assert.AreEqual(Array.Empty<AssetReferenceGameObject>(),
+                CSVValueConverter.AssetReferenceGameObjectArray.FromString(null));
+            Assert.AreEqual(Array.Empty<AssetReferenceGameObject>(),
+                CSVValueConverter.AssetReferenceGameObjectArray.FromString(""));
+            Assert.AreEqual(Array.Empty<AssetReferenceGameObject>(),
+                CSVValueConverter.AssetReferenceGameObjectArray.FromString(" "));
+            var result = CSVValueConverter.AssetReferenceGameObjectArray.FromString("guid-|-|-|guid2-sub");
             Assert.AreEqual("guid", result[0].AssetGUID);
             Assert.AreEqual(null, result[0].SubObjectName);
             Assert.AreEqual("", result[1].AssetGUID);
