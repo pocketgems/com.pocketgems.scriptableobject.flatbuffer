@@ -41,7 +41,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         {
             var referenceClassName = SanitizedPropertyTypeName();
             return
-                $"public {referenceClassName}<{_genericType.Name}> {PropertyName} => new ParameterStructReferenceRuntime<{_genericType.Name}>(_fb.{FlatBufferStructPropertyName});";
+                $"public {referenceClassName}<{_genericType.Name}> {PropertyName} => new ParameterStructReferenceRuntime<{_genericType.Name}>(_parameterManager, _fb.{FlatBufferStructPropertyName});";
         }
 
         public override string FlatBufferEditPropertyCode(string variableName) =>

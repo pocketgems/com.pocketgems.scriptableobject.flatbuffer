@@ -64,13 +64,6 @@ namespace PocketGems.Parameters.Validation
             InnerKeyValueStructDataValidator.NextInstanceErrors = null;
 
             _parameterManager = Substitute.For<IMutableParameterManager>();
-            Params.SetInstance(_parameterManager);
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            Params.SetInstance(null);
         }
 
         private void SetupGeneralValidationParameters()
@@ -95,25 +88,25 @@ namespace PocketGems.Parameters.Validation
             _info1.Identifier = "Info1";
             _info1.DisplayName = "Some Display Name";
             _info1.Description = "Some Description";
-            _info1.StructRef = new ParameterStructReferenceRuntime<IKeyValueStruct>(keyValueGuid1);
+            _info1.StructRef = new ParameterStructReferenceRuntime<IKeyValueStruct>(_parameterManager, keyValueGuid1);
             _info1._structRefs = new[]
             {
-                new ParameterStructReferenceRuntime<IKeyValueStruct>(keyValueGuid2),
-                new ParameterStructReferenceRuntime<IKeyValueStruct>(keyValueGuid3)
+                new ParameterStructReferenceRuntime<IKeyValueStruct>(_parameterManager, keyValueGuid2),
+                new ParameterStructReferenceRuntime<IKeyValueStruct>(_parameterManager, keyValueGuid3)
             };
 
             _info2 = new MockTestValidationInfo();
             _info2.Identifier = "Info2";
             _info2.DisplayName = "Some Display Name";
             _info2.Description = "Some Description";
-            _info2.StructRef = new ParameterStructReferenceRuntime<IKeyValueStruct>(keyValueGuid4);
+            _info2.StructRef = new ParameterStructReferenceRuntime<IKeyValueStruct>(_parameterManager, keyValueGuid4);
             _info2._structRefs = Array.Empty<ParameterStructReferenceRuntime<IKeyValueStruct>>();
 
             _info3 = new MockTestValidationInfo();
             _info3.Identifier = "Info3";
             _info3.DisplayName = "Some Display Name";
             _info3.Description = "Some Description";
-            _info3.StructRef = new ParameterStructReferenceRuntime<IKeyValueStruct>(keyValueGuid5);
+            _info3.StructRef = new ParameterStructReferenceRuntime<IKeyValueStruct>(_parameterManager, keyValueGuid5);
             _info3._structRefs = Array.Empty<ParameterStructReferenceRuntime<IKeyValueStruct>>();
 
             var mocks = new[] { _info1, _info2, _info3 };
@@ -123,15 +116,15 @@ namespace PocketGems.Parameters.Validation
 
             // create key value structs
             _info1KeyValueStruct1 = new MockKeyValueStruct(
-                "Some Description", 100, innerKeyValueGuid1, new[] { innerKeyValueGuid2, innerKeyValueGuid3 });
+                _parameterManager, "Some Description", 100, innerKeyValueGuid1, new[] { innerKeyValueGuid2, innerKeyValueGuid3 });
             _info1KeyValueStruct2 = new MockKeyValueStruct(
-                "Some Description", 100, innerKeyValueGuid4, Array.Empty<string>());
+                _parameterManager, "Some Description", 100, innerKeyValueGuid4, Array.Empty<string>());
             _info1KeyValueStruct3 = new MockKeyValueStruct(
-                "Some Description", 100, innerKeyValueGuid5, Array.Empty<string>());
+                _parameterManager, "Some Description", 100, innerKeyValueGuid5, Array.Empty<string>());
             _info2KeyValueStruct = new MockKeyValueStruct(
-                "Some Description", 100, innerKeyValueGuid6, Array.Empty<string>());
+                _parameterManager, "Some Description", 100, innerKeyValueGuid6, Array.Empty<string>());
             _info3KeyValueStruct = new MockKeyValueStruct(
-                "Some Description", 100, innerKeyValueGuid7, Array.Empty<string>());
+                _parameterManager, "Some Description", 100, innerKeyValueGuid7, Array.Empty<string>());
             _parameterManager.GetStructWithGuid<IKeyValueStruct>(keyValueGuid1).Returns(_info1KeyValueStruct1);
             _parameterManager.GetStructWithGuid<IKeyValueStruct>(keyValueGuid2).Returns(_info1KeyValueStruct2);
             _parameterManager.GetStructWithGuid<IKeyValueStruct>(keyValueGuid3).Returns(_info1KeyValueStruct3);
@@ -275,7 +268,7 @@ namespace PocketGems.Parameters.Validation
         {
             // setup
             var structGuid = "someStructGuid";
-            var structReference = new ParameterStructReferenceRuntime<IExceptionStruct>(structGuid);
+            var structReference = new ParameterStructReferenceRuntime<IExceptionStruct>(_parameterManager, structGuid);
             var testExceptionInfo1 = Substitute.For<ITestExceptionInfo>();
             testExceptionInfo1.ExceptionStruct.Returns(structReference);
             var testExceptionInfo2 = Substitute.For<ITestExceptionInfo>();
@@ -376,8 +369,8 @@ namespace PocketGems.Parameters.Validation
             var mocks = new[]
             {
                 new MockMyVerySpecialInfo() {
-                    Struct = new ParameterStructReferenceRuntime<IMissingValidator1Struct>(structGuid1),
-                    Structs = new []{ new ParameterStructReferenceRuntime<IMissingValidator2Struct>(structGuid2) }
+                    Struct = new ParameterStructReferenceRuntime<IMissingValidator1Struct>(_parameterManager, structGuid1),
+                    Structs = new []{ new ParameterStructReferenceRuntime<IMissingValidator2Struct>(_parameterManager, structGuid2) }
                 },
             };
             _parameterManager.Get<IMyVerySpecialInfo>().Returns(mocks);
@@ -432,11 +425,11 @@ namespace PocketGems.Parameters.Validation
             string badInnerStructGuid = "bad_inner_struct_guid";
             _parameterManager.GetStructWithGuid<IInnerKeyValueStruct>(badInnerStructGuid).ReturnsNull();
 
-            _info1.Ref = new ParameterReference<ITestValidationInfo>(badInfoGuid);
-            _info1._structRefs[1] = new ParameterStructReferenceRuntime<IKeyValueStruct>(badKeyValueStructGuid);
-            _info1KeyValueStruct1._innerStructs[0] = new ParameterStructReferenceRuntime<IInnerKeyValueStruct>(badInnerStructGuid);
-            _info1KeyValueStruct2.InnerStruct = new ParameterStructReferenceRuntime<IInnerKeyValueStruct>(badInnerStructGuid);
-            _info2.StructRef = new ParameterStructReferenceRuntime<IKeyValueStruct>(badKeyValueStructGuid);
+            _info1.Ref = new ParameterReference<ITestValidationInfo>(_parameterManager, badInfoGuid);
+            _info1._structRefs[1] = new ParameterStructReferenceRuntime<IKeyValueStruct>(_parameterManager, badKeyValueStructGuid);
+            _info1KeyValueStruct1._innerStructs[0] = new ParameterStructReferenceRuntime<IInnerKeyValueStruct>(_parameterManager, badInnerStructGuid);
+            _info1KeyValueStruct2.InnerStruct = new ParameterStructReferenceRuntime<IInnerKeyValueStruct>(_parameterManager, badInnerStructGuid);
+            _info2.StructRef = new ParameterStructReferenceRuntime<IKeyValueStruct>(_parameterManager, badKeyValueStructGuid);
 
             ValidateGeneralValidationParameters(out var validator);
 

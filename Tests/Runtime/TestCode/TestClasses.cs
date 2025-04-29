@@ -11,7 +11,7 @@ public class MockMutableParameter : IMutableParameter
     public string EditPropertyValue;
     public string ReturnEditPropertyError;
 
-    public bool EditProperty(string propertyName, string value, out string error)
+    public bool EditProperty(IParameterManager parameterManager, string propertyName, string value, out string error)
     {
         EditPropertyCalls++;
         EditPropertyPropertyName = propertyName;
@@ -47,14 +47,14 @@ public class MockKeyValueStruct : MockMutableBaseStruct, IKeyValueStruct
     public IReadOnlyList<ParameterStructReference<IInnerKeyValueStruct>> InnerStructs => _innerStructs;
     public ParameterStructReferenceRuntime<IInnerKeyValueStruct>[] _innerStructs;
 
-    public MockKeyValueStruct(string description, int value, string innerStruct, string[] innerStructs)
+    public MockKeyValueStruct(IParameterManager parameterManager, string description, int value, string innerStruct, string[] innerStructs)
     {
         Description = description;
         Value = value;
-        InnerStruct = new ParameterStructReferenceRuntime<IInnerKeyValueStruct>(innerStruct);
+        InnerStruct = new ParameterStructReferenceRuntime<IInnerKeyValueStruct>(parameterManager, innerStruct);
         var innerStructsArray = new ParameterStructReferenceRuntime<IInnerKeyValueStruct>[innerStructs.Length];
         for (int i = 0; i < innerStructs.Length; i++)
-            innerStructsArray[i] = new ParameterStructReferenceRuntime<IInnerKeyValueStruct>(innerStructs[i]);
+            innerStructsArray[i] = new ParameterStructReferenceRuntime<IInnerKeyValueStruct>(parameterManager, innerStructs[i]);
         _innerStructs = innerStructsArray;
     }
 }
@@ -81,7 +81,8 @@ public class MockTestValidationInfo : IMutableParameter, ITestValidationInfo
     public IReadOnlyList<ParameterStructReference<IKeyValueStruct>> StructRefs => _structRefs;
     public ParameterStructReference<IKeyValueStruct>[] _structRefs;
 
-    public bool EditProperty(string propertyName, string value, out string error) => throw new System.NotImplementedException();
+    public bool EditProperty(IParameterManager parameterManager, string propertyName, string value, out string error) =>
+        throw new System.NotImplementedException();
     public void RemoveAllEdits() => throw new System.NotImplementedException();
 }
 
@@ -91,7 +92,7 @@ public class MockSubBadValidationInfo : IMutableParameter, ITestSubInterfaceInfo
     public int Value { get; set; }
     public int SubValue { get; set; }
 
-    public bool EditProperty(string propertyName, string value, out string error) =>
+    public bool EditProperty(IParameterManager parameterManager, string propertyName, string value, out string error) =>
         throw new System.NotImplementedException();
 
     public void RemoveAllEdits() => throw new System.NotImplementedException();

@@ -49,10 +49,10 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
                    $"        if ({OverrideFieldName} != null)\n" +
                    $"            return new ReadOnlyListContainer<ParameterReference<{_genericType.Name}>>(\n" +
                    $"                () => {OverrideFieldName}.Length,\n" +
-                   $"                i => new ParameterReference<{_genericType.Name}>({OverrideFieldName}[i], true));\n" +
+                   $"                i => new ParameterReference<{_genericType.Name}>(_parameterManager, {OverrideFieldName}[i], true));\n" +
                    $"        return new ReadOnlyListContainer<ParameterReference<{_genericType.Name}>>(\n" +
                    $"            () => _fb.{FlatBufferStructPropertyName}Length,\n" +
-                   $"                i => new ParameterReference<{_genericType.Name}>(_fb.{FlatBufferStructPropertyName}(i)));\n" +
+                   $"                i => new ParameterReference<{_genericType.Name}>(_parameterManager, _fb.{FlatBufferStructPropertyName}(i)));\n" +
                    $"    }}\n" +
                    $"}}";
         }
@@ -60,7 +60,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         public override string CSVBridgeColumnTypeText => $"{_genericType.Name}[]";
 
         public override string CSVBridgeReadFromCSVCode(string variableName) =>
-            $"data.{FieldName} = {nameof(CSVValueConverter)}.ParameterReferenceArray.FromString<{_genericType.Name}>({variableName});";
+            $"data.{FieldName} = {nameof(CSVValueConverter)}.ParameterReferenceArray.FromString<{_genericType.Name}>(parameterManager, {variableName});";
 
         public override string CSVBridgeUpdateCSVRowCode(string variableName) =>
             $"{variableName} = {nameof(CSVValueConverter)}.ParameterReferenceArray.ToString<{_genericType.Name}>(data.{FieldName});";

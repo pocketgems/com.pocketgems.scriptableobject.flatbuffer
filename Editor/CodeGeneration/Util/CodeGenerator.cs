@@ -251,6 +251,7 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
                 { "interfaceName", parameterInterface.InterfaceName },
                 { "flatBufferStructName", parameterInterface.FlatBufferStructName(false) },
                 { "propertyTypeDicts", propertyTypeDicts },
+                { "parameterManagerType", nameof(IParameterManager) },
             };
             var fileName = parameterInterface.FlatBufferClassName(true);
             var filePath = Path.Combine(outputDirectory, fileName);

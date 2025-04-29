@@ -32,7 +32,6 @@ namespace PocketGems.Parameters
             _parameterManagerMock = Substitute.For<IMutableParameterManager>();
             _parameterManagerMock.GetStructWithGuid<IBaseStruct>(default).ReturnsNullForAnyArgs();
             _parameterManagerMock.GetStructWithGuid<IBaseStruct>(kTestGuid).Returns(_mockStruct);
-            Params.SetInstance(_parameterManagerMock);
         }
 
         [TearDown]
@@ -45,7 +44,7 @@ namespace PocketGems.Parameters
         [Test]
         public void GetStruct()
         {
-            var reference = new ParameterStructReferenceRuntime<IBaseStruct>(kTestGuid);
+            var reference = new ParameterStructReferenceRuntime<IBaseStruct>(_parameterManagerMock, kTestGuid);
             Assert.AreEqual(_mockStruct, reference.Struct);
         }
 
@@ -54,28 +53,18 @@ namespace PocketGems.Parameters
         [TestCase(null)]
         public void MissingGuid(string guid)
         {
-            var reference = new ParameterStructReferenceRuntime<IBaseStruct>(null);
+            var reference = new ParameterStructReferenceRuntime<IBaseStruct>(_parameterManagerMock, null);
             Assert.IsNull(reference.Struct);
         }
 
         [Test]
         public void NonExistentParameterManager()
         {
-            Params.SetInstance(null);
+            const string errorString = "Must provide IParameterManager when constructing ParameterStructReference.";
 
-            const string errorString = "Fetching Struct before ParamsSetup.Setup() has been called.";
-
-            var reference = new ParameterStructReferenceRuntime<IBaseStruct>(kTestGuid);
             LogAssert.Expect(LogType.Error, errorString);
+            var reference = new ParameterStructReferenceRuntime<IBaseStruct>(null, kTestGuid);
             Assert.IsNull(reference.Struct);
-            LogAssert.Expect(LogType.Error, errorString);
-            Assert.IsNotEmpty(reference.ToString());
-
-            reference = new ParameterStructReferenceRuntime<IBaseStruct>(null);
-            Assert.IsNotEmpty(reference.ToString());
-
-            reference = new ParameterStructReferenceRuntime<IBaseStruct>("asdf");
-            LogAssert.Expect(LogType.Error, errorString);
             Assert.IsNotEmpty(reference.ToString());
         }
 

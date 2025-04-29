@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using PocketGems.Parameters;
 using PocketGems.Parameters.Common.DataTypes.Editor;
 using PocketGems.Parameters.DataGeneration.LocalCSV.Editor;
 using PocketGems.Parameters.DataGeneration.Util.Editor;
@@ -57,6 +58,9 @@ namespace {{namespace}}
         {
             if (_scriptableObjectMetadatas == null)
                 return;
+            // parameter manager is used for the Info/Struct references but doesn't need to be
+            // assigned since we're only reading for serialization, not runtime
+            IParameterManager parameterManager = null;
             var keyPathBuilder = new StructKeyPathBuilder();
             var csvFile = _infoCSVFileCache.Load<{{interface.InterfaceName}}>();
             _currentCSVFile = csvFile;

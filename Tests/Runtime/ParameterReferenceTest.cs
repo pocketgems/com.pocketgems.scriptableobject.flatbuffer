@@ -1,9 +1,11 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
 using NSubstitute;
 using NSubstitute.ReturnsExtensions;
 using NUnit.Framework;
 using PocketGems.Parameters.Interface;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 
@@ -27,7 +29,6 @@ namespace PocketGems.Parameters
             _parameterManagerMock.GetWithGUID<IBaseInfo>(kTestGuid).Returns(_mockInfo);
             _parameterManagerMock.Get<IBaseInfo>(default).ReturnsNullForAnyArgs();
             _parameterManagerMock.Get<IBaseInfo>(kTestIdentifier).Returns(_mockInfo);
-            Params.SetInstance(_parameterManagerMock);
         }
 
         [TearDown]
@@ -40,17 +41,17 @@ namespace PocketGems.Parameters
         [Test]
         public void Init()
         {
-            var parameterReference = new ParameterReference<IBaseInfo>();
+            var parameterReference = new ParameterReference<IBaseInfo>(_parameterManagerMock);
             Assert.That(parameterReference.AssignedGUID, Is.Null);
             Assert.That(parameterReference.AssignedIdentifier, Is.Null);
             Assert.That(parameterReference.ToString(), Is.Not.Empty);
 
-            parameterReference = new ParameterReference<IBaseInfo>(kTestGuid);
+            parameterReference = new ParameterReference<IBaseInfo>(_parameterManagerMock, kTestGuid);
             Assert.That(parameterReference.AssignedGUID, Is.EqualTo(kTestGuid));
             Assert.That(parameterReference.AssignedIdentifier, Is.Null);
             Assert.That(parameterReference.ToString(), Is.Not.Empty);
 
-            parameterReference = new ParameterReference<IBaseInfo>(kTestIdentifier, true);
+            parameterReference = new ParameterReference<IBaseInfo>(_parameterManagerMock, kTestIdentifier, true);
             Assert.That(parameterReference.AssignedGUID, Is.Null);
             Assert.That(parameterReference.AssignedIdentifier, Is.EqualTo(kTestIdentifier));
             Assert.That(parameterReference.ToString(), Is.Not.Empty);
@@ -59,35 +60,35 @@ namespace PocketGems.Parameters
         [Test]
         public void GetByGuid()
         {
-            var parameterReference = new ParameterReference<IBaseInfo>(kTestGuid);
+            var parameterReference = new ParameterReference<IBaseInfo>(_parameterManagerMock, kTestGuid);
             Assert.That(parameterReference.Info, Is.EqualTo(_mockInfo));
         }
 
         [Test]
         public void GetByIdentifier()
         {
-            var parameterReference = new ParameterReference<IBaseInfo>(kTestIdentifier, true);
+            var parameterReference = new ParameterReference<IBaseInfo>(_parameterManagerMock, kTestIdentifier, true);
             Assert.That(parameterReference.Info, Is.EqualTo(_mockInfo));
         }
 
         [Test]
         public void GetNothing()
         {
-            var parameterReference = new ParameterReference<IBaseInfo>();
+            var parameterReference = new ParameterReference<IBaseInfo>(_parameterManagerMock);
             Assert.That(parameterReference.Info, Is.Null);
         }
 
         [Test]
         public void MissingGuidInParameterManager()
         {
-            var parameterReference = new ParameterReference<IBaseInfo>("bad guid");
+            var parameterReference = new ParameterReference<IBaseInfo>(_parameterManagerMock, "bad guid");
             Assert.That(parameterReference.Info, Is.Null);
         }
 
         [Test]
         public void MissingIdentifierInParameterManager()
         {
-            var parameterReference = new ParameterReference<IBaseInfo>("bad id", true);
+            var parameterReference = new ParameterReference<IBaseInfo>(_parameterManagerMock, "bad id", true);
             LogAssert.Expect(LogType.Error, new Regex("Cannot find.*"));
             Assert.That(parameterReference.Info, Is.Null);
         }
@@ -95,20 +96,16 @@ namespace PocketGems.Parameters
         [Test]
         public void NonExistentParameterManager()
         {
-            Params.SetInstance(null);
+            const string errorString = "No _parameterManager set in ParameterReference<IBaseInfo>";
 
-            const string errorString = "Fetching Info before ParamsSetup.Setup() has been called.";
-
-            var parameterReference = new ParameterReference<IBaseInfo>(kTestGuid);
+            var parameterReference = new ParameterReference<IBaseInfo>(null, kTestGuid);
             LogAssert.Expect(LogType.Error, errorString);
             Assert.That(parameterReference.Info, Is.Null);
-            LogAssert.Expect(LogType.Error, errorString);
             Assert.That(parameterReference.ToString(), Is.Not.Empty);
 
-            parameterReference = new ParameterReference<IBaseInfo>(kTestIdentifier, true);
+            parameterReference = new ParameterReference<IBaseInfo>(null, kTestIdentifier, true);
             LogAssert.Expect(LogType.Error, errorString);
             Assert.That(parameterReference.Info, Is.Null);
-            LogAssert.Expect(LogType.Error, errorString);
             Assert.That(parameterReference.ToString(), Is.Not.Empty);
         }
 
@@ -121,7 +118,7 @@ namespace PocketGems.Parameters
                 mockInfo.Identifier.Returns(identifier);
                 _parameterManagerMock.GetWithGUID<IBaseInfo>(guid).Returns(mockInfo);
                 _parameterManagerMock.Get<IBaseInfo>(identifier).Returns(mockInfo);
-                var reference = new ParameterReference<IBaseInfo>(refIsIdentifier ? identifier : guid, refIsIdentifier);
+                var reference = new ParameterReference<IBaseInfo>(_parameterManagerMock, refIsIdentifier ? identifier : guid, refIsIdentifier);
                 Assert.AreEqual(identifier, reference.Info.Identifier);
                 if (refIsIdentifier)
                 {
@@ -136,7 +133,7 @@ namespace PocketGems.Parameters
                 return reference;
             }
 
-            var refNull = new ParameterReference<IBaseInfo>();
+            var refNull = new ParameterReference<IBaseInfo>(_parameterManagerMock);
             var refA = CreateReference("def", "A", true);
             var refB = CreateReference("abc", "B", false);
             var refC = CreateReference("aaa", "C", true);
@@ -166,7 +163,7 @@ namespace PocketGems.Parameters
             }
 
             // two nulls are equal
-            Assert.That(refNull.CompareTo(new ParameterReference<IBaseInfo>()), Is.Zero);
+            Assert.That(refNull.CompareTo(new ParameterReference<IBaseInfo>(_parameterManagerMock)), Is.Zero);
         }
 
         [Test]
@@ -180,11 +177,29 @@ namespace PocketGems.Parameters
         [TestCase("blah", true, true, false)]
         public void InfoExists_HasAssignedValue(string value, bool isIdentifier, bool expectedHasAssignedValue, bool expectedInfoExists)
         {
-            var parameterReference = new ParameterReference<IBaseInfo>(value, isIdentifier);
+            var parameterReference = new ParameterReference<IBaseInfo>(_parameterManagerMock, value, isIdentifier);
             Assert.That(parameterReference.HasAssignedValue, Is.EqualTo(expectedHasAssignedValue));
             if (isIdentifier && expectedHasAssignedValue && !expectedInfoExists)
                 LogAssert.Expect(LogType.Error, new Regex("Cannot find info of type .*"));
             Assert.That(parameterReference.InfoExists, Is.EqualTo(expectedInfoExists));
+        }
+
+        [Test]
+        public void Deserialization()
+        {
+            var parameterReference = new ParameterReference<IBaseInfo>(_parameterManagerMock, kTestGuid);
+            string json = JsonUtility.ToJson(parameterReference);
+            var deserialized = JsonUtility.FromJson<ParameterReference<IBaseInfo>>(json);
+
+            // unable to get info
+            LogAssert.Expect(LogType.Error, "Fetching Info before ParamsSetup.Setup() has been called.");
+            Assert.That(deserialized.Info, Is.Null);
+
+            // deserialized references uses the global Params since this only happens when the Unity game is running.
+            Params.SetInstance(_parameterManagerMock);
+
+            // able to get info
+            Assert.That(deserialized.Info, Is.EqualTo(_mockInfo));
         }
     }
 }
