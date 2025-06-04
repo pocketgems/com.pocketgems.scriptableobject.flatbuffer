@@ -14,8 +14,13 @@ namespace PocketGems.Parameters.Processors.Editor
     /// Regenerate all parameters into a single flat buffer prior to starting build.
     /// </summary>
     [ExcludeFromCoverage]
-    internal class ParameterBuildProcessor : IPreprocessBuildWithReport
+    public class ParameterBuildProcessor : IPreprocessBuildWithReport
     {
+        /// <summary>
+        /// Called before parameter building occurs for any parameters modifiations/baking needed.
+        /// </summary>
+        public static event Action OnPreBuild;
+
         public int callbackOrder => 0;
 
         /// <summary>
@@ -30,9 +35,24 @@ namespace PocketGems.Parameters.Processors.Editor
 
         internal static bool BuildAndValidateParameters()
         {
-            ParameterDebug.Log($"{typeof(ParameterBuildProcessor)} generating parameters.");
+            try
+            {
+                if (OnPreBuild != null)
+                {
+                    Console.WriteLine($"{typeof(ParameterBuildProcessor)} calling prebuild event start.");
+                    OnPreBuild.Invoke();
+                    Console.WriteLine($"{typeof(ParameterBuildProcessor)} calling prebuild event finished.");
+                }
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e.Message);
+                return false;
+            }
+
+            Console.WriteLine($"{typeof(ParameterBuildProcessor)} generating parameters.");
             var success = EditorParameterDataManager.GenerateData(GenerateDataType.All, out var failedOperation);
-            ParameterDebug.Log($"{typeof(ParameterBuildProcessor)} finished generating parameters.");
+            Console.WriteLine($"{typeof(ParameterBuildProcessor)} finished generating parameters.");
 
             // in batch mode, write out to console for readability in console logs
             if (Application.isBatchMode && !success)
