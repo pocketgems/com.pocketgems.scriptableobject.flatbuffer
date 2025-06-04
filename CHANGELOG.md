@@ -4,6 +4,14 @@ All package updates & migration steps will be listed in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.6.0] - 2025-07-24
+### Added
+- Support to add pre-build events to the `ParameterBuildProcessor`
+- Validation warning if the sum of info validators is too lon
+- Support for selecting and copying of validation error messages in the window.
+### Changed
+- Optimize the validation performance for checking addressables existance.
+
 ## [4.5.1] - 2025-04-29
 ### Fixes
 - Fix support for multiple parameter managers initalized at once.
