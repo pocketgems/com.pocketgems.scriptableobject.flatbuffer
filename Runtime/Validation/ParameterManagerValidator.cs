@@ -96,6 +96,7 @@ namespace PocketGems.Parameters.Validation
 
         // constants
         private const int SlowExecutingValidatorInfoMillis = 10;
+        private const int SlowExecutingValidatorInfoTotalMillis = 100;
         private const int SlowExecutingValidatorMillis = 100;
 
         // built in attributes
@@ -157,7 +158,7 @@ namespace PocketGems.Parameters.Validation
                     {
                         var error = new ValidationError(typeof(T), null, null,
                             $"{dataValidator.GetType().Name}.{nameof(dataValidator.ValidateParameters)} took {stopwatch.ElapsedMilliseconds}ms to run validation.",
-                            severity:ValidationError.Severity.Warning);
+                            severity: ValidationError.Severity.Warning);
                         _errors.Add(error);
                     }
                 }
@@ -169,6 +170,8 @@ namespace PocketGems.Parameters.Validation
                     _verifiedInfosMap[dataValidator] = verifiedInfos;
                 }
 
+                stopwatch.Restart();
+                Stopwatch individualInfoStopwatch = new();
                 for (int j = 0; j < infos.Count; j++)
                 {
                     var info = infos[j];
@@ -178,7 +181,7 @@ namespace PocketGems.Parameters.Validation
                     verifiedInfos.Add(info);
                     try
                     {
-                        stopwatch.Restart();
+                        individualInfoStopwatch.Restart();
                         dataValidator.ValidateInfo(_parameterManager, info);
                     }
                     catch (Exception e)
@@ -189,13 +192,22 @@ namespace PocketGems.Parameters.Validation
                         Debug.LogError(e);
                     }
 
-                    stopwatch.Stop();
-                    if (stopwatch.ElapsedMilliseconds >= SlowExecutingValidatorInfoMillis)
+                    individualInfoStopwatch.Stop();
+                    if (individualInfoStopwatch.ElapsedMilliseconds >= SlowExecutingValidatorInfoMillis)
                     {
-                        var error = new ValidationError(typeof(T), info.Identifier, null, $"Took {stopwatch.ElapsedMilliseconds}ms to run info validation.",
+                        var error = new ValidationError(typeof(T), info.Identifier, null, $"Took {individualInfoStopwatch.ElapsedMilliseconds}ms to run info validation.",
                             severity: ValidationError.Severity.Warning);
                         _errors.Add(error);
                     }
+                }
+
+                stopwatch.Stop();
+                if (stopwatch.ElapsedMilliseconds >= SlowExecutingValidatorInfoTotalMillis)
+                {
+                    var error = new ValidationError(typeof(T), null, null,
+                        $"Took {stopwatch.ElapsedMilliseconds}ms to run all {nameof(IDataValidator.ValidateInfo)} methods.",
+                        severity: ValidationError.Severity.Warning);
+                    _errors.Add(error);
                 }
             }
         }
