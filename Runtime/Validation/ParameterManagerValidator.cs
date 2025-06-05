@@ -6,6 +6,9 @@ using System.Linq;
 using System.Reflection;
 using PocketGems.Parameters.Interface;
 using PocketGems.Parameters.Validation.Attributes;
+#if ADDRESSABLE_PARAMS && UNITY_EDITOR
+using UnityEditor.AddressableAssets;
+#endif
 using Debug = UnityEngine.Debug;
 
 namespace PocketGems.Parameters.Validation
@@ -46,9 +49,23 @@ namespace PocketGems.Parameters.Validation
             _parameterManager = parameterManager;
             _errors = new List<ValidationError>();
 
-            // auto added attributes - add any others here
+            var addressablesGuidHashSet = new HashSet<string>();
+#if ADDRESSABLE_PARAMS && UNITY_EDITOR
+            // caching addressable entries so lookup is faster
+            var settings = AddressableAssetSettingsDefaultObject.Settings;
+            foreach (var group in settings.groups)
+            {
+                if (group == null) continue;
+                foreach (var entry in group.entries)
+                {
+                    if (!string.IsNullOrEmpty(entry.guid))
+                        addressablesGuidHashSet.Add(entry.guid);
+                }
+            }
+#endif
+
             _builtInAttributesCreators =
-                new Func<IValidationAttribute>[] { () => new AssertAssignedReferenceExistsAttribute() };
+                new Func<IValidationAttribute>[] { () => new AssertAssignedReferenceExistsAttribute(addressablesGuidHashSet) };
             _builtInAttributesInstancePool = new IValidationAttribute[_builtInAttributesCreators.Length];
             for (int i = 0; i < _builtInAttributesCreators.Length; i++)
                 _builtInAttributesInstancePool[i] = _builtInAttributesCreators[i].Invoke();

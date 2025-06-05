@@ -411,7 +411,8 @@ namespace PocketGems.Parameters.Validation.Attributes
         [Test]
         public void AssertAssignedReferenceExists()
         {
-            var attribute = new AssertAssignedReferenceExistsAttribute();
+            var addressablesGuidHashSet = new HashSet<string>();
+            var attribute = new AssertAssignedReferenceExistsAttribute(addressablesGuidHashSet);
 
             // can validate
             AssertCanValidate(attribute, nameof(ParameterReference), true);
@@ -500,6 +501,16 @@ namespace PocketGems.Parameters.Validation.Attributes
             AssertAttribute(attribute, nameof(AssetReferenceArray), AssetReferenceArray, false);
             AssertAttribute(attribute, nameof(AssetReferenceSprite), AssetReferenceSprite, false);
             AssertAttribute(attribute, nameof(AssetReferenceSpriteArray), AssetReferenceSpriteArray, false);
+
+            addressablesGuidHashSet.Add(validGuid);
+            AssetReference = new AssetReference(validGuid);
+            AssetReferenceArray = new[] { new AssetReference(validGuid) };
+            AssetReferenceSprite = new AssetReferenceSprite(validGuid);
+            AssetReferenceSpriteArray = new[] { new AssetReferenceSprite(validGuid) };
+            AssertAttribute(attribute, nameof(AssetReference), AssetReference, true);
+            AssertAttribute(attribute, nameof(AssetReferenceArray), AssetReferenceArray, true);
+            AssertAttribute(attribute, nameof(AssetReferenceSprite), AssetReferenceSprite, true);
+            AssertAttribute(attribute, nameof(AssetReferenceSpriteArray), AssetReferenceSpriteArray, true);
 #endif
         }
 

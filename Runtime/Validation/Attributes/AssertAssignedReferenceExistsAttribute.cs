@@ -1,12 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using PocketGems.Parameters.Interface;
-using UnityEngine;
 #if ADDRESSABLE_PARAMS
 using UnityEngine.AddressableAssets;
-#if UNITY_EDITOR
-using UnityEditor.AddressableAssets;
-#endif
 #endif
 
 namespace PocketGems.Parameters.Validation.Attributes
@@ -17,8 +14,14 @@ namespace PocketGems.Parameters.Validation.Attributes
         private bool _isAssetReference;
 #endif
         private MethodInfo _paramRefGetInfoMethod;
+        private HashSet<string> _addressablesGuidHashSet;
 
         protected override bool CompatibleWithReadOnlyLists => true;
+
+        internal AssertAssignedReferenceExistsAttribute(HashSet<string> addressablesGuidHashSet)
+        {
+            _addressablesGuidHashSet = addressablesGuidHashSet;
+        }
 
         protected override bool CheckType(Type type)
         {
@@ -66,8 +69,7 @@ namespace PocketGems.Parameters.Validation.Attributes
             if (string.IsNullOrEmpty(assetReference.AssetGUID))
                 return null;
 
-            var settings = AddressableAssetSettingsDefaultObject.Settings;
-            bool foundEntry = settings.FindAssetEntry(assetReference.AssetGUID) != null;
+            bool foundEntry = _addressablesGuidHashSet.Contains(assetReference.AssetGUID);
             return foundEntry ? null : $"cannot find addressable with guid {assetReference.AssetGUID}";
 #else
             return null;
