@@ -158,7 +158,7 @@ namespace PocketGems.Parameters.Editor.Validation.Editor
                         }
                         if (column == Columns.ErrorMessage)
                             value = item.data.ValidationError?.Message;
-                        DefaultGUI.Label(cellRect, value, args.selected, args.focused);
+                        EditorGUI.SelectableLabel(cellRect, value, EditorStyles.label);
                     }
                     break;
             }
