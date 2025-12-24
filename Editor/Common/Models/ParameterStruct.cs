@@ -78,7 +78,9 @@ namespace PocketGems.Parameters.Common.Models.Editor
                     {
                         var propertyInfo = propertyInfos[j];
 
-                        var structType = AttemptToGetStructReference(propertyInfo);
+                        // C# allows circular references in structs if a list is used (not direct field)
+                        const bool includeLists = false;
+                        var structType = AttemptToGetStructReference(propertyInfo, includeLists);
                         if (structType == null)
                             continue;
                         errorString = CheckStructCircularReferences(structType, path);
@@ -94,11 +96,11 @@ namespace PocketGems.Parameters.Common.Models.Editor
             return errorString;
         }
 
-        private Type AttemptToGetStructReference(PropertyInfo propertyInfo)
+        private Type AttemptToGetStructReference(PropertyInfo propertyInfo, bool includeLists)
         {
             if (ParameterStructReferencePropertyType.IsReferenceType(propertyInfo, out Type genericType))
                 return genericType;
-            if (ParameterStructReferenceListPropertyType.IsListReferenceType(propertyInfo, out genericType))
+            if (includeLists && ParameterStructReferenceListPropertyType.IsListReferenceType(propertyInfo, out genericType))
                 return genericType;
             return null;
         }

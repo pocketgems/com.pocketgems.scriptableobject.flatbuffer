@@ -123,55 +123,49 @@ public interface ICircularBStruct : IBaseStruct
     ParameterStructReference<ICircularAStruct> Circular { get; }
 }
 
-// circular reference in list
-public interface ICircularCStruct : IBaseStruct
-{
-    IReadOnlyList<ParameterStructReference<ICircularAStruct>> Circular { get; }
-}
-
 // circular reference in super class references
-public interface ICircularDStruct : ICircularBStruct
+public interface ICircularCStruct : ICircularBStruct
 {
-}
-
-// circular reference between list
-public interface ICircularEStruct : IBaseStruct
-{
-    IReadOnlyList<ParameterStructReference<ICircularFStruct>> Circular { get; }
-}
-
-// circular reference between list
-public interface ICircularFStruct : IBaseStruct
-{
-    IReadOnlyList<ParameterStructReference<ICircularEStruct>> Circular { get; }
 }
 
 // circular reference between self (direct reference)
-public interface ICircularGStruct : IBaseStruct
+public interface ICircularDStruct : IBaseStruct
+{
+    ParameterStructReference<ICircularDStruct> Circular { get; }
+}
+
+// deeper circular reference
+public interface ICircularEStruct : IBaseStruct
+{
+    ParameterStructReference<ICircularFStruct> Circular { get; }
+}
+
+// deeper circular reference
+public interface ICircularFStruct : IBaseStruct
 {
     ParameterStructReference<ICircularGStruct> Circular { get; }
 }
 
-// circular reference between self (list reference)
-public interface ICircularHStruct : IBaseStruct
+// deeper circular reference
+public interface ICircularGStruct : IBaseStruct
 {
-    IReadOnlyList<ParameterStructReference<ICircularHStruct>> Circular { get; }
+    ParameterStructReference<ICircularEStruct> Circular { get; }
 }
 
-// deeper circular reference
+// circular reference between list
 public interface ICircularIStruct : IBaseStruct
 {
-    ParameterStructReference<ICircularJStruct> Circular { get; }
+    IReadOnlyList<ParameterStructReference<ICircularJStruct>> Circular { get; }
 }
 
-// deeper circular reference
+// circular reference between list
 public interface ICircularJStruct : IBaseStruct
 {
-    IReadOnlyList<ParameterStructReference<ICircularKStruct>> Circular { get; }
+    IReadOnlyList<ParameterStructReference<ICircularIStruct>> Circular { get; }
 }
 
-// deeper circular reference
+// circular reference between self (list reference)
 public interface ICircularKStruct : IBaseStruct
 {
-    ParameterStructReference<ICircularIStruct> Circular { get; }
+    IReadOnlyList<ParameterStructReference<ICircularKStruct>> Circular { get; }
 }

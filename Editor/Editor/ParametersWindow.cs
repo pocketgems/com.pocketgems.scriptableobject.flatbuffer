@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using PocketGems.Parameters.CodeGeneration.Operation.Editor;
 using PocketGems.Parameters.Common.Editor;
@@ -8,6 +9,7 @@ using PocketGems.Parameters.Editor.Validation.Editor;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
+using Object = UnityEngine.Object;
 
 namespace PocketGems.Parameters.Editor.Editor
 {
@@ -29,7 +31,16 @@ namespace PocketGems.Parameters.Editor.Editor
         [MenuItem(MenuItemConstants.RegenerateCodePath, false, MenuItemConstants.RegenerateCodePriority)]
         public static void GenerateCode()
         {
-            EditorParameterDataManager.GenerateCodeFiles(GenerateCodeType.Generate, GenerateDataType.All);
+            bool isUsingExternalCodeGeneration = Directory.Exists(EditorParameterConstants.CodeGeneration.ExternalProjectDir);
+            if (isUsingExternalCodeGeneration)
+            {
+                EditorUtility.DisplayDialog("Code Generation", "Please use the external code generation project that will open in your IDE.", "Okay");
+                Application.OpenURL(new Uri(Path.GetFullPath(EditorParameterConstants.CodeGeneration.ExternalProjectSolutionPath)).AbsoluteUri);
+            }
+            else
+            {
+                EditorParameterDataManager.GenerateCodeFiles(GenerateCodeType.Generate, GenerateDataType.All);
+            }
         }
 
         [MenuItem(MenuItemConstants.ConfigPanelPath, false, MenuItemConstants.ConfigPanelPriority)]
