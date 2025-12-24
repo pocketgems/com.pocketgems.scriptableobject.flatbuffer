@@ -85,17 +85,38 @@ namespace PocketGems.Parameters.Editor.Editor
             EditorGUILayout.Space();
         }
 
+        #region hack for backwards compatibility
+
+        private static string warningMessageHolder = null;
+
+        [Obsolete]
+        private void InternalDrawProperty(SerializedProperty property, string errorMessage = null, string warningMessage = null)
+        {
+            warningMessageHolder = warningMessage;
+            DrawProperty(property, errorMessage);
+        }
+
+        [Obsolete]
+        protected virtual void DrawProperty(SerializedProperty property, string errorMessage = null)
+        {
+            DrawProperty(property, errorMessage, warningMessageHolder);
+        }
+
+        #endregion
+
         /// <summary>
         /// Allow for subclasses to draw custom visualizers for the property
         /// </summary>
         /// <param name="property">property to render</param>
         /// <param name="errorMessage">error message to show if any</param>
-        protected virtual void DrawProperty(SerializedProperty property, string errorMessage = null)
+        protected virtual void DrawProperty(SerializedProperty property, string errorMessage = null, string warningMessage = null)
         {
             var propLabel = new GUIContent(property.displayName);
             EditorGUILayout.PropertyField(property, propLabel, true);
             if (errorMessage != null)
                 EditorGUILayout.HelpBox(errorMessage, MessageType.Error);
+            if (warningMessage != null)
+                EditorGUILayout.HelpBox(warningMessage, MessageType.Warning);
         }
 
         public override void OnInspectorGUI()
@@ -147,8 +168,8 @@ namespace PocketGems.Parameters.Editor.Editor
                 errors.Add(error);
             }
 
-            // collect properties & errors
-            List<(SerializedProperty, string)> properties = new();
+            // collect properties, errors & warnings
+            List<(SerializedProperty, string, string)> properties = new();
             // call to ensure the values are up to date with the target in case it was modified in another inspector/drawer
             serializedObject.Update();
             var serializedProp = serializedObject.GetIterator();
@@ -159,17 +180,28 @@ namespace PocketGems.Parameters.Editor.Editor
                 // don't draw class file
                 if (serializedProp.name == "m_Script") continue;
                 var interfacePropertyGetterName = GetPropertyGetterName(serializedProp);
-                string errorMessage = null;
+                StringBuilder errorMessage = null;
+                StringBuilder warningMessage = null;
                 if (_propertyToError.ContainsKey(interfacePropertyGetterName))
                 {
-                    StringBuilder s = new StringBuilder();
-                    s.Append($"{interfacePropertyGetterName} Validation Error(s):");
                     var propertyErrors = _propertyToError[interfacePropertyGetterName];
                     _propertyToError.Remove(interfacePropertyGetterName);
                     for (int i = 0; i < propertyErrors.Count; i++)
                     {
+                        StringBuilder s;
                         var error = propertyErrors[i];
-                        s.AppendLine();
+                        if (error.ErrorSeverity == ValidationError.Severity.Error)
+                        {
+                            errorMessage ??= new();
+                            s = errorMessage;
+                        }
+                        else
+                        {
+                            warningMessage ??= new();
+                            s = warningMessage;
+                        }
+                        if (s.Length != 0)
+                            s.AppendLine();
                         s.Append("  ");
                         if (!string.IsNullOrEmpty(error.StructKeyPath))
                         {
@@ -190,21 +222,32 @@ namespace PocketGems.Parameters.Editor.Editor
                         }
                         s.Append($"{error.Message}");
                     }
-
-                    errorMessage = s.ToString();
                 }
-                properties.Add((serializedProp.Copy(), errorMessage));
+                properties.Add((serializedProp.Copy(), errorMessage?.ToString(), warningMessage?.ToString()));
             }
 
             // display missing maps (shouldn't ever happen but just in case...)
             if (_propertyToError.Count != 0)
             {
-                StringBuilder s = new StringBuilder("Unexpected Errors:");
+                StringBuilder errorMessage = null;
+                StringBuilder warningMessage = null;
                 foreach (var kvp in _propertyToError)
                 {
                     var errors = kvp.Value;
                     for (int i = 0; i < errors.Count; i++)
                     {
+                        StringBuilder s;
+                        var error = errors[i];
+                        if (error.ErrorSeverity == ValidationError.Severity.Error)
+                        {
+                            errorMessage ??= new("Unexpected Error(s):");
+                            s = errorMessage;
+                        }
+                        else
+                        {
+                            warningMessage ??= new("Unexpected Warning(s):");
+                            s = warningMessage;
+                        }
                         s.AppendLine();
                         if (!string.IsNullOrEmpty(errors[i].InfoProperty))
                             s.Append($"{errors[i].InfoProperty}: ");
@@ -212,7 +255,10 @@ namespace PocketGems.Parameters.Editor.Editor
                     }
                 }
                 EditorGUILayout.Space();
-                EditorGUILayout.HelpBox(s.ToString(), MessageType.Error);
+                if (errorMessage != null)
+                    EditorGUILayout.HelpBox(errorMessage.ToString(), MessageType.Error);
+                if (warningMessage != null)
+                    EditorGUILayout.HelpBox(warningMessage.ToString(), MessageType.Warning);
                 EditorGUILayout.Space();
             }
 
@@ -227,6 +273,7 @@ namespace PocketGems.Parameters.Editor.Editor
             {
                 serializedProp = properties[i].Item1;
                 var errorMessage = properties[i].Item2;
+                var warningMessage = properties[i].Item3;
 
                 // don't draw class file
                 if (serializedProp.name == "m_Script") continue;
@@ -255,7 +302,7 @@ namespace PocketGems.Parameters.Editor.Editor
 
                 // draw property
                 if (foldOutAttribute == null || isFoldoutOpen)
-                    DrawProperty(serializedProp, errorMessage);
+                    InternalDrawProperty(serializedProp, errorMessage, warningMessage);
             }
             scope?.Dispose();
 

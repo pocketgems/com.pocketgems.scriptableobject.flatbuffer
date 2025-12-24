@@ -3,6 +3,7 @@ using PocketGems.Parameters.Common.Editor;
 using PocketGems.Parameters.Common.Models.Editor;
 using PocketGems.Parameters.Common.Operation.Editor;
 using PocketGems.Parameters.DataGeneration.LocalCSV.Editor;
+using PocketGems.Parameters.Validation;
 
 namespace PocketGems.Parameters.DataGeneration.Operation.Editor
 {
@@ -14,6 +15,7 @@ namespace PocketGems.Parameters.DataGeneration.Operation.Editor
             InfoCSVFileCache = new InfoCSVFileCache(GeneratedLocalCSVDirectory, true);
             StructCSVFileCache = new StructCSVFileCache(GeneratedLocalCSVDirectory, true);
             ScriptableObjectMetadatas = new Dictionary<IParameterInfo, List<IScriptableObjectMetadata>>();
+            AllValidationErrors = new();
         }
 
         public GenerateDataType GenerateDataType { get; set; }
@@ -36,5 +38,7 @@ namespace PocketGems.Parameters.DataGeneration.Operation.Editor
 #endif
         public Dictionary<IParameterInfo, List<IScriptableObjectMetadata>> ScriptableObjectMetadatas { get; }
         public List<string> GeneratedFilePaths { get; }
+
+        public List<ValidationError> AllValidationErrors { get; }
     }
 }

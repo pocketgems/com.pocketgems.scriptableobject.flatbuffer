@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using PocketGems.Parameters.Editor.Validation.TreeDataModel.Editor;
+using PocketGems.Parameters.Validation;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
@@ -134,7 +135,12 @@ namespace PocketGems.Parameters.Editor.Validation.Editor
                 case Columns.Icon:
                     {
                         if (!string.IsNullOrEmpty(item.data.ValidationError?.Message))
-                            GUI.DrawTexture(cellRect, _errorIcon, ScaleMode.ScaleToFit);
+                        {
+                            var icon = _errorIcon;
+                            if (item.data.ValidationError.ErrorSeverity == ValidationError.Severity.Warning)
+                                icon = _warningIcon;
+                            GUI.DrawTexture(cellRect, icon, ScaleMode.ScaleToFit);
+                        }
                     }
                     break;
                 case Columns.PropertyName:

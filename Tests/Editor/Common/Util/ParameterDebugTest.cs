@@ -30,6 +30,13 @@ namespace PocketGems.Parameters.Common.Util.Editor
         }
 
         [Test]
+        public void LogWarning()
+        {
+            ParameterDebug.LogWarning(_logMessage);
+            LogAssert.Expect(LogType.Warning, _logMessage);
+        }
+
+        [Test]
         public void LogError()
         {
             ParameterDebug.LogError(_logMessage);
