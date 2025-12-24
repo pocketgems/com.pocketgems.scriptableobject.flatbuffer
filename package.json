@@ -1,6 +1,5 @@
 {
   "name": "com.pocketgems.scriptableobject.flatbuffer",
-  "version": "4.6.1",
   "displayName": "Scriptable Object - FlatBuffer",
   "description": "Seamless syncing between Scriptable Objects and CSVs.  Scriptable Object data built to Google FlatBuffers for optimal runtime loading & access.",
   "unity": "2021.3",
@@ -16,6 +15,7 @@
     "name": "Pocket Gems",
     "url": "https://www.pocketgems.com/"
   },
+  "version": "4.6.2",
   "codegen": "0.0.3",
   "dependencies": {
     "com.unity.nuget.newtonsoft-json": "2.0.2",
