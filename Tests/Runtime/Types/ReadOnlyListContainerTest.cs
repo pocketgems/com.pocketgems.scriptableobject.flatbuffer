@@ -42,6 +42,23 @@ namespace PocketGems.Parameters.Types
         }
 
         [Test]
+        public void ReadingOutOfBounds()
+        {
+            int length = 2;
+            var container = new ReadOnlyListContainer<int>(() => length, x => 0);
+
+            // trying to access outside of the length throws an exception
+            Assert.Throws<IndexOutOfRangeException>(() => {
+                _ = container[length];
+            });
+
+                        // trying to access outside of the length throws an exception
+            Assert.Throws<IndexOutOfRangeException>(() => {
+                _ = container[-1];
+            });
+        }
+
+        [Test]
         public void Enumerator()
         {
             int index = 0;

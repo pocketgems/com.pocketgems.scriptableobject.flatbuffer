@@ -16,7 +16,15 @@ namespace PocketGems.Parameters.Types
             _getterFunc = getterFunc;
         }
 
-        public T this[int index] => _getterFunc(index);
+        public T this[int index]
+        {
+            get
+            {
+                if (index < 0 || index >= Count)
+                    throw new IndexOutOfRangeException();
+                return _getterFunc(index);
+            }
+        }
 
         public int Count
         {
