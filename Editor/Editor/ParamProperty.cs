@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -48,6 +49,8 @@ namespace PocketGems.Parameters.Editor.Editor
             }
         }
 
+        public SerializedObject SerializedScriptableObject => _serializedScriptableObject;
+
         /// <summary>
         /// Current position if the property is part of a list or array.  Null otherwise.
         /// </summary>
@@ -59,6 +62,20 @@ namespace PocketGems.Parameters.Editor.Editor
         public readonly Type InterfaceType;
 
         private readonly SerializedProperty _guidProperty;
+
+        /*
+         * Unity recommended we cache our SerializedObject to avoid GUI glitches.
+         *
+         * Unity's response:
+         * Regarding the issue of Serializable fields becoming unselectable originates from your custom
+         * property drawer. Our investigation revealed that parts of IMGUI, including the ReorderableList,
+         * are stateful. This means they retain data about the SerializedObject and SerializedProperties.
+         * In your property drawer, you are generating a new SerializedObject each time and disposing of it
+         * immediately. This process invalidates the state, causing multiple drawings of the list and
+         * disrupting input states.
+         */
+        private readonly SerializedObject _serializedScriptableObject;
+        private static Dictionary<string, SerializedObject> s_serializedScriptableObjectByGuid = new ();
 
         public ParamProperty(FieldInfo fieldInfo, SerializedProperty property)
         {
@@ -86,13 +103,28 @@ namespace PocketGems.Parameters.Editor.Editor
 
             if (!string.IsNullOrWhiteSpace(GUID))
             {
-                if (ScriptableObject == null)
+                var scriptableObject = ScriptableObject;
+                if (scriptableObject == null)
                 {
                     Error = $"Missing asset {GUID}";
                 }
-                else if (!InterfaceType.IsInstanceOfType(ScriptableObject))
+                else if (!InterfaceType.IsInstanceOfType(scriptableObject))
                 {
                     Error = $"Asset no longer matches generic type {InterfaceType}";
+                }
+                else
+                {
+                    if (!s_serializedScriptableObjectByGuid.TryGetValue(GUID, out var serializedScriptableObject))
+                    {
+                        serializedScriptableObject = new SerializedObject(scriptableObject);
+                        s_serializedScriptableObjectByGuid[GUID] = serializedScriptableObject;
+                    }
+                    else
+                    {
+                        // call to ensure the values are up to date with the target in case it was modified in another inspector/drawer
+                        serializedScriptableObject.Update();
+                    }
+                    _serializedScriptableObject = serializedScriptableObject;
                 }
             }
         }

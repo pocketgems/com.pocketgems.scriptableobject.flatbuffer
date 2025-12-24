@@ -146,7 +146,7 @@ namespace PocketGems.Parameters.Editor.Editor
                 return 0;
 
             float height = 0;
-            var serializedObject = new SerializedObject(paramProperty.ScriptableObject);
+            var serializedObject = paramProperty.SerializedScriptableObject;
             var prop = serializedObject.GetIterator();
             bool children = true;
             while (prop.NextVisible(children))
@@ -160,7 +160,6 @@ namespace PocketGems.Parameters.Editor.Editor
                     height += EditorGUI.GetPropertyHeight(prop, new GUIContent(prop.displayName), true);
                 height += EditorGUIUtility.standardVerticalSpacing;
             }
-            serializedObject.Dispose();
             return height;
         }
 
@@ -206,7 +205,6 @@ namespace PocketGems.Parameters.Editor.Editor
                 objectFieldPosition.y, newButtonWidth, objectFieldPosition.height);
             objectFieldPosition.width -= newButtonWidth;
             EditorGUI.BeginChangeCheck();
-            bool objectChanged = false;
             newObject = null;
             // object field
             var scriptableObject = paramProperty.ScriptableObject;
@@ -214,10 +212,11 @@ namespace PocketGems.Parameters.Editor.Editor
             if (EditorGUI.EndChangeCheck())
             {
                 // this means the user interacted and set the value on the field
-                // this helps determine if the user deliberately an object or nulled the field.
-                objectChanged = true;
+                // this helps determine if the user deliberately set an object or nulled the field.
                 newObject = fieldObject as ParameterScriptableObject;
-                scriptableObject = newObject;
+
+                // return early so that the ParamProperty can be updated with the correct scriptable object
+                return true;
             }
 
             if (GUI.Button(buttonRect, "New"))
@@ -250,9 +249,10 @@ namespace PocketGems.Parameters.Editor.Editor
                 {
                     var createdObject = ScriptableObject.CreateInstance(parameterInterface.ScriptableObjectType());
                     AssetDatabase.CreateAsset(createdObject, savePath);
-                    objectChanged = true;
-                    scriptableObject = createdObject;
                     newObject = createdObject as ParameterScriptableObject;
+
+                    // return early so that the ParamProperty can be updated with the correct scriptable object
+                    return true;
                 }
             }
 
@@ -281,8 +281,7 @@ namespace PocketGems.Parameters.Editor.Editor
             }
             else if (canExpandDrawer && property.isExpanded)
             {
-                var serializedObject = new SerializedObject(scriptableObject);
-                var prop = serializedObject.GetIterator();
+                var prop = paramProperty.SerializedScriptableObject.GetIterator();
                 EditorGUI.indentLevel++;
                 bool children = true;
                 while (prop.NextVisible(children))
@@ -307,7 +306,7 @@ namespace PocketGems.Parameters.Editor.Editor
                     {
                         height = EditorGUI.GetPropertyHeight(prop, propLabel, true);
                         position.height = height;
-                        DrawExpandedField(serializedObject, position, prop, propLabel);
+                        DrawExpandedField(paramProperty.SerializedScriptableObject, position, prop, propLabel);
                     }
                     position.y += height + EditorGUIUtility.standardVerticalSpacing;
                 }
@@ -322,10 +321,9 @@ namespace PocketGems.Parameters.Editor.Editor
                  */
                 if (GUI.changed)
                 {
-                    serializedObject.ApplyModifiedProperties();
+                    paramProperty.SerializedScriptableObject.ApplyModifiedProperties();
                     InspectorAutoSave.DispatchDelayedSave();
                 }
-                serializedObject.Dispose();
             }
 
             if (paramProperty.ElementPosition.HasValue)
@@ -336,7 +334,7 @@ namespace PocketGems.Parameters.Editor.Editor
                 s_firstTargetObject = null;
             }
 
-            return objectChanged;
+            return false;
         }
 
         /// <summary>

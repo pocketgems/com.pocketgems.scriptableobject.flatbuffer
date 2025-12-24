@@ -66,10 +66,10 @@ namespace PocketGems.Parameters.Editor.Editor
 
             if (s_target != null)
             {
-                if (s_dirtyStopWatch.IsRunning && s_dirtyStopWatch.ElapsedMilliseconds < SaveDelayMillis)
-                    return;
-
-                SaveAsset();
+                if (s_dirtyStopWatch.IsRunning && s_dirtyStopWatch.ElapsedMilliseconds >= SaveDelayMillis)
+                {
+                    SaveAsset();
+                }
             }
         }
 
