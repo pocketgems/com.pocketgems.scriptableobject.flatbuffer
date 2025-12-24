@@ -218,7 +218,9 @@ namespace PocketGems.Parameters.Common.Editor
 
         public static class ScriptableObjectClass
         {
-            public const string TemplateFileName = "ScriptableObject.template";
+            public const string MenuItemsFileName = "ScriptableObjectMenuItems.cs";
+            public const string MenuItemsTemplateFileName = "ScriptableObjectMenuItems.template";
+            public const string ClassTemplateFileName = "ScriptableObject.template";
         }
 
         public static class Struct

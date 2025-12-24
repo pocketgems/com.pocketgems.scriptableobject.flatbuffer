@@ -125,9 +125,18 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
         }
 
         [Test]
+        public void GenerateMenuItemScriptableObjectFile()
+        {
+            CodeGenerator.GenerateScriptableObjectMenuItems(new List<IParameterInfo> { _mockParameterInfo1, _mockParameterInfo2 }, TestDirectoryName);
+
+            AssertFileCount(1);
+            AssertFileExists(EditorParameterConstants.ScriptableObjectClass.MenuItemsFileName);
+        }
+
+        [Test]
         public void GenerateScriptableObjectFile()
         {
-            CodeGenerator.GenerateScriptableObjectFile(_mockParameterInfo1, 0, TestDirectoryName);
+            CodeGenerator.GenerateScriptableObjectFile(_mockParameterInfo1, TestDirectoryName);
 
             AssertFileCount(1);
             AssertFileExists(_mockParameterInfo1.ScriptableObjectClassName(true));

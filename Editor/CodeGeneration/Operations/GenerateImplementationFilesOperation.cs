@@ -1,4 +1,3 @@
-using System.Linq;
 using PocketGems.Parameters.CodeGeneration.Operation.Editor;
 using PocketGems.Parameters.CodeGeneration.Util.Editor;
 using PocketGems.Parameters.Common.Operations.Editor;
@@ -23,17 +22,17 @@ namespace PocketGems.Parameters.CodeGeneration.Operations.Editor
             var fbFileRemover = new UnusedFileRemover(flatBufferClassesDir);
 
             // generate files
-            var orderedInfos = context.ParameterInfos.OrderBy(t => t.BaseName);
-            int index = 0;
-            foreach (var parameterInfo in orderedInfos)
+            foreach (var parameterInfo in context.ParameterInfos)
             {
-                var soFilename = CodeGenerator.GenerateScriptableObjectFile(parameterInfo, index, scriptableObjectDir);
+                var soFilename = CodeGenerator.GenerateScriptableObjectFile(parameterInfo, scriptableObjectDir);
                 soFileRemover.UsedFile(soFilename);
 
                 var fbClassFile = CodeGenerator.GenerateFlatBufferClassFile(parameterInfo, true, flatBufferClassesDir);
                 fbFileRemover.UsedFile(fbClassFile);
-                index++;
             }
+
+            var menuItemFilename = CodeGenerator.GenerateScriptableObjectMenuItems(context.ParameterInfos, scriptableObjectDir);
+            soFileRemover.UsedFile(menuItemFilename);
 
             var parameterStructs = context.ParameterStructs;
             for (int i = 0; i < parameterStructs.Count; i++)

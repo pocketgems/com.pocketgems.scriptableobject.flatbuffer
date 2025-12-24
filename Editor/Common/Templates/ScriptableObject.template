@@ -17,8 +17,7 @@ using UnityEngine.AddressableAssets;
 
 namespace {{namespace}}
 {
-    [CreateAssetMenu(fileName = "{{baseName}}", menuName = "Parameters/{{baseName}}", order = {{order}})]
-    internal class {{className}} : ParameterScriptableObject
+    internal partial class {{className}} : ParameterScriptableObject
 #if !{{disableSymbol}}
         , {{interfaceName}}
 #endif
