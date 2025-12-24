@@ -248,7 +248,7 @@ namespace PocketGems.Parameters.LocalCSV
                 if (ScriptableObjectLookupCache.Enabled)
                 {
                     var data = ScriptableObjectLookupCache.LookUp(value);
-                    for (int i = 0; i < data.Count; i++)
+                    for (int i = 0; i < data?.Count; i++)
                     {
                         var path = data[i].Item2;
                         var asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);

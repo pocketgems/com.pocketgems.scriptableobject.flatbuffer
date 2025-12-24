@@ -136,6 +136,10 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
                 return new AssetReferencePropertyType(propertyInfo);
             if (propertyType == typeof(IReadOnlyList<AssetReference>))
                 return new AssetReferenceListPropertyType(propertyInfo);
+            if (propertyType == typeof(AssetReferenceGameObject))
+                return new AssetReferenceGameObjectPropertyType(propertyInfo);
+            if (propertyType == typeof(IReadOnlyList<AssetReferenceGameObject>))
+                return new AssetReferenceGameObjectListPropertyType(propertyInfo);
             if (propertyType == typeof(AssetReferenceSprite))
                 return new AssetReferenceSpritePropertyType(propertyInfo);
             if (propertyType == typeof(IReadOnlyList<AssetReferenceSprite>))

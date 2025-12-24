@@ -60,6 +60,24 @@ namespace PocketGems.Parameters.LocalCSV
             }
         }
 
+        public static class AssetReferenceGameObject
+        {
+            public static string ToString(UnityEngine.AddressableAssets.AssetReferenceGameObject value)
+            {
+                return AssetReference.ToString(value);
+            }
+
+            public static UnityEngine.AddressableAssets.AssetReferenceGameObject FromString(string value,
+                bool validateGuid = false)
+            {
+                (string guid, string subObjectName) = AssetReference.ParseString(value, validateGuid);
+                var reference = new UnityEngine.AddressableAssets.AssetReferenceGameObject(guid);
+                if (subObjectName != null)
+                    reference.SubObjectName = subObjectName;
+                return reference;
+            }
+        }
+
         public static class AssetReferenceSprite
         {
             public static string ToString(UnityEngine.AddressableAssets.AssetReferenceSprite value)
@@ -116,6 +134,32 @@ namespace PocketGems.Parameters.LocalCSV
                 var assetRefs = new UnityEngine.AddressableAssets.AssetReference[guids.Length];
                 for (int i = 0; i < guids.Length; i++)
                     assetRefs[i] = AssetReference.FromString(guids[i], validateGuid);
+                return assetRefs;
+            }
+        }
+
+        public static class AssetReferenceGameObjectArray
+        {
+            public static string ToString(UnityEngine.AddressableAssets.AssetReferenceGameObject[] value)
+            {
+                if (value == null)
+                    return "";
+                var guids = new string[value.Length];
+                for (int i = 0; i < value.Length; i++)
+                    guids[i] = AssetReferenceGameObject.ToString(value[i]);
+                return string.Join(ListDelimiter.ToString(), guids);
+            }
+
+            public static UnityEngine.AddressableAssets.AssetReferenceGameObject[] FromString(string value,
+                bool validateGuid = false)
+            {
+                // must return a non null value so we can detect overriding of properties by checking non null
+                if (string.IsNullOrWhiteSpace(value))
+                    return Array.Empty<UnityEngine.AddressableAssets.AssetReferenceGameObject>();
+                var guids = value.Split(ListDelimiter);
+                var assetRefs = new UnityEngine.AddressableAssets.AssetReferenceGameObject[guids.Length];
+                for (int i = 0; i < guids.Length; i++)
+                    assetRefs[i] = AssetReferenceGameObject.FromString(guids[i], validateGuid);
                 return assetRefs;
             }
         }
