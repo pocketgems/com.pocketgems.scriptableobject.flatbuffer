@@ -239,11 +239,11 @@ namespace PocketGems.Parameters.LocalCSV
             }
 #endif
 
-            public static ParameterReference<T> FromString<T>(string value)
+            public static ParameterReference<T> FromString<T>(IParameterManager parameterManager, string value)
                 where T : class, IBaseInfo
             {
                 if (string.IsNullOrWhiteSpace(value))
-                    return new ParameterReference<T>();
+                    return new ParameterReference<T>(parameterManager);
 #if UNITY_EDITOR
                 if (ScriptableObjectLookupCache.Enabled)
                 {
@@ -254,7 +254,7 @@ namespace PocketGems.Parameters.LocalCSV
                         var asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
                         if (asset != null && asset.name == value && asset is T)
                         {
-                            return new ParameterReference<T>(data[i].Item1);
+                            return new ParameterReference<T>(parameterManager, data[i].Item1);
                         }
                     }
                 }
@@ -268,7 +268,7 @@ namespace PocketGems.Parameters.LocalCSV
                         var asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
                         if (asset != null && asset.name == value && asset is T)
                         {
-                            return new ParameterReference<T>(guids[i]);
+                            return new ParameterReference<T>(parameterManager, guids[i]);
                         }
                     }
                 }
@@ -352,7 +352,7 @@ namespace PocketGems.Parameters.LocalCSV
             }
 #endif
 
-            public static ParameterReference<T>[] FromString<T>(string value)
+            public static ParameterReference<T>[] FromString<T>(IParameterManager parameterManager, string value)
                     where T : class, IBaseInfo
             {
                 // must return a non null value so we can detect overriding of properties by checking non null
@@ -361,7 +361,7 @@ namespace PocketGems.Parameters.LocalCSV
                 var strings = value.Split(ListDelimiter);
                 var assetRefs = new ParameterReference<T>[strings.Length];
                 for (int i = 0; i < strings.Length; i++)
-                    assetRefs[i] = ParameterReference.FromString<T>(strings[i]);
+                    assetRefs[i] = ParameterReference.FromString<T>(parameterManager, strings[i]);
                 return assetRefs;
             }
         }

@@ -35,7 +35,7 @@ namespace {{namespace}}
             for (int i = 0; i < infoLength; i++)
             {
                 var parameter = collection.{{interface.FlatBufferStructName}}(i).Value;
-                var wrapper = new {{interface.FlatBufferClassName}}(parameter);
+                var wrapper = new {{interface.FlatBufferClassName}}(parameterManager, parameter);
                 var identifier = wrapper.Identifier; // use the Identifier from the wrapper to pre-cache the field
                 var guid = parameter.GUID;
             {{~for baseInterface in interface.BaseInterfaceNames~}}
@@ -55,7 +55,7 @@ namespace {{namespace}}
             for (int i = 0; i < structLength; i++)
             {
                 var parameter = collection.{{interface.FlatBufferStructName}}(i).Value;
-                var wrapper = new {{interface.FlatBufferClassName}}(parameter);
+                var wrapper = new {{interface.FlatBufferClassName}}(parameterManager, parameter);
                 parameterManager.Load<{{interface.InterfaceName}}, {{interface.FlatBufferClassName}}>(wrapper, parameter.GUID);
             }
         {{~end~}}

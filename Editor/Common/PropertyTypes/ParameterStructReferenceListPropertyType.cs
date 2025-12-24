@@ -62,10 +62,10 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
                    $"        if ({OverrideFieldName} != null)\n" +
                    $"            return new ReadOnlyListContainer<ParameterStructReference<{_genericType.Name}>>(\n" +
                    $"                () => {OverrideFieldName}.Length,\n" +
-                   $"                i => new ParameterStructReferenceRuntime<{_genericType.Name}>({OverrideFieldName}[i]));\n" +
+                   $"                i => new ParameterStructReferenceRuntime<{_genericType.Name}>(_parameterManager, {OverrideFieldName}[i]));\n" +
                    $"        return new ReadOnlyListContainer<ParameterStructReference<{_genericType.Name}>>(\n" +
                    $"            () => _fb.{FlatBufferStructPropertyName}Length,\n" +
-                   $"                i => new ParameterStructReferenceRuntime<{_genericType.Name}>(_fb.{FlatBufferStructPropertyName}(i)));\n" +
+                   $"                i => new ParameterStructReferenceRuntime<{_genericType.Name}>(_parameterManager, _fb.{FlatBufferStructPropertyName}(i)));\n" +
                    $"    }}\n" +
                    $"}}";
         }

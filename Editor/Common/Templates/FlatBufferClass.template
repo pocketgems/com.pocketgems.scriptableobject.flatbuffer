@@ -21,6 +21,7 @@ namespace {{namespace}}
     {
         #region  private fields
 
+        private {{parameterManagerType}} _parameterManager;
         private {{flatBufferStructName}} _fb;
 {{~
 for propertyTypeDict in propertyTypeDicts
@@ -38,9 +39,10 @@ end
 
         #endregion
 
-        public {{className}}({{flatBufferStructName}} fb)
+        public {{className}}({{parameterManagerType}} parameterManager, {{flatBufferStructName}} fb)
         {
             _fb = fb;
+            _parameterManager = parameterManager;
         }
 
 {{~if isInfo~}}
@@ -60,7 +62,7 @@ end
 
         #region  mutation
 
-        public bool EditProperty(string propertyName, string value, out string error)
+        public bool EditProperty(IParameterManager parameterManager, string propertyName, string value, out string error)
         {
             error = null;
             try

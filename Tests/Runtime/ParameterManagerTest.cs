@@ -27,53 +27,53 @@ namespace PocketGems.Parameters
 
         private const string StructGuid = "guid3";
 
-        private ParameterManager _pm;
+        private ParameterManager _parameterManager;
 
         [SetUp]
         public void SetUp()
         {
+            _parameterManager = new ParameterManager();
             _mockMySpecialInfo = new MockMySpecialInfo();
             _mockMyVerySpecialInfo = new MockMyVerySpecialInfo();
-            _mockKeyValueStruct = new MockKeyValueStruct("desc", 10, "guid", new string[0]);
-            _pm = new ParameterManager();
+            _mockKeyValueStruct = new MockKeyValueStruct(_parameterManager, "desc", 10, "guid", new string[0]);
         }
 
         private void LoadInfos()
         {
-            _pm.Load<IKeyValueStruct, MockKeyValueStruct>(_mockKeyValueStruct, StructGuid);
+            _parameterManager.Load<IKeyValueStruct, MockKeyValueStruct>(_mockKeyValueStruct, StructGuid);
 
             // load under one interface
-            _pm.Load<IMySpecialInfo, MockMySpecialInfo>(_mockMySpecialInfo, SpecialId, SpecialGuid);
+            _parameterManager.Load<IMySpecialInfo, MockMySpecialInfo>(_mockMySpecialInfo, SpecialId, SpecialGuid);
 
             // load under two interfaces
-            _pm.Load<IMySpecialInfo, MockMyVerySpecialInfo>(_mockMyVerySpecialInfo, VerySpecialId, VerySpecialGuid);
-            _pm.Load<IMyVerySpecialInfo, MockMyVerySpecialInfo>(_mockMyVerySpecialInfo, VerySpecialId, VerySpecialGuid);
+            _parameterManager.Load<IMySpecialInfo, MockMyVerySpecialInfo>(_mockMyVerySpecialInfo, VerySpecialId, VerySpecialGuid);
+            _parameterManager.Load<IMyVerySpecialInfo, MockMyVerySpecialInfo>(_mockMyVerySpecialInfo, VerySpecialId, VerySpecialGuid);
         }
 
         private void AssertEmptyManager()
         {
-            Assert.IsNull(_pm.Get<IMySpecialInfo>(SpecialId));
-            Assert.IsNull(_pm.Get<IMyVerySpecialInfo>(SpecialId));
-            Assert.IsNull(_pm.Get(SpecialId, typeof(IMySpecialInfo)));
-            Assert.IsNull(_pm.Get(SpecialId, typeof(IMyVerySpecialInfo)));
+            Assert.IsNull(_parameterManager.Get<IMySpecialInfo>(SpecialId));
+            Assert.IsNull(_parameterManager.Get<IMyVerySpecialInfo>(SpecialId));
+            Assert.IsNull(_parameterManager.Get(SpecialId, typeof(IMySpecialInfo)));
+            Assert.IsNull(_parameterManager.Get(SpecialId, typeof(IMyVerySpecialInfo)));
 
-            Assert.IsNull(_pm.Get<IMySpecialInfo>(VerySpecialId));
-            Assert.IsNull(_pm.Get<IMyVerySpecialInfo>(VerySpecialId));
-            Assert.IsNull(_pm.Get(VerySpecialId, typeof(IMySpecialInfo)));
-            Assert.IsNull(_pm.Get(VerySpecialId, typeof(IMyVerySpecialInfo)));
-
-            LogAssert.Expect(LogType.Error, new Regex(".*"));
-            Assert.IsNull(_pm.GetWithGUID<IMySpecialInfo>(SpecialGuid));
-            LogAssert.Expect(LogType.Error, new Regex(".*"));
-            Assert.IsNull(_pm.GetWithGUID<IMyVerySpecialInfo>(SpecialGuid));
+            Assert.IsNull(_parameterManager.Get<IMySpecialInfo>(VerySpecialId));
+            Assert.IsNull(_parameterManager.Get<IMyVerySpecialInfo>(VerySpecialId));
+            Assert.IsNull(_parameterManager.Get(VerySpecialId, typeof(IMySpecialInfo)));
+            Assert.IsNull(_parameterManager.Get(VerySpecialId, typeof(IMyVerySpecialInfo)));
 
             LogAssert.Expect(LogType.Error, new Regex(".*"));
-            Assert.IsNull(_pm.GetWithGUID<IMySpecialInfo>(VerySpecialGuid));
+            Assert.IsNull(_parameterManager.GetWithGUID<IMySpecialInfo>(SpecialGuid));
             LogAssert.Expect(LogType.Error, new Regex(".*"));
-            Assert.IsNull(_pm.GetWithGUID<IMyVerySpecialInfo>(VerySpecialGuid));
+            Assert.IsNull(_parameterManager.GetWithGUID<IMyVerySpecialInfo>(SpecialGuid));
 
             LogAssert.Expect(LogType.Error, new Regex(".*"));
-            Assert.IsNull(_pm.GetStructWithGuid<IKeyValueStruct>(StructGuid));
+            Assert.IsNull(_parameterManager.GetWithGUID<IMySpecialInfo>(VerySpecialGuid));
+            LogAssert.Expect(LogType.Error, new Regex(".*"));
+            Assert.IsNull(_parameterManager.GetWithGUID<IMyVerySpecialInfo>(VerySpecialGuid));
+
+            LogAssert.Expect(LogType.Error, new Regex(".*"));
+            Assert.IsNull(_parameterManager.GetStructWithGuid<IKeyValueStruct>(StructGuid));
         }
 
         [Test]
@@ -82,22 +82,22 @@ namespace PocketGems.Parameters
             AssertEmptyManager();
             LoadInfos();
 
-            Assert.AreEqual(_mockMySpecialInfo, _pm.Get<IMySpecialInfo>(SpecialId));
-            Assert.AreEqual(_mockMySpecialInfo, _pm.Get(SpecialId, typeof(IMySpecialInfo)));
-            Assert.IsNull(_pm.Get<IMyVerySpecialInfo>(SpecialId));
-            Assert.IsNull(_pm.Get(SpecialId, typeof(IMyVerySpecialInfo)));
+            Assert.AreEqual(_mockMySpecialInfo, _parameterManager.Get<IMySpecialInfo>(SpecialId));
+            Assert.AreEqual(_mockMySpecialInfo, _parameterManager.Get(SpecialId, typeof(IMySpecialInfo)));
+            Assert.IsNull(_parameterManager.Get<IMyVerySpecialInfo>(SpecialId));
+            Assert.IsNull(_parameterManager.Get(SpecialId, typeof(IMyVerySpecialInfo)));
 
-            Assert.AreEqual(_mockMyVerySpecialInfo, _pm.Get(VerySpecialId, typeof(IMySpecialInfo)));
-            Assert.AreEqual(_mockMyVerySpecialInfo, _pm.Get(VerySpecialId, typeof(IMyVerySpecialInfo)));
-            Assert.AreEqual(_mockMyVerySpecialInfo, _pm.Get<IMySpecialInfo>(VerySpecialId));
-            Assert.AreEqual(_mockMyVerySpecialInfo, _pm.Get<IMyVerySpecialInfo>(VerySpecialId));
+            Assert.AreEqual(_mockMyVerySpecialInfo, _parameterManager.Get(VerySpecialId, typeof(IMySpecialInfo)));
+            Assert.AreEqual(_mockMyVerySpecialInfo, _parameterManager.Get(VerySpecialId, typeof(IMyVerySpecialInfo)));
+            Assert.AreEqual(_mockMyVerySpecialInfo, _parameterManager.Get<IMySpecialInfo>(VerySpecialId));
+            Assert.AreEqual(_mockMyVerySpecialInfo, _parameterManager.Get<IMyVerySpecialInfo>(VerySpecialId));
 
-            Assert.AreEqual(_mockMySpecialInfo, _pm.GetWithGUID<IMySpecialInfo>(SpecialGuid));
+            Assert.AreEqual(_mockMySpecialInfo, _parameterManager.GetWithGUID<IMySpecialInfo>(SpecialGuid));
             LogAssert.Expect(LogType.Error, new Regex(".*"));
-            Assert.IsNull(_pm.GetWithGUID<IMyVerySpecialInfo>(SpecialGuid));
+            Assert.IsNull(_parameterManager.GetWithGUID<IMyVerySpecialInfo>(SpecialGuid));
 
-            Assert.AreEqual(_mockMyVerySpecialInfo, _pm.GetWithGUID<IMySpecialInfo>(VerySpecialGuid));
-            Assert.AreEqual(_mockMyVerySpecialInfo, _pm.GetWithGUID<IMyVerySpecialInfo>(VerySpecialGuid));
+            Assert.AreEqual(_mockMyVerySpecialInfo, _parameterManager.GetWithGUID<IMySpecialInfo>(VerySpecialGuid));
+            Assert.AreEqual(_mockMyVerySpecialInfo, _parameterManager.GetWithGUID<IMyVerySpecialInfo>(VerySpecialGuid));
         }
 
         [Test]
@@ -106,10 +106,10 @@ namespace PocketGems.Parameters
             AssertEmptyManager();
             LoadInfos();
 
-            Assert.AreEqual(_mockKeyValueStruct, _pm.GetStructWithGuid<IKeyValueStruct>(StructGuid));
+            Assert.AreEqual(_mockKeyValueStruct, _parameterManager.GetStructWithGuid<IKeyValueStruct>(StructGuid));
 
             LogAssert.Expect(LogType.Error, new Regex(".*"));
-            Assert.IsNull(_pm.GetStructWithGuid<IKeyValueStruct>("non existing guid"));
+            Assert.IsNull(_parameterManager.GetStructWithGuid<IKeyValueStruct>("non existing guid"));
         }
 
         [Test]
@@ -117,19 +117,19 @@ namespace PocketGems.Parameters
         {
             LoadInfos();
             LogAssert.Expect(LogType.Error, BaseInfoErrorMsg);
-            Assert.IsNull(_pm.Get<IBaseInfo>("some_identifier"));
+            Assert.IsNull(_parameterManager.Get<IBaseInfo>("some_identifier"));
 
             LogAssert.Expect(LogType.Error, BaseInterfaceErrorMsg);
-            Assert.IsNull(_pm.GetWithGUID<IBaseInfo>("some_guid"));
+            Assert.IsNull(_parameterManager.GetWithGUID<IBaseInfo>("some_guid"));
 
             LogAssert.Expect(LogType.Error, BaseInfoErrorMsg);
-            Assert.AreEqual(0, _pm.Get<IBaseInfo>().ToArray().Length);
+            Assert.AreEqual(0, _parameterManager.Get<IBaseInfo>().ToArray().Length);
 
             LogAssert.Expect(LogType.Error, BaseInfoErrorMsg);
-            Assert.AreEqual(0, _pm.GetSorted<IBaseInfo>().ToArray().Length);
+            Assert.AreEqual(0, _parameterManager.GetSorted<IBaseInfo>().ToArray().Length);
 
             LogAssert.Expect(LogType.Error, BaseInfoErrorMsg);
-            _pm.Load<IBaseInfo, MockMySpecialInfo>(null, "some_id", "some guid");
+            _parameterManager.Load<IBaseInfo, MockMySpecialInfo>(null, "some_id", "some guid");
         }
 
         [Test]
@@ -138,10 +138,10 @@ namespace PocketGems.Parameters
             LoadInfos();
 
             LogAssert.Expect(LogType.Error, BaseInterfaceErrorMsg);
-            Assert.IsNull(_pm.GetStructWithGuid<IBaseStruct>("some_guid"));
+            Assert.IsNull(_parameterManager.GetStructWithGuid<IBaseStruct>("some_guid"));
 
             LogAssert.Expect(LogType.Error, BaseStructErrorMsg);
-            _pm.Load<IBaseStruct, MockKeyValueStruct>(null, "some guid");
+            _parameterManager.Load<IBaseStruct, MockKeyValueStruct>(null, "some guid");
         }
 
         [Test]
@@ -150,12 +150,12 @@ namespace PocketGems.Parameters
             AssertEmptyManager();
             LoadInfos();
 
-            var specialInfos = _pm.Get<IMySpecialInfo>().ToList();
+            var specialInfos = _parameterManager.Get<IMySpecialInfo>().ToList();
             Assert.AreEqual(2, specialInfos.Count);
             Assert.IsTrue(specialInfos.Contains(_mockMySpecialInfo));
             Assert.IsTrue(specialInfos.Contains(_mockMyVerySpecialInfo));
 
-            var verySpecialInfos = _pm.Get<IMyVerySpecialInfo>().ToList();
+            var verySpecialInfos = _parameterManager.Get<IMyVerySpecialInfo>().ToList();
             Assert.AreEqual(1, verySpecialInfos.Count);
             Assert.AreEqual(_mockMyVerySpecialInfo, verySpecialInfos[0]);
         }
@@ -168,12 +168,12 @@ namespace PocketGems.Parameters
             var info3 = new MockMySpecialInfo { Identifier = "a" };
             var info4 = new MockMySpecialInfo { Identifier = "1" };
 
-            _pm.Load<IMySpecialInfo, MockMySpecialInfo>(info1, info1.Identifier, "guid1");
-            _pm.Load<IMySpecialInfo, MockMySpecialInfo>(info2, info2.Identifier, "guid2");
-            _pm.Load<IMySpecialInfo, MockMySpecialInfo>(info3, info3.Identifier, "guid3");
-            _pm.Load<IMySpecialInfo, MockMySpecialInfo>(info4, info4.Identifier, "guid4");
+            _parameterManager.Load<IMySpecialInfo, MockMySpecialInfo>(info1, info1.Identifier, "guid1");
+            _parameterManager.Load<IMySpecialInfo, MockMySpecialInfo>(info2, info2.Identifier, "guid2");
+            _parameterManager.Load<IMySpecialInfo, MockMySpecialInfo>(info3, info3.Identifier, "guid3");
+            _parameterManager.Load<IMySpecialInfo, MockMySpecialInfo>(info4, info4.Identifier, "guid4");
 
-            var infos = _pm.GetSorted<IMySpecialInfo>().ToArray();
+            var infos = _parameterManager.GetSorted<IMySpecialInfo>().ToArray();
             Assert.AreEqual(4, infos.Length);
             Assert.AreEqual(info2, infos[0]);
             Assert.AreEqual(info4, infos[1]);
@@ -186,31 +186,31 @@ namespace PocketGems.Parameters
         {
             LoadInfos();
 
-            Assert.AreEqual(_mockMyVerySpecialInfo, _pm.Get<IMySpecialInfo>(VerySpecialId));
-            Assert.AreEqual(_mockMyVerySpecialInfo, _pm.Get(VerySpecialId, typeof(IMySpecialInfo)));
-            Assert.AreEqual(_mockMyVerySpecialInfo, _pm.GetWithGUID<IMySpecialInfo>(VerySpecialGuid));
-            Assert.AreEqual(_mockKeyValueStruct, _pm.GetStructWithGuid<IKeyValueStruct>(StructGuid));
+            Assert.AreEqual(_mockMyVerySpecialInfo, _parameterManager.Get<IMySpecialInfo>(VerySpecialId));
+            Assert.AreEqual(_mockMyVerySpecialInfo, _parameterManager.Get(VerySpecialId, typeof(IMySpecialInfo)));
+            Assert.AreEqual(_mockMyVerySpecialInfo, _parameterManager.GetWithGUID<IMySpecialInfo>(VerySpecialGuid));
+            Assert.AreEqual(_mockKeyValueStruct, _parameterManager.GetStructWithGuid<IKeyValueStruct>(StructGuid));
 
             // override an existing loaded object
             // load new object with the same identifier & guid
             var newInfo = new MockMyVerySpecialInfo();
-            _pm.Load<IMySpecialInfo, MockMyVerySpecialInfo>(newInfo, VerySpecialId, VerySpecialGuid);
-            _pm.Load<IMyVerySpecialInfo, MockMyVerySpecialInfo>(newInfo, VerySpecialId, VerySpecialGuid);
+            _parameterManager.Load<IMySpecialInfo, MockMyVerySpecialInfo>(newInfo, VerySpecialId, VerySpecialGuid);
+            _parameterManager.Load<IMyVerySpecialInfo, MockMyVerySpecialInfo>(newInfo, VerySpecialId, VerySpecialGuid);
 
-            var newStruct = new MockKeyValueStruct("new struct", 100, "guid", new string[0]);
-            _pm.Load<IKeyValueStruct, MockKeyValueStruct>(newStruct, StructGuid);
+            var newStruct = new MockKeyValueStruct(_parameterManager, "new struct", 100, "guid", new string[0]);
+            _parameterManager.Load<IKeyValueStruct, MockKeyValueStruct>(newStruct, StructGuid);
 
-            Assert.AreEqual(newInfo, _pm.Get<IMySpecialInfo>(VerySpecialId));
-            Assert.AreEqual(newInfo, _pm.Get(VerySpecialId, typeof(IMySpecialInfo)));
-            Assert.AreEqual(newInfo, _pm.GetWithGUID<IMySpecialInfo>(VerySpecialGuid));
-            Assert.AreEqual(newStruct, _pm.GetStructWithGuid<IKeyValueStruct>(StructGuid));
+            Assert.AreEqual(newInfo, _parameterManager.Get<IMySpecialInfo>(VerySpecialId));
+            Assert.AreEqual(newInfo, _parameterManager.Get(VerySpecialId, typeof(IMySpecialInfo)));
+            Assert.AreEqual(newInfo, _parameterManager.GetWithGUID<IMySpecialInfo>(VerySpecialGuid));
+            Assert.AreEqual(newStruct, _parameterManager.GetStructWithGuid<IKeyValueStruct>(StructGuid));
 
-            var specialInfos = _pm.Get<IMySpecialInfo>().ToList();
+            var specialInfos = _parameterManager.Get<IMySpecialInfo>().ToList();
             Assert.AreEqual(2, specialInfos.Count);
             Assert.IsTrue(specialInfos.Contains(_mockMySpecialInfo));
             Assert.IsTrue(specialInfos.Contains(newInfo));
 
-            var verySpecialInfos = _pm.Get<IMyVerySpecialInfo>().ToList();
+            var verySpecialInfos = _parameterManager.Get<IMyVerySpecialInfo>().ToList();
             Assert.AreEqual(1, verySpecialInfos.Count);
             Assert.AreEqual(newInfo, verySpecialInfos[0]);
         }
@@ -226,10 +226,10 @@ namespace PocketGems.Parameters
             var newGuid = "myNewGuid";
 
             LogAssert.Expect(LogType.Error, new Regex(".*"));
-            _pm.Load<IMySpecialInfo, MockMyVerySpecialInfo>(newInfo, VerySpecialId, newGuid);
+            _parameterManager.Load<IMySpecialInfo, MockMyVerySpecialInfo>(newInfo, VerySpecialId, newGuid);
 
             LogAssert.Expect(LogType.Error, new Regex(".*"));
-            _pm.Load<IMyVerySpecialInfo, MockMyVerySpecialInfo>(newInfo, VerySpecialId, newGuid);
+            _parameterManager.Load<IMyVerySpecialInfo, MockMyVerySpecialInfo>(newInfo, VerySpecialId, newGuid);
         }
 
         [Test]
@@ -243,10 +243,10 @@ namespace PocketGems.Parameters
             var newIdentifier = "myNewIdentifier";
 
             LogAssert.Expect(LogType.Error, new Regex(".*"));
-            _pm.Load<IMySpecialInfo, MockMyVerySpecialInfo>(newInfo, newIdentifier, VerySpecialGuid);
+            _parameterManager.Load<IMySpecialInfo, MockMyVerySpecialInfo>(newInfo, newIdentifier, VerySpecialGuid);
 
             LogAssert.Expect(LogType.Error, new Regex(".*"));
-            _pm.Load<IMyVerySpecialInfo, MockMyVerySpecialInfo>(newInfo, newIdentifier, VerySpecialGuid);
+            _parameterManager.Load<IMyVerySpecialInfo, MockMyVerySpecialInfo>(newInfo, newIdentifier, VerySpecialGuid);
         }
 
         [Test]
@@ -254,7 +254,7 @@ namespace PocketGems.Parameters
         {
             LoadInfos();
 
-            _pm.RemoveAll();
+            _parameterManager.RemoveAll();
 
             AssertEmptyManager();
         }
@@ -264,11 +264,11 @@ namespace PocketGems.Parameters
         {
             LoadInfos();
             IReadOnlyList<string> errors;
-            var success = _pm.ApplyOverrides(null, out errors);
+            var success = _parameterManager.ApplyOverrides(null, out errors);
             Assert.IsTrue(success);
             Assert.IsNull(errors);
 
-            success = _pm.ApplyOverrides(JObject.Parse("{}"), out errors);
+            success = _parameterManager.ApplyOverrides(JObject.Parse("{}"), out errors);
             Assert.IsTrue(success);
             Assert.IsNull(errors);
 
@@ -284,29 +284,29 @@ namespace PocketGems.Parameters
             bool success;
             IReadOnlyList<string> errors;
 
-            success = _pm.ApplyOverrides(JObject.Parse("{\"delete\":[]}"), out errors);
+            success = _parameterManager.ApplyOverrides(JObject.Parse("{\"delete\":[]}"), out errors);
             Assert.IsFalse(success);
             Assert.AreEqual(1, errors.Count);
             Assert.AreEqual("Override action delete isn't supported yet.", errors[0]);
 
-            success = _pm.ApplyOverrides(JObject.Parse("{\"add\":[]}"), out errors);
+            success = _parameterManager.ApplyOverrides(JObject.Parse("{\"add\":[]}"), out errors);
             Assert.IsFalse(success);
             Assert.AreEqual(1, errors.Count);
             Assert.AreEqual("Override action add isn't supported yet.", errors[0]);
 
-            success = _pm.ApplyOverrides(JObject.Parse("{\"jump\":[]}"), out errors);
+            success = _parameterManager.ApplyOverrides(JObject.Parse("{\"jump\":[]}"), out errors);
             Assert.IsFalse(success);
             Assert.AreEqual(1, errors.Count);
             Assert.AreEqual("Override action jump isn't valid.", errors[0]);
 
-            success = _pm.ApplyOverrides(JObject.Parse("{\"edit\":[[\"hello\"]]}"), out errors);
+            success = _parameterManager.ApplyOverrides(JObject.Parse("{\"edit\":[[\"hello\"]]}"), out errors);
             Assert.IsFalse(success);
             Assert.AreEqual(1, errors.Count);
             Assert.AreEqual("ParameterManager expects 4 elements in the array of data.", errors[0]);
 
 
             LogAssert.Expect(LogType.Error, $"Missing: Cannot find parameter by GUID {SpecialId} for type IMySpecialInfo");
-            success = _pm.ApplyOverrides(JObject.Parse("{\"edit\":" +
+            success = _parameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
                                                        "[" +
                                                        "  [\"MySpecialInfo.csv\"," +
                                                        $"  \"{SpecialId}\"," +
@@ -326,7 +326,7 @@ namespace PocketGems.Parameters
             _mockMySpecialInfo.ReturnEditPropertyError = "some error";
 
 
-            success = _pm.ApplyOverrides(JObject.Parse("{\"edit\":" +
+            success = _parameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
                                                        "[" +
                                                        "  [\"MySpecialInfo.csv\"," +
                                                        $"   \"{SpecialId}\"," +
@@ -349,14 +349,14 @@ namespace PocketGems.Parameters
         public void ApplyAndClearOverrides()
         {
             LoadInfos();
-            _pm.ClearAllOverrides();
+            _parameterManager.ClearAllOverrides();
             Assert.AreEqual(0, _mockMySpecialInfo.EditPropertyCalls);
             Assert.AreEqual(0, _mockMySpecialInfo.RemoveAllEditCalls);
             Assert.AreEqual(0, _mockMyVerySpecialInfo.EditPropertyCalls);
             Assert.AreEqual(0, _mockMyVerySpecialInfo.RemoveAllEditCalls);
 
             // apply to one row
-            var success = _pm.ApplyOverrides(JObject.Parse("{\"edit\":" +
+            var success = _parameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
                                                                "[" +
                                                                "  [\"MySpecialInfo.csv\"," +
                                                                $"  \"{SpecialId}\"," +
@@ -385,7 +385,7 @@ namespace PocketGems.Parameters
             Assert.AreEqual("SomeColumnName2", _mockKeyValueStruct.EditPropertyPropertyName);
             Assert.AreEqual("SomeValue2", _mockKeyValueStruct.EditPropertyValue);
 
-            _pm.ClearAllOverrides();
+            _parameterManager.ClearAllOverrides();
 
             Assert.AreEqual(1, _mockMySpecialInfo.EditPropertyCalls);
             Assert.AreEqual(1, _mockMySpecialInfo.RemoveAllEditCalls);
@@ -395,7 +395,7 @@ namespace PocketGems.Parameters
             Assert.AreEqual(0, _mockMyVerySpecialInfo.RemoveAllEditCalls);
 
             // apply to both rows
-            success = _pm.ApplyOverrides(JObject.Parse("{\"edit\":" +
+            success = _parameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
                                                        "[" +
                                                        "  [\"MySpecialInfo.csv\"," +
                                                        $"  \"{SpecialId}\"," +
@@ -424,7 +424,7 @@ namespace PocketGems.Parameters
             Assert.AreEqual(1, _mockKeyValueStruct.EditPropertyCalls);
             Assert.AreEqual(1, _mockKeyValueStruct.RemoveAllEditCalls);
 
-            _pm.ClearAllOverrides();
+            _parameterManager.ClearAllOverrides();
 
             Assert.AreEqual(2, _mockMySpecialInfo.EditPropertyCalls);
             Assert.AreEqual(2, _mockMySpecialInfo.RemoveAllEditCalls);
@@ -437,34 +437,34 @@ namespace PocketGems.Parameters
         [Test]
         public void UnsafeGetError()
         {
-            _pm.IsGettingSafe = false;
+            _parameterManager.IsGettingSafe = false;
 
             var regex = new Regex($".*{nameof(IParameterManager.IsGettingSafe)}.*");
 
             LogAssert.Expect(LogType.Error, regex);
-            Assert.IsNull(_pm.Get<IMySpecialInfo>(SpecialId));
-            Assert.IsTrue(_pm.HasGetBeenCalled);
+            Assert.IsNull(_parameterManager.Get<IMySpecialInfo>(SpecialId));
+            Assert.IsTrue(_parameterManager.HasGetBeenCalled);
 
             LogAssert.Expect(LogType.Error, regex);
-            Assert.IsNull(_pm.Get(SpecialId, typeof(IMySpecialInfo)));
+            Assert.IsNull(_parameterManager.Get(SpecialId, typeof(IMySpecialInfo)));
 
             LogAssert.Expect(LogType.Error, regex);
-            Assert.IsEmpty(_pm.Get<IMySpecialInfo>());
-
-            LogAssert.Expect(LogType.Error, regex);
-            LogAssert.Expect(LogType.Error, new Regex(".*"));
-            Assert.IsNull(_pm.GetWithGUID<IMySpecialInfo>(SpecialGuid));
+            Assert.IsEmpty(_parameterManager.Get<IMySpecialInfo>());
 
             LogAssert.Expect(LogType.Error, regex);
             LogAssert.Expect(LogType.Error, new Regex(".*"));
-            Assert.IsNull(_pm.GetStructWithGuid<IKeyValueStruct>(StructGuid));
+            Assert.IsNull(_parameterManager.GetWithGUID<IMySpecialInfo>(SpecialGuid));
 
             LogAssert.Expect(LogType.Error, regex);
-            Assert.IsEmpty(_pm.GetSorted<IMySpecialInfo>());
+            LogAssert.Expect(LogType.Error, new Regex(".*"));
+            Assert.IsNull(_parameterManager.GetStructWithGuid<IKeyValueStruct>(StructGuid));
+
+            LogAssert.Expect(LogType.Error, regex);
+            Assert.IsEmpty(_parameterManager.GetSorted<IMySpecialInfo>());
 
             // no more errors
-            _pm.IsGettingSafe = true;
-            Assert.IsNull(_pm.Get<IMySpecialInfo>(SpecialId));
+            _parameterManager.IsGettingSafe = true;
+            Assert.IsNull(_parameterManager.Get<IMySpecialInfo>(SpecialId));
         }
     }
 }

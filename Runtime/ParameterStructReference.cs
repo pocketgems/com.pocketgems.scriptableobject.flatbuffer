@@ -1,3 +1,4 @@
+using System;
 using PocketGems.Parameters.Interface;
 using UnityEngine;
 #if UNITY_EDITOR
@@ -19,8 +20,11 @@ namespace PocketGems.Parameters
 
     public abstract class ParameterStructReference<T> : ParameterStructReference where T : class, IBaseStruct
     {
-        protected ParameterStructReference(string guid) : base(guid)
+        private readonly IParameterManager _parameterManager;
+
+        protected ParameterStructReference(IParameterManager parameterManager, string guid) : base(guid)
         {
+            _parameterManager = parameterManager;
         }
 
         public T Struct
@@ -35,13 +39,7 @@ namespace PocketGems.Parameters
                     return GetStruct(EditorParams.ParameterManager);
                 }
 #endif
-                if (Params.ParameterManager == null)
-                {
-                    Debug.LogError("Fetching Struct before ParamsSetup.Setup() has been called.");
-                    return null;
-                }
-
-                return GetStruct(Params.ParameterManager);
+                return GetStruct(_parameterManager);
             }
         }
 
@@ -51,9 +49,9 @@ namespace PocketGems.Parameters
 #if UNITY_EDITOR
     public class ParameterStructReferenceEditor<T> : ParameterStructReference<T> where T : class, IBaseStruct
     {
-        private T _struct;
+        private readonly T _struct;
 
-        public ParameterStructReferenceEditor(T @struct) : base(null)
+        public ParameterStructReferenceEditor(T @struct) : base(null, null)
         {
             _struct = @struct;
         }
@@ -64,9 +62,16 @@ namespace PocketGems.Parameters
 
     public class ParameterStructReferenceRuntime<T> : ParameterStructReference<T> where T : class, IBaseStruct
     {
-        public ParameterStructReferenceRuntime(string guid) : base(guid)
+        public ParameterStructReferenceRuntime(IParameterManager parameterManager, string guid) : base(parameterManager, guid)
         {
+            if (parameterManager == null)
+            {
+                Debug.LogError($"Must provide {nameof(IParameterManager)} when constructing {nameof(ParameterStructReference)}.");
+            }
         }
+
+        [Obsolete("Use other ParameterStructReferenceRuntime() constructor.")]
+        public ParameterStructReferenceRuntime(string guid) : this(Params.ParameterManager, guid) { }
 
         public override string ToString()
         {
@@ -84,6 +89,6 @@ namespace PocketGems.Parameters
         }
 
 
-        internal override T GetStruct(IParameterManager parameterManager) => parameterManager.GetStructWithGuid<T>(_guid);
+        internal override T GetStruct(IParameterManager parameterManager) => parameterManager?.GetStructWithGuid<T>(_guid);
     }
 }

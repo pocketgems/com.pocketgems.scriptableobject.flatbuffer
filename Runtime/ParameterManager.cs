@@ -106,7 +106,7 @@ namespace PocketGems.Parameters
                     }
 
                     _overriddenParameters.Add(mutableParameter);
-                    if (!mutableParameter.EditProperty(propertyName, value, out string error))
+                    if (!mutableParameter.EditProperty(this, propertyName, value, out string error))
                         Error(
                             $"Error editing ({interfaceType})[{identifierOrGuid}] property [{propertyName}] with value [{value}]: {error}");
                 }

@@ -41,29 +41,28 @@ namespace PocketGems.Parameters
     [Serializable]
     public class ParameterReference<T> : ParameterReference, IComparable<ParameterReference<T>> where T : class, IBaseInfo
     {
-        public ParameterReference(string value = null, bool isIdentifier = false) : base(value, isIdentifier)
+        private readonly IParameterManager _parameterManager;
+        private readonly bool _createdWithConstructor;
+
+        public ParameterReference(IParameterManager parameterManager, string value = null, bool isIdentifier = false) : base(value, isIdentifier)
         {
+            _parameterManager = parameterManager;
+            _createdWithConstructor = true;
         }
+
+        [Obsolete("Use other ParameterReference() constructor.")]
+        public ParameterReference(string value = null, bool isIdentifier = false) : this(Params.ParameterManager, value, isIdentifier) { }
 
         public override string ToString()
         {
-            string description;
-            if (string.IsNullOrWhiteSpace(guid) && string.IsNullOrWhiteSpace(_identifier))
-            {
-                description = "not assigned";
-            }
-            else if (Info == null)
-            {
-                if (!string.IsNullOrWhiteSpace(_identifier))
-                    description = $"missing asset for identifier {_identifier}";
-                else
-                    description = $"missing asset for GUID {guid}";
-            }
+            string description = null;
+            if (!string.IsNullOrWhiteSpace(guid) && string.IsNullOrWhiteSpace(_identifier))
+                description = $"guid: {guid}";
+            else if (!string.IsNullOrWhiteSpace(_identifier))
+                description = $"identifier: {_identifier}";
             else
-            {
-                description = $"{Info.Identifier}({guid})";
-            }
-            return $"{GetType().Name}<{typeof(T).Name}>: {description}";
+                description = "not assigned";
+            return $"{GetType().Name}<{typeof(T).Name}> {description}";
         }
 
         public int CompareTo(ParameterReference<T> other)
@@ -100,13 +99,24 @@ namespace PocketGems.Parameters
                     return GetInfo(EditorParams.ParameterManager);
                 }
 #endif
-                if (Params.ParameterManager == null)
+
+                var parameterManager = _parameterManager;
+                if (parameterManager == null)
                 {
-                    Debug.LogError("Fetching Info before ParamsSetup.Setup() has been called.");
-                    return null;
+                    if (_createdWithConstructor)
+                    {
+                        Debug.LogError($"No {nameof(_parameterManager)} set in {nameof(ParameterReference)}<{typeof(T).Name}>");
+                        return null;
+                    }
+                    if (Params.ParameterManager == null)
+                    {
+                        Debug.LogError("Fetching Info before ParamsSetup.Setup() has been called.");
+                        return null;
+                    }
+                    parameterManager = Params.ParameterManager;
                 }
 
-                return GetInfo(Params.ParameterManager);
+                return GetInfo(parameterManager);
             }
         }
 
