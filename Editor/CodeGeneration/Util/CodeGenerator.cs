@@ -122,11 +122,50 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
         /// <summary>
         /// Generate the Scriptable Object class file that implements the interface.
         /// </summary>
-        /// <param name="parameterInfo">Interface to write the class for.</param>
-        /// <param name="order">The menu order.</param>
+        /// <param name="parameterInfos">All of the parameter infos.</param>
         /// <param name="outputDirectory">Directory to write the class to.</param>
         /// <returns>filepath of the file written</returns>
-        public static string GenerateScriptableObjectFile(IParameterInfo parameterInfo, int order, string outputDirectory)
+        public static string GenerateScriptableObjectMenuItems(IReadOnlyList<IParameterInfo> parameterInfos, string outputDirectory)
+        {
+            if (!Directory.Exists(outputDirectory))
+                Directory.CreateDirectory(outputDirectory);
+
+            var orderedInfos = parameterInfos.OrderBy(t => t.BaseName);
+
+            var infoInterfaces = new List<object>();
+            int orderIndex = 0;
+            foreach (var parameterInfo in orderedInfos)
+            {
+                var infoArgs = new Dictionary<string, object>
+                {
+                    { "baseName", parameterInfo.BaseName },
+                    { "className", parameterInfo.ScriptableObjectClassName(false) },
+                    { "order", orderIndex }
+                };
+                infoInterfaces.Add(infoArgs);
+                orderIndex++;
+            }
+
+            var args = new Dictionary<string, object>
+            {
+                { "namespace", ParameterConstants.GeneratedNamespace },
+                { "infoInterfaces", infoInterfaces }
+            };
+
+            var fileName = EditorParameterConstants.ScriptableObjectClass.MenuItemsFileName;
+            var filePath = Path.Combine(outputDirectory, fileName);
+            var templateFileName = EditorParameterConstants.ScriptableObjectClass.MenuItemsTemplateFileName;
+            ScribanHelper.GenerateClass(templateFileName, filePath, args);
+            return fileName;
+        }
+
+        /// <summary>
+        /// Generate the Scriptable Object class file that implements the interface.
+        /// </summary>
+        /// <param name="parameterInfo">Interface to write the class for.</param>
+        /// <param name="outputDirectory">Directory to write the class to.</param>
+        /// <returns>filepath of the file written</returns>
+        public static string GenerateScriptableObjectFile(IParameterInfo parameterInfo, string outputDirectory)
         {
             if (!Directory.Exists(outputDirectory))
                 Directory.CreateDirectory(outputDirectory);
@@ -152,12 +191,11 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
                 { "baseName", parameterInfo.BaseName },
                 { "className", parameterInfo.ScriptableObjectClassName(false) },
                 { "interfaceName", parameterInfo.InterfaceName },
-                { "properties", properties },
-                { "order", order },
+                { "properties", properties }
             };
             var fileName = parameterInfo.ScriptableObjectClassName(true);
             var filePath = Path.Combine(outputDirectory, fileName);
-            var templateFileName = EditorParameterConstants.ScriptableObjectClass.TemplateFileName;
+            var templateFileName = EditorParameterConstants.ScriptableObjectClass.ClassTemplateFileName;
             ScribanHelper.GenerateClass(templateFileName, filePath, args);
             return fileName;
         }

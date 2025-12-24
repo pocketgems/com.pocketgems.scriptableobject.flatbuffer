@@ -55,7 +55,8 @@ namespace PocketGems.Parameters.CodeGeneration.Operations.Editor
 
             void AssertFileCounts(int scriptableObjects, int structs, int flatbuffers)
             {
-                Assert.AreEqual(scriptableObjects, FileCount(TestScriptableObjectsDir));
+                // +1 for the menu item file generated
+                Assert.AreEqual(scriptableObjects + 1, FileCount(TestScriptableObjectsDir));
                 Assert.AreEqual(structs, FileCount(TestStructsDir));
                 Assert.AreEqual(flatbuffers, FileCount(TestFlatBufferClassesDir));
             }
@@ -87,7 +88,8 @@ namespace PocketGems.Parameters.CodeGeneration.Operations.Editor
             var operation = new GenerateImplementationFilesOperation();
             AssertExecute(operation, OperationState.Finished);
 
-            Assert.AreEqual(0, FileCount(TestScriptableObjectsDir));
+            // only 1 file for the menu item file
+            Assert.AreEqual(1, FileCount(TestScriptableObjectsDir));
             Assert.AreEqual(0, FileCount(TestStructsDir));
             Assert.AreEqual(0, FileCount(TestFlatBufferClassesDir));
         }
