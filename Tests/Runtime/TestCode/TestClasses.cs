@@ -25,13 +25,19 @@ public class MockMutableParameter : IMutableParameter
 
 public class MockMutableBaseInfo : MockMutableParameter, IBaseInfo
 {
-    public string Identifier { get; set; }
+    public string Identifier { get; private set; }
+
+    public MockMutableBaseInfo(string identifier) => Identifier = identifier;
 }
 
 public class MockMutableBaseStruct : MockMutableParameter, IBaseStruct { }
-public class MockMySpecialInfo : MockMutableBaseInfo, IMySpecialInfo { }
-public class MockMyVerySpecialInfo : MockMutableBaseInfo, IMyVerySpecialInfo
+public class MockSubclassAInfo : MockMutableBaseInfo, ISubInterfaceAInfo
 {
+    public MockSubclassAInfo(string identifier) : base(identifier) { }
+}
+public class MockSubclassBInfo : MockMutableBaseInfo, ISubInterfaceBInfo
+{
+    public MockSubclassBInfo(string identifier) : base(identifier) { }
     public ParameterStructReference<IMissingValidator1Struct> Struct { get; set; }
     public IReadOnlyList<ParameterStructReference<IMissingValidator2Struct>> Structs { get; set; }
 }

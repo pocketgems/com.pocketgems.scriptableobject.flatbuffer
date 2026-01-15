@@ -4,10 +4,10 @@ using PocketGems.Parameters.Interface;
 
 namespace PocketGems.Parameters.Validation
 {
-    public class MySpecialInfoDataValidator : InfoCounterDataValidator<IMySpecialInfo>
+    public class MockSubclassAInfoDataValidator : InfoCounterDataValidator<ISubInterfaceAInfo>
     {
         public static List<ValidationError> NextInstanceErrors { get; set; }
-        public MySpecialInfoDataValidator()
+        public MockSubclassAInfoDataValidator()
         {
             Errors = NextInstanceErrors;
             NextInstanceErrors = null;

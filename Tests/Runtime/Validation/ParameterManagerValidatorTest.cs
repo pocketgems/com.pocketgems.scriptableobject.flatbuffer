@@ -44,8 +44,8 @@ namespace PocketGems.Parameters.Validation
         public void SetUp()
         {
             // info validators
-            MySpecialInfoDataValidator.Instance = null;
-            MySpecialInfoDataValidator.NextInstanceErrors = null;
+            MockSubclassAInfoDataValidator.Instance = null;
+            MockSubclassAInfoDataValidator.NextInstanceErrors = null;
             TestValidationInfoDataValidator.Instance = null;
             TestValidationInfoDataValidator.NextInstanceErrors = null;
             TestBaseValidationInfoDataValidator.Instance = null;
@@ -112,7 +112,7 @@ namespace PocketGems.Parameters.Validation
             var mocks = new[] { _info1, _info2, _info3 };
             _parameterManager.Get<ITestValidationInfo>().Returns(mocks);
             _parameterManager.Get<ITestBaseValidationInfo>().Returns(mocks);
-            _parameterManager.Get<IMySpecialInfo>().Returns(mocks);
+            _parameterManager.Get<ISubInterfaceAInfo>().Returns(mocks);
 
             // create key value structs
             _info1KeyValueStruct1 = new MockKeyValueStruct(
@@ -155,7 +155,7 @@ namespace PocketGems.Parameters.Validation
             Assert.IsEmpty(validator.ValidationErrors);
             validator.Validate<ITestValidationInfo>();
             validator.Validate<ITestBaseValidationInfo>();
-            validator.Validate<IMySpecialInfo>();
+            validator.Validate<ISubInterfaceAInfo>();
         }
 
         [Test]
@@ -164,12 +164,12 @@ namespace PocketGems.Parameters.Validation
             // run validation
             var validator = new ParameterManagerValidator(_parameterManager);
             Assert.IsEmpty(validator.ValidationErrors);
-            validator.Validate<IMySpecialInfo>();
+            validator.Validate<ISubInterfaceAInfo>();
 
             // results
-            Assert.IsNotNull(MySpecialInfoDataValidator.Instance);
-            Assert.AreEqual(0, MySpecialInfoDataValidator.Instance.ValidateInfoCalls);
-            Assert.AreEqual(1, MySpecialInfoDataValidator.Instance.ValidateParametersCalls);
+            Assert.IsNotNull(MockSubclassAInfoDataValidator.Instance);
+            Assert.AreEqual(0, MockSubclassAInfoDataValidator.Instance.ValidateInfoCalls);
+            Assert.AreEqual(1, MockSubclassAInfoDataValidator.Instance.ValidateParametersCalls);
             Assert.IsEmpty(validator.ValidationErrors);
         }
 
@@ -346,10 +346,10 @@ namespace PocketGems.Parameters.Validation
             // run validation
             var validator = new ParameterManagerValidator(_parameterManager);
             Assert.IsEmpty(validator.ValidationErrors);
-            validator.Validate<IMyVerySpecialInfo>();
-            validator.Validate<IMySpecialInfo>();
+            validator.Validate<ISubInterfaceBInfo>();
+            validator.Validate<ISubInterfaceAInfo>();
 
-            Assert.IsNotNull(MySpecialInfoDataValidator.Instance);
+            Assert.IsNotNull(MockSubclassAInfoDataValidator.Instance);
 
             /*
              * 1 error total:
@@ -368,12 +368,12 @@ namespace PocketGems.Parameters.Validation
             var structGuid2 = "structGuid2";
             var mocks = new[]
             {
-                new MockMyVerySpecialInfo() {
+                new MockSubclassBInfo("someId") {
                     Struct = new ParameterStructReferenceRuntime<IMissingValidator1Struct>(_parameterManager, structGuid1),
                     Structs = new []{ new ParameterStructReferenceRuntime<IMissingValidator2Struct>(_parameterManager, structGuid2) }
                 },
             };
-            _parameterManager.Get<IMyVerySpecialInfo>().Returns(mocks);
+            _parameterManager.Get<ISubInterfaceBInfo>().Returns(mocks);
             _parameterManager.GetStructWithGuid<IMissingValidator1Struct>(structGuid1)
                 .Returns(new MockMyVerySpecial1Struct());
             _parameterManager.GetStructWithGuid<IMissingValidator2Struct>(structGuid2)
@@ -382,10 +382,10 @@ namespace PocketGems.Parameters.Validation
             // run validation
             var validator = new ParameterManagerValidator(_parameterManager);
             Assert.IsEmpty(validator.ValidationErrors);
-            validator.Validate<IMyVerySpecialInfo>();
-            validator.Validate<IMySpecialInfo>();
+            validator.Validate<ISubInterfaceBInfo>();
+            validator.Validate<ISubInterfaceAInfo>();
 
-            Assert.IsNotNull(MySpecialInfoDataValidator.Instance);
+            Assert.IsNotNull(MockSubclassAInfoDataValidator.Instance);
 
             /*
              * 3 errors total:
