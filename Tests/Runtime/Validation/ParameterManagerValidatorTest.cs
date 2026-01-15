@@ -428,7 +428,7 @@ namespace PocketGems.Parameters.Validation
             _info1.Ref = new ParameterReference<ITestValidationInfo>(_parameterManager, badInfoGuid);
             _info1._structRefs[1] = new ParameterStructReferenceRuntime<IKeyValueStruct>(_parameterManager, badKeyValueStructGuid);
             _info1KeyValueStruct1._innerStructs[0] = new ParameterStructReferenceRuntime<IInnerKeyValueStruct>(_parameterManager, badInnerStructGuid);
-            _info1KeyValueStruct2.InnerStruct = new ParameterStructReferenceRuntime<IInnerKeyValueStruct>(_parameterManager, badInnerStructGuid);
+            _info1KeyValueStruct2._innerStruct = new ParameterStructReferenceRuntime<IInnerKeyValueStruct>(_parameterManager, badInnerStructGuid);
             _info2.StructRef = new ParameterStructReferenceRuntime<IKeyValueStruct>(_parameterManager, badKeyValueStructGuid);
 
             ValidateGeneralValidationParameters(out var validator);
@@ -546,7 +546,7 @@ namespace PocketGems.Parameters.Validation
             // setup bad parameters
             _info1._structRefs[1] = null;
             _info1KeyValueStruct1._innerStructs[0] = null;
-            _info1KeyValueStruct2.InnerStruct = null;
+            _info1KeyValueStruct2._innerStruct = null;
             _info2.StructRef = null;
 
             ValidateGeneralValidationParameters(out var validator);
