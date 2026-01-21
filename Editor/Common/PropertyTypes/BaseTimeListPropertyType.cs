@@ -17,9 +17,16 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             $"public {_serializedTypeKeyword}[] {FieldName};";
 
         public override string ScriptableObjectPropertyImplementationCode() =>
-            $"public IReadOnlyList<{_typeKeyword}> {PropertyName} => new ReadOnlyListContainer<{_typeKeyword}>(\n" +
-            $"    () => {FieldName}?.Length ?? 0,\n" +
-            $"    i => ({_typeKeyword}){FieldName}[i]);";
+            $"public IReadOnlyList<{_typeKeyword}> {PropertyName}\n" +
+            $"{{\n" +
+            $"    get\n" +
+            $"    {{\n" +
+            $"        var collection = {FieldName};\n" +
+            $"        return new ReadOnlyListContainer<{_typeKeyword}>(\n" +
+            $"            () => collection?.Length ?? 0,\n" +
+            $"            i => ({_typeKeyword})collection[i]);\n" +
+            $"    }}\n" +
+            $"}}";
 
         public override string CSVBridgeReadFromCSVCode(string variableName) =>
             $"data.{FieldName} = {nameof(CSVValueConverter)}.ArrayFuncMapper<{_serializedTypeKeyword}>.FromString({variableName}, " +

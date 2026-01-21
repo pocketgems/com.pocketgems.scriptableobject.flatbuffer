@@ -15,9 +15,16 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         public override string ScriptableObjectPropertyImplementationCode()
         {
             var typeName = nameof(LocalizedString);
-            return $"public IReadOnlyList<{typeName}> {PropertyName} => new ReadOnlyListContainer<{typeName}>(\n" +
-                   $"    () => {FieldName}?.Length ?? 0,\n" +
-                   $"    i => new {typeName}({FieldName}[i]));";
+            return $"public IReadOnlyList<{typeName}> {PropertyName}\n" +
+                $"{{\n" +
+                $"    get\n" +
+                $"    {{\n" +
+                $"        var collection = {FieldName};\n" +
+                $"        return new ReadOnlyListContainer<{typeName}>(\n" +
+                $"            () => collection?.Length ?? 0,\n" +
+                $"            i => new {typeName}(collection[i]));\n" +
+                $"    }}\n" +
+                $"}}";
         }
 
         public override string FlatBufferPropertyImplementationCode()
