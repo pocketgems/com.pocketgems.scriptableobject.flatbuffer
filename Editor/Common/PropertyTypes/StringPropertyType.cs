@@ -30,22 +30,19 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             return null;
         }
 
-        public override string FlatBufferFieldDefinitionCode() =>
-            $"private {_typeKeyword} {OverrideFieldName};";
-
-        public override string FlatBufferPropertyImplementationCode()
+        public override string FlatBufferPropertyImplementationCode(int propertyIndex)
         {
             if (HasLocalizationKeyAttribute)
-                return $"public {_typeKeyword} {PropertyName} => {nameof(ParameterLocalizationHandler)}.{nameof(ParameterLocalizationHandler.GetLocalizationKeyTranslation)}({OverrideFieldName} ?? _fb.{FlatBufferStructPropertyName});";
+                return $"public {_typeKeyword} {PropertyName} => {nameof(ParameterLocalizationHandler)}.{nameof(ParameterLocalizationHandler.GetLocalizationKeyTranslation)}(TryGetOverride<{_typeKeyword}>({propertyIndex}, out var val) ? val : _fb.{FlatBufferStructPropertyName});";
 
             if (HasLocalizedScriptAttribute)
-                return $"public {_typeKeyword} {PropertyName} => {nameof(ParameterLocalizationHandler)}.{nameof(ParameterLocalizationHandler.GetLocalizableScriptTranslation)}({OverrideFieldName} ?? _fb.{FlatBufferStructPropertyName});";
+                return $"public {_typeKeyword} {PropertyName} => {nameof(ParameterLocalizationHandler)}.{nameof(ParameterLocalizationHandler.GetLocalizableScriptTranslation)}(TryGetOverride<{_typeKeyword}>({propertyIndex}, out var val) ? val : _fb.{FlatBufferStructPropertyName});";
 
-            return base.FlatBufferPropertyImplementationCode();
+            return base.FlatBufferPropertyImplementationCode(propertyIndex);
         }
 
-        public override string FlatBufferEditPropertyCode(string variableName) =>
-            $"{OverrideFieldName} = {variableName};";
+        public override string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName) =>
+            $"return TrySetOverride<{_typeKeyword}>({propertyIndex}, {variableName}, {maxPropertyIndex}, out error);";
 
         public override string FlatBufferBuilderPrepareCode(string tableName) =>
             $"var sharedString{FlatBufferStructPropertyName} = _builder.CreateSharedString(data.{PropertyName});";

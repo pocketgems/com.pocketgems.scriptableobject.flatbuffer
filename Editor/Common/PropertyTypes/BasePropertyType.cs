@@ -84,10 +84,9 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             string localizationKeysArgumentName,
             string localizedScriptArgumentName) => null;
 
-        public abstract string FlatBufferFieldDefinitionCode();
-        public abstract string FlatBufferPropertyImplementationCode();
-        public abstract string FlatBufferEditPropertyCode(string variableName);
-        public abstract string FlatBufferRemoveEditCode();
+        public virtual string FlatBufferFieldDefinitionCode() => null;
+        public abstract string FlatBufferPropertyImplementationCode(int propertyIndex);
+        public abstract string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName);
 
         public abstract string FlatBufferBuilderPrepareCode(string tableName);
         public abstract string FlatBufferBuilderCode(string tableName);
@@ -105,7 +104,6 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         // helper methods
         protected string PropertyName => PropertyInfo.Name;
         protected string PropertyTypeName => PropertyInfo.PropertyType.Name;
-        protected string OverrideFieldName => $"_override{PropertyInfo.Name}";
         protected string FieldName => $"_{PropertyInfo.Name.LowercaseFirstChar()}";
         protected string FlatBufferStructPropertyName => PropertyInfo.Name.UppercaseFirstChar();
     }

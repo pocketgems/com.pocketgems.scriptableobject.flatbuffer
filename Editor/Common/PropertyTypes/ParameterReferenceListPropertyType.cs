@@ -40,16 +40,16 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         public override string ScriptableObjectPropertyImplementationCode() =>
             $"public IReadOnlyList<ParameterReference<{_genericType.Name}>> {PropertyName} => {FieldName};";
 
-        public override string FlatBufferPropertyImplementationCode()
+        public override string FlatBufferPropertyImplementationCode(int propertyIndex)
         {
             return $"public IReadOnlyList<ParameterReference<{_genericType.Name}>> {PropertyName}\n" +
                    $"{{\n" +
                    $"    get\n" +
                    $"    {{\n" +
-                   $"        if ({OverrideFieldName} != null)\n" +
+                   $"        if (TryGetOverride<string[]>({propertyIndex}, out var val))\n" +
                    $"            return new ReadOnlyListContainer<ParameterReference<{_genericType.Name}>>(\n" +
-                   $"                () => {OverrideFieldName}.Length,\n" +
-                   $"                i => new ParameterReference<{_genericType.Name}>(_parameterManager, {OverrideFieldName}[i], true));\n" +
+                   $"                () => val.Length,\n" +
+                   $"                i => new ParameterReference<{_genericType.Name}>(_parameterManager, val[i], true));\n" +
                    $"        return new ReadOnlyListContainer<ParameterReference<{_genericType.Name}>>(\n" +
                    $"            () => _fb.{FlatBufferStructPropertyName}Length,\n" +
                    $"                i => new ParameterReference<{_genericType.Name}>(_parameterManager, _fb.{FlatBufferStructPropertyName}(i)));\n" +

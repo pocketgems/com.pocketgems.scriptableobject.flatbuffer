@@ -21,18 +21,14 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         public override string ScriptableObjectPropertyImplementationCode() =>
             $"public {ClassName} {PropertyName} => {FieldName};";
 
-
-        public override string FlatBufferFieldDefinitionCode() =>
-            $"private {ClassName} {OverrideFieldName};";
-
-        public override string FlatBufferPropertyImplementationCode()
+        public override string FlatBufferPropertyImplementationCode(int propertyIndex)
         {
             return $"public {ClassName} {PropertyName}\n" +
                    $"{{\n" +
                    $"    get\n" +
                    $"    {{\n" +
-                   $"        if ({OverrideFieldName} != null)\n" +
-                   $"            return {OverrideFieldName};\n" +
+                   $"        if (TryGetOverride<{ClassName}>({propertyIndex}, out var val))\n" +
+                   $"            return val;\n" +
                    $"        var assetRef = new {ClassName}(_fb.{FlatBufferStructPropertyName});\n" +
                    $"        var subObjectName = _fb.{SubObjectNameFlatBufferStructPropertyName};\n" +
                    $"        if (!string.IsNullOrEmpty(subObjectName))\n" +
@@ -44,11 +40,8 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
 
         // no need to set validateGuid to true in the this call to FromString - the check only checks the AssetDatabase in editor.
         // Also, this check an potentially give false positive if the asset is a new asset from an addresss catalog we're ab testing in.
-        public override string FlatBufferEditPropertyCode(string variableName) =>
-            $"{OverrideFieldName} = {nameof(CSVValueConverter)}.{ClassName}.FromString({variableName});";
-
-        public override string FlatBufferRemoveEditCode() =>
-            $"{OverrideFieldName} = null;";
+        public override string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName) =>
+            $"return TrySetOverride<{ClassName}>({propertyIndex}, {nameof(CSVValueConverter)}.{ClassName}.FromString({variableName}), {maxPropertyIndex}, out error);";
 
         public override string FlatBufferBuilderPrepareCode(string tableName)
         {

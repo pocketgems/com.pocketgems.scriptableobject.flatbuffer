@@ -21,17 +21,14 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         public override string ScriptableObjectPropertyImplementationCode() =>
             $"public IReadOnlyList<{_typeKeyword}> {PropertyName} => {FieldName};";
 
-        public override string FlatBufferFieldDefinitionCode() =>
-            $"private {_typeKeyword}[] {OverrideFieldName};";
-
-        public override string FlatBufferPropertyImplementationCode()
+        public override string FlatBufferPropertyImplementationCode(int propertyIndex)
         {
             return $"public IReadOnlyList<{_typeKeyword}> {PropertyName}\n" +
                    $"{{\n" +
                    $"    get\n" +
                    $"    {{\n" +
-                   $"        if ({OverrideFieldName} != null)\n" +
-                   $"            return {OverrideFieldName};\n" +
+                   $"        if (TryGetOverride<{_typeKeyword}[]>({propertyIndex}, out var val))\n" +
+                   $"            return val;\n" +
                    $"        return new ReadOnlyListContainer<{_typeKeyword}>(\n" +
                    $"            () => _fb.{FlatBufferStructPropertyName}Length,\n" +
                    $"            i => _fb.{FlatBufferStructPropertyName}(i));\n" +
@@ -39,11 +36,8 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
                    $"}}";
         }
 
-        public override string FlatBufferEditPropertyCode(string variableName) =>
-            $"{OverrideFieldName} = {FromStringCode(variableName)};";
-
-        public override string FlatBufferRemoveEditCode() =>
-            $"{OverrideFieldName} = null;";
+        public override string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName) =>
+            $"return TrySetOverride<{_typeKeyword}[]>({propertyIndex}, {FromStringCode(variableName)}, {maxPropertyIndex}, out error);";
 
         public override string FlatBufferBuilderPrepareCode(string tableName)
         {

@@ -34,21 +34,15 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         public override string ScriptableObjectPropertyImplementationCode() =>
             $"public {SanitizedPropertyTypeName()}<{_genericType.Name}> {PropertyName} => {FieldName};";
 
-        public override string FlatBufferFieldDefinitionCode() =>
-            $"private {SanitizedPropertyTypeName()}<{_genericType.Name}> {OverrideFieldName};";
-
-        public override string FlatBufferPropertyImplementationCode()
+        public override string FlatBufferPropertyImplementationCode(int propertyIndex)
         {
             var referenceClassName = SanitizedPropertyTypeName();
             return
-                $"public {referenceClassName}<{_genericType.Name}> {PropertyName} => {OverrideFieldName} ?? new {referenceClassName}<{_genericType.Name}>(_parameterManager, _fb.{FlatBufferStructPropertyName});";
+                $"public {referenceClassName}<{_genericType.Name}> {PropertyName} => TryGetOverride<{SanitizedPropertyTypeName()}<{_genericType.Name}>>({propertyIndex}, out var val) ? val : new {referenceClassName}<{_genericType.Name}>(_parameterManager, _fb.{FlatBufferStructPropertyName});";
         }
 
-        public override string FlatBufferEditPropertyCode(string variableName) =>
-            $"{OverrideFieldName} = {FromStringCode(variableName)};";
-
-        public override string FlatBufferRemoveEditCode() =>
-            $"{OverrideFieldName} = null;";
+        public override string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName) =>
+            $"return TrySetOverride<{SanitizedPropertyTypeName()}<{_genericType.Name}>>({propertyIndex}, {FromStringCode(variableName)}, {maxPropertyIndex}, out error);";
 
         public override string FlatBufferBuilderPrepareCode(string tableName)
         {
