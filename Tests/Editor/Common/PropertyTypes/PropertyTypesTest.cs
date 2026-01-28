@@ -6,6 +6,7 @@ using NUnit.Framework;
 using PocketGems.Parameters.Common.Util.Editor;
 using PocketGems.Parameters.Editor;
 using PocketGems.Parameters.Interface;
+using PocketGems.Parameters.Interface.Attributes;
 using PocketGems.Parameters.Types;
 using UnityEngine;
 #if ADDRESSABLE_PARAMS
@@ -95,11 +96,11 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             IReadOnlyList<AssetReferenceAtlasedSprite> MyAssetAltasdSprites { get; }
 #endif
 
-            [AttachFieldAttribute("MyAttribute(\"blah\")")]
+            [ParameterAttachFieldAttribute("MyAttribute(\"blah\")")]
             int IntWithAttribute { get; }
 
-            [AttachFieldAttribute("MyAttribute(\"blah1\")")]
-            [AttachFieldAttribute("MyAttribute(\"blah2\")")]
+            [ParameterAttachFieldAttribute("MyAttribute(\"blah1\")")]
+            [ParameterAttachFieldAttribute("MyAttribute(\"blah2\")")]
             int IntWithAttributes { get; }
         }
 
