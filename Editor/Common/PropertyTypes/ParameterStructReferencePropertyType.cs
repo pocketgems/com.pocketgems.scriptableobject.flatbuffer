@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using PocketGems.Parameters.Common.Util.Editor;
+using PocketGems.Parameters.Interface;
 
 namespace PocketGems.Parameters.Common.PropertyTypes.Editor
 {
@@ -33,6 +34,11 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         public override string ScriptableObjectPropertyImplementationCode() =>
             // need the double cast to handle situations where PARAMS_DISABLE_INTERFACE_IMPLEMENTATION is enabled
             $"public {SanitizedPropertyTypeName()}<{_genericType.Name}> {PropertyName} => new ParameterStructReferenceEditor<{_genericType}>(({_genericType})(object){FieldName});";
+
+        public override string ScriptableObjectCollectLocalizationStringsCode(string localizationKeysArgumentName, string localizedScriptArgumentName)
+        {
+            return $"{FieldName}.{nameof(IParameterScriptableObjectStruct.CollectLocalizationStrings)}({localizationKeysArgumentName}, {localizedScriptArgumentName});";
+        }
 
         // flat buffer guids are always deterministic and shouldn't change via ab testing
         public override string FlatBufferFieldDefinitionCode() => null;

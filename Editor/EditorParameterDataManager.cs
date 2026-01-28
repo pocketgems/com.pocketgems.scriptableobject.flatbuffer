@@ -12,6 +12,7 @@ using PocketGems.Parameters.Common.Util.Editor;
 using PocketGems.Parameters.DataGeneration.Operation.Editor;
 using PocketGems.Parameters.DataGeneration.Operations.Editor;
 using PocketGems.Parameters.DataGeneration.Util.Editor;
+using PocketGems.Parameters.Editor.Localization;
 using PocketGems.Parameters.Editor.Validation.Editor;
 using PocketGems.Parameters.Interface;
 using PocketGems.Parameters.Processors.Editor;
@@ -466,30 +467,32 @@ namespace PocketGems.Parameters.Editor
         /// <summary>
         /// Helper method to analyze all parameter files and output all localization keys.
         /// </summary>
-        /// <returns>List of unique localization key strings.</returns>
-        public static List<string> CollectLocalizationKeys()
+        /// <returns>ICollectedLocalizationStrings of collected strings.</returns>
+        public static ICollectedLocalizationStrings CollectLocalizationStrings()
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
-            ParameterDebug.LogVerbose("Collecting Localization keys: Started");
-            var localizationKeys = new List<string>();
+            ParameterDebug.LogVerbose($"Collecting {nameof(CollectLocalizationStrings)}: Started");
             var executor = new OperationExecutor<IDataOperationContext>();
             var context = new DataOperationContext();
+            context.GenerateDataType = GenerateDataType.All;
             executor.ExecuteOperations(new List<IParameterOperation<IDataOperationContext>>()
             {
+                // find assembly & fetch all types
+                new ParseInterfaceAssemblyOperation<IDataOperationContext>(),
                 // read all scriptable object files
                 new ScriptableObjectLoaderOperation(),
-                // iterate and collect localization keys
-                new LocalizationScraperOperation(localizationKeys),
+                // collect localization keys from scriptable objects
+                new StringLocalizationOperation(out var localizationKeys, out var localizedScripts),
             }, context);
 
             DisplayExecutionResults(executor);
 
-            ParameterDebug.LogVerbose("Collecting Localization keys: Finished");
+            ParameterDebug.LogVerbose($"Collecting {nameof(CollectLocalizationStrings)}: Finished");
 
             stopwatch.Stop();
-            ParameterDebug.LogVerbose($"{nameof(CollectLocalizationKeys)} duration: {stopwatch.ElapsedMilliseconds}ms");
+            ParameterDebug.LogVerbose($"{nameof(CollectLocalizationStrings)} duration: {stopwatch.ElapsedMilliseconds}ms");
 
-            return localizationKeys;
+            return new CollectedLocalizationStrings(localizationKeys, localizedScripts);
         }
 
         private static void DisplayExecutionResults<T>(OperationExecutor<T> executor)

@@ -19,14 +19,32 @@ namespace {{namespace}}
 #if {{disableSymbol}}
     internal struct {{structName}}
 #else
-    internal struct {{structName}} : {{interfaceName}}
+    internal struct {{structName}} : IParameterScriptableObjectStruct, {{interfaceName}}
 #endif
     {
+        #region {{interfaceName}}
+
 {{~for property in properties~}}
     {{~lines = property | regex.split `\n`~}}
     {{~for line in lines~}}
         {{line}}
     {{~end~}}
 {{~end~}}
+
+        #endregion
+
+        #region IParameterScriptableObjectStruct
+
+        public void CollectLocalizationStrings(HashSet<string> localizationKeys, HashSet<string> localizedScript)
+        {
+    {{~for localization in localizations~}}
+        {{~lines = localization | regex.split `\n`~}}
+        {{~for line in lines~}}
+            {{line}}
+        {{~end~}}
+    {{~end~}}
+        }
+
+        #endregion
     }
 }

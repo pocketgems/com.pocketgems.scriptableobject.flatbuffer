@@ -12,6 +12,7 @@ namespace PocketGems.Parameters
         public void SetUp()
         {
             Params.IsGettingSafe = true;
+            Assert.That(Params.IsGettingSafe, Is.True);
             Params.SetInstance(null);
         }
 
@@ -52,13 +53,24 @@ namespace PocketGems.Parameters
         }
 
         [Test]
-        public void Get()
+        public void GetT()
         {
             var pm = Substitute.For<IMutableParameterManager>();
             Params.SetInstance(pm);
 
             Params.Get<ISubInterfaceAInfo>();
             pm.Received().Get<ISubInterfaceAInfo>();
+        }
+
+        [Test]
+        public void Get()
+        {
+            var pm = Substitute.For<IMutableParameterManager>();
+            Params.SetInstance(pm);
+
+            var theType = typeof(ISubInterfaceAInfo);
+            Params.Get("id", theType);
+            pm.Received().Get("id", theType);
         }
 
         [Test]

@@ -213,12 +213,6 @@ namespace PocketGems.Parameters.LocalCSV
             }
         }
 
-        public static class LocalizedString
-        {
-            public static string ToString(string value) => value;
-            public static string FromString(string value) => value;
-        }
-
         [ExcludeFromCoverage]
         public static class ParameterReference
         {

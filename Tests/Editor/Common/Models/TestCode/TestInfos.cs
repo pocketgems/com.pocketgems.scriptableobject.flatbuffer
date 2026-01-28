@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using PocketGems.Parameters;
 using PocketGems.Parameters.Interface;
+using PocketGems.Parameters.Interface.Attributes;
 
 // valid interface
 public interface ISuperInfo : IBaseInfo
@@ -103,4 +104,26 @@ public interface IReferenceBaseInfo : IBaseInfo
 public interface IListReferenceBaseInfo : IBaseInfo
 {
     IReadOnlyList<ParameterReference<IBaseInfo>> MyInfos { get; }
+}
+
+// bad: invalid localization attribute tagging
+public interface IBadLocalizationOneInfo : IBaseInfo
+{
+    [ParameterLocalizableScript]
+    [ParameterLocalizationKey]
+    string MyString { get; }
+}
+
+// bad: localization key on invalid type
+public interface IBadLocalizationTwoInfo : IBaseInfo
+{
+    [ParameterLocalizationKey]
+    int MyInt { get; }
+}
+
+// bad: localizable script on invalid type
+public interface IBadLocalizationThreeInfo : IBaseInfo
+{
+    [ParameterLocalizableScript]
+    int MyInt { get; }
 }

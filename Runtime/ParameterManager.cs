@@ -257,6 +257,7 @@ namespace PocketGems.Parameters
             guidDict[guid] = parameter;
         }
 
+        /// <inheritdoc cref="IParameterManager.Get"/>
         public IBaseInfo Get(string identifier, Type type)
         {
             CheckGet();

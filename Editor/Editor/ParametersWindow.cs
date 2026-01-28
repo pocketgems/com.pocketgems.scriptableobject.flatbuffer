@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using PocketGems.Parameters.CodeGeneration.Operation.Editor;
 using PocketGems.Parameters.Common.Editor;
 using PocketGems.Parameters.Common.Util.Editor;
@@ -169,6 +170,14 @@ namespace PocketGems.Parameters.Editor.Editor
                 EditorParameterDataManager.GenerateCodeFiles(GenerateCodeType.Generate, GenerateDataType.None);
             if (GUILayout.Button("Generate Data Only"))
                 GenerateData();
+            if (GUILayout.Button("Log Localization Strings"))
+            {
+                var collectedLocalizationStrings = EditorParameterDataManager.CollectLocalizationStrings();
+                var localizationKeys = collectedLocalizationStrings.LocalizationKeys.ToList();
+                var LocalizableScripts = collectedLocalizationStrings.LocalizableScripts.ToList();
+                Debug.Log($"{nameof(collectedLocalizationStrings.LocalizationKeys)}[{localizationKeys.Count}]: {string.Join(" | ", localizationKeys)}");
+                Debug.Log($"{nameof(collectedLocalizationStrings.LocalizableScripts)}[{LocalizableScripts.Count}]: {string.Join(" | ", LocalizableScripts)}");
+            }
             if (GUILayout.Button("Disable code Interface Implementations"))
                 EditorParameterDataManager.DisableInterfaceImplementations();
             GUI.enabled = EditorApplication.isPlaying;

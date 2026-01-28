@@ -73,11 +73,19 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             TimeSpan MyTimeSpan { get; }
             IReadOnlyList<TimeSpan> MyTimeSpans { get; }
 
+            // strings
             string MyString { get; }
             IReadOnlyList<string> MyStrings { get; }
 
-            LocalizedString MyLocString { get; }
-            IReadOnlyList<LocalizedString> MyLocStrings { get; }
+            // localized strings
+            [ParameterLocalizationKey]
+            string MyLocalizedString { get; }
+            [ParameterLocalizationKey]
+            IReadOnlyList<string> MyLocalizedStrings { get; }
+            [ParameterLocalizableScript]
+            string MyLocalizedCode { get; }
+            [ParameterLocalizableScript]
+            IReadOnlyList<string> MyLocalizedCodes { get; }
 
             ParameterReference<ITestInfo> MyTestInfo { get; }
             IReadOnlyList<ParameterReference<ITestInfo>> MyTestInfos { get; }
@@ -131,8 +139,11 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         private void AssertPropertyType(IPropertyType propertyType,
             bool expectNullPrepareSource = false,
             bool expectImmutableFlatBufferData = false,
+            bool expectLocalization = false,
             bool isBaseInfoIdentifier = false)
         {
+            Assert.IsTrue(propertyType.Validate("interfaceName", out _));
+
             Assert.IsNotNull(propertyType.PropertyInfo);
             Assert.IsNull(propertyType.ScriptableObjectFieldAttributesCode());
             if (isBaseInfoIdentifier)
@@ -140,6 +151,12 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             else
                 Assert.IsNotNull(propertyType.ScriptableObjectFieldDefinitionCode());
             Assert.IsNotNull(propertyType.ScriptableObjectPropertyImplementationCode());
+
+            var localizationStrings = propertyType.ScriptableObjectCollectLocalizationStringsCode("arg1", "arg2");
+            if (expectLocalization)
+                Assert.IsNotNull(localizationStrings);
+            else
+                Assert.IsNull(localizationStrings);
 
             if (expectImmutableFlatBufferData)
                 Assert.IsNull(propertyType.FlatBufferFieldDefinitionCode());
@@ -222,13 +239,15 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         [TestCase(nameof(ITestInfo.MyTimeSpans))]
         [TestCase(nameof(ITestInfo.MyString))]
         [TestCase(nameof(ITestInfo.MyStrings))]
-        [TestCase(nameof(ITestInfo.MyLocString))]
-        [TestCase(nameof(ITestInfo.MyLocStrings))]
+        [TestCase(nameof(ITestInfo.MyLocalizedString), false, false, true)]
+        [TestCase(nameof(ITestInfo.MyLocalizedStrings), false, false, true)]
+        [TestCase(nameof(ITestInfo.MyLocalizedCode), false, false, true)]
+        [TestCase(nameof(ITestInfo.MyLocalizedCodes), false, false, true)]
         [TestCase(nameof(ITestInfo.MyTestInfo))]
         [TestCase(nameof(ITestInfo.MyTestInfos))]
         [TestCase(nameof(ITestInfo.MyTestInfos))]
-        [TestCase(nameof(ITestInfo.MyStruct), false, true)]
-        [TestCase(nameof(ITestInfo.MyStructs))]
+        [TestCase(nameof(ITestInfo.MyStruct), false, true, true)]
+        [TestCase(nameof(ITestInfo.MyStructs), false, false, true)]
 #if ADDRESSABLE_PARAMS
         [TestCase(nameof(ITestInfo.MyAsset))]
         [TestCase(nameof(ITestInfo.MyGameObject))]
@@ -241,12 +260,14 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
 #endif
         public void ValidateTypes(string propertyName,
             bool expectNullPrepareSource = false,
-            bool expectNullFlatBufferFieldDefinitionCode = false)
+            bool expectNullFlatBufferFieldDefinitionCode = false,
+            bool expectLocalization = false)
         {
             var propertyType = CreatePropertyType(propertyName);
             AssertPropertyType(propertyType,
                 expectNullPrepareSource: expectNullPrepareSource,
-                expectImmutableFlatBufferData: expectNullFlatBufferFieldDefinitionCode);
+                expectImmutableFlatBufferData: expectNullFlatBufferFieldDefinitionCode,
+                expectLocalization: expectLocalization);
         }
 
         [Test]

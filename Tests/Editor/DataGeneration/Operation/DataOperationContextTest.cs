@@ -21,6 +21,8 @@ namespace PocketGems.Parameters.DataGeneration.Operation.Editor
             Assert.AreEqual(list2, context.ModifiedScriptableObjectPaths);
             Assert.IsNotNull(context.InfoCSVFileCache);
             Assert.IsNotNull(context.StructCSVFileCache);
+            Assert.IsNotNull(context.GeneratedCodeAssemblyName);
+            Assert.IsNotNull(context.GeneratedCodeEditorAssemblyName);
             Assert.IsNotEmpty(context.GeneratedLocalCSVDirectory);
             Assert.IsNotEmpty(context.GeneratedAssetDirectory);
             Assert.IsNotEmpty(context.GeneratedAssetFileName);

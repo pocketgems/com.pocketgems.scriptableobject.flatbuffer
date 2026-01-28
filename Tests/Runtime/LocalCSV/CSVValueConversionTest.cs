@@ -441,24 +441,6 @@ namespace PocketGems.Parameters.LocalCSV
         }
 
         [Test]
-        [TestCase("blah")]
-        [TestCase("")]
-        [TestCase(null)]
-        public void LocalizedStringToString(string value)
-        {
-            Assert.AreEqual(value, CSVValueConverter.LocalizedString.ToString(value));
-        }
-
-        [Test]
-        [TestCase("blah")]
-        [TestCase("")]
-        [TestCase(null)]
-        public void LocalizedStringFromString(string value)
-        {
-            Assert.AreEqual(value, CSVValueConverter.LocalizedString.FromString(value));
-        }
-
-        [Test]
         public void BoolArrayToString()
         {
             void Test(string expected, bool[] value)

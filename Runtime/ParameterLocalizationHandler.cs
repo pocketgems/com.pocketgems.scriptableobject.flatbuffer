@@ -12,28 +12,51 @@ namespace PocketGems.Parameters
         /// Callback that can be set externally by apps for a localization system to translate given a localization
         /// key.
         /// </summary>
-        public delegate string TranslateStringDelegate(string localizationKey);
-        public static TranslateStringDelegate GlobalTranslateStringDelegate;
+        public delegate string TranslateLocalizationKeyDelegate(string localizationKey);
+        public static TranslateLocalizationKeyDelegate GlobalTranslateLocalizationKeyDelegate;
+
+        /// <summary>
+        /// Callback that can be set externally by apps for a localization system to translate given a script.
+        /// </summary>
+        public delegate string TranslateLocalizableScriptDelegate(string localizableScript);
+        public static TranslateLocalizableScriptDelegate GlobalTranslateLocalizableScriptDelegate;
 
         /// <summary>
         /// Called by the auto generated parameters info files to translate strings.
         /// </summary>
         /// <param name="localizationKey">The localization key to fetch the local language's text for.</param>
         /// <returns>The current locale's translation if it exists, else the key is returned.</returns>
-        public static string GetTranslation(string localizationKey)
+        public static string GetLocalizationKeyTranslation(string localizationKey)
         {
             if (string.IsNullOrWhiteSpace(localizationKey))
+                return localizationKey;
+
+            if (GlobalTranslateLocalizationKeyDelegate == null)
             {
+                Debug.LogError($"{nameof(GlobalTranslateLocalizationKeyDelegate)} not set prior to calling {nameof(GetLocalizationKeyTranslation)}");
                 return localizationKey;
             }
 
-            if (GlobalTranslateStringDelegate == null)
+            return GlobalTranslateLocalizationKeyDelegate(localizationKey);
+        }
+
+        /// <summary>
+        /// Called by the auto generated parameters info files to translate strings.
+        /// </summary>
+        /// <param name="localizableScript">The localizableScript to fetch a localized script for.</param>
+        /// <returns>The current locale's translation if it exists, else the key is returned.</returns>
+        public static string GetLocalizableScriptTranslation(string localizableScript)
+        {
+            if (string.IsNullOrWhiteSpace(localizableScript))
+                return localizableScript;
+
+            if (GlobalTranslateLocalizableScriptDelegate == null)
             {
-                Debug.LogError($"{nameof(GlobalTranslateStringDelegate)} not set prior to calling {nameof(GetTranslation)}");
-                return localizationKey;
+                Debug.LogError($"{nameof(GlobalTranslateLocalizableScriptDelegate)} not set prior to calling {nameof(GetLocalizableScriptTranslation)}");
+                return localizableScript;
             }
 
-            return GlobalTranslateStringDelegate(localizationKey.Trim());
+            return GlobalTranslateLocalizableScriptDelegate(localizableScript);
         }
     }
 }

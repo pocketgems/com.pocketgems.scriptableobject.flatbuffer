@@ -34,6 +34,9 @@ namespace PocketGems.Parameters.Common.Models.Editor
         [TestCase(typeof(INameSpacedInfo))] // interface has a name space
         [TestCase(typeof(IReferenceBaseInfo))] // interface has reference to base info
         [TestCase(typeof(IListReferenceBaseInfo))] // interface has reference to base info
+        [TestCase(typeof(IBadLocalizationOneInfo))] // has two loc attributes on one property
+        [TestCase(typeof(IBadLocalizationTwoInfo))] // using loc key attribute on invalid type
+        [TestCase(typeof(IBadLocalizationThreeInfo))] // using loc script attribute on invalid type
         public void InvalidInterface(Type interfaceType)
         {
             AssertInvalidInterface(new ParameterInfo(interfaceType));
