@@ -4,6 +4,29 @@ All package updates & migration steps will be listed in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.0] - 2026-02-06
+### Added
+- `TryGet<T>()` method to `IParameterManager` and `Params`
+- New Localization Support
+ - Support to tag strings as `[ParameterLocalizationKey]` and `[ParameterLocalizableScript]`
+ - `EditorParameterDataManager.CollectLocalizationStrings()` API to return all tagged strings.
+ - README for localization.
+### Changed
+- Updated README details.
+- Improved `LogError` message in `ParameterManager`
+### Fixed
+- Compilation issue with in-editor code generation.
+- CSV Writing/Reading issues when modified by Numbers & Excel.
+- CSV Syncing to a null struct array.
+### Removed 
+- `Obsolete` `AttachFieldAttributeAttribute` class.
+- `Obsolete` `ParameterStructReferenceRuntime()` constructor.
+- `Obsolete` `ParameterReference()` constructor.
+- `Obsolete` `PocketGems.Parameters.Editor.CommandLineBuild` class.
+- `Obsolete` `ParameterScriptableObjectInspectorDrawProperty` method.
+- Legacy `LocalizedString` type.
+- Legacy `EditorParameterDataManager.CollectLocalizationKeys()` API.
+
 ## [4.8.1] - 2026-01-28
 ### Fixed
 - Code gen output for iterating arrays in structs.
