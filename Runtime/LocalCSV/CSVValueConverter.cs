@@ -281,7 +281,7 @@ namespace PocketGems.Parameters.LocalCSV
 
                 throw new Exception($"Cannot find asset with name {value} of type {typeof(T)}");
 #else
-                return new ParameterReference<T>(value, true);
+                return new ParameterReference<T>(parameterManager, value, true);
 #endif
             }
         }
