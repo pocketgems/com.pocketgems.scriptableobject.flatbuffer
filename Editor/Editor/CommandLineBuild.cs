@@ -1,4 +1,3 @@
-using System;
 using PocketGems.Parameters.Processors.Editor;
 using UnityEditor;
 using UnityEngine;
@@ -19,16 +18,5 @@ namespace PocketGems.Parameters.Editor.Editor
                 return;
             EditorApplication.Exit(success ? 0 : 1);
         }
-    }
-}
-
-// leave the old function & namespace for backwards compatibility reasons
-namespace PocketGems.Parameters.Editor
-{
-    [Obsolete]
-    [ExcludeFromCoverage]
-    internal static class CommandLineBuild
-    {
-        public static void GenerateParameters() => Editor.CommandLineBuild.GenerateParameters();
     }
 }
