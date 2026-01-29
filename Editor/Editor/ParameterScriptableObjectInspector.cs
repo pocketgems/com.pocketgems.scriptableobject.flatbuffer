@@ -85,25 +85,6 @@ namespace PocketGems.Parameters.Editor.Editor
             EditorGUILayout.Space();
         }
 
-        #region hack for backwards compatibility
-
-        private static string warningMessageHolder = null;
-
-        [Obsolete]
-        private void InternalDrawProperty(SerializedProperty property, string errorMessage = null, string warningMessage = null)
-        {
-            warningMessageHolder = warningMessage;
-            DrawProperty(property, errorMessage);
-        }
-
-        [Obsolete]
-        protected virtual void DrawProperty(SerializedProperty property, string errorMessage = null)
-        {
-            DrawProperty(property, errorMessage, warningMessageHolder);
-        }
-
-        #endregion
-
         /// <summary>
         /// Allow for subclasses to draw custom visualizers for the property
         /// </summary>
@@ -302,7 +283,7 @@ namespace PocketGems.Parameters.Editor.Editor
 
                 // draw property
                 if (foldOutAttribute == null || isFoldoutOpen)
-                    InternalDrawProperty(serializedProp, errorMessage, warningMessage);
+                    DrawProperty(serializedProp, errorMessage, warningMessage);
             }
             scope?.Dispose();
 
