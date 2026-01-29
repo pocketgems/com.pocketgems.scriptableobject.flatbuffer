@@ -70,9 +70,6 @@ namespace PocketGems.Parameters
             }
         }
 
-        [Obsolete("Use other ParameterStructReferenceRuntime() constructor.")]
-        public ParameterStructReferenceRuntime(string guid) : this(Params.ParameterManager, guid) { }
-
         public override string ToString()
         {
             string description = _guid;
