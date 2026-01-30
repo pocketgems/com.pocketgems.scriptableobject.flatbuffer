@@ -104,6 +104,45 @@ namespace PocketGems.Parameters
         }
 
         [Test]
+        public void TryGet()
+        {
+            void TryGet<T>(string identifier, bool expectExist = true) where T : class, IBaseInfo
+            {
+                var originalResult = _parameterManager.TryGet<T>(identifier, out var originalInfo);
+                var linkedResult = _linkedParameterManager.TryGet<T>(identifier, out var linkedInfo);
+
+                Assert.That(linkedResult, Is.EqualTo(originalResult));
+
+                if (expectExist)
+                {
+                    Assert.That(originalInfo, Is.Not.Null);
+                    Assert.That(linkedInfo, Is.Not.Null);
+
+                    // info data match
+                    Assert.That(originalInfo.Identifier, Is.EqualTo(identifier));
+                    Assert.That(linkedInfo.Identifier, Is.EqualTo(identifier));
+
+                    // infos are not the exact same info
+                    Assert.That(linkedInfo != originalInfo, Is.True);
+
+                    // querying the info more than once returns the same info
+                    Assert.That(_linkedParameterManager.TryGet<T>(identifier, out var anotherLinkedInfo), Is.True);
+                    Assert.That(anotherLinkedInfo, Is.EqualTo(linkedInfo));
+                }
+                else
+                {
+                    Assert.That(linkedResult, Is.False);
+                    Assert.That(linkedInfo, Is.Null);
+                }
+            }
+
+            TryGet<ISubInterfaceAInfo>("NonExistentId", false);
+            TryGet<ISubInterfaceAInfo>(Item1SubclassAId);
+            TryGet<ISubInterfaceBInfo>(Item2SubclassBId);
+            TryGet<ISubInterfaceBInfo>(Item3SubclassBId);
+        }
+
+        [Test]
         public void GetIEnumerable()
         {
             void Get<T>() where T : class, IBaseInfo

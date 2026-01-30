@@ -10,6 +10,10 @@ namespace PocketGems.Parameters
     /// </summary>
     public static class Params
     {
+        /// <summary>
+        /// Sets the global static parameter manager instance.
+        /// </summary>
+        /// <param name="parameterManager">the parameter manager to set</param>
         public static void SetInstance(IMutableParameterManager parameterManager)
         {
             s_parameterManager = parameterManager;
@@ -19,14 +23,56 @@ namespace PocketGems.Parameters
         public static IParameterManager ParameterManager => s_parameterManager;
         public static IMutableParameterManager MutableParameterManager => s_parameterManager;
 
+        /// <summary>
+        /// Get a particular parameter object by identifier from the globally set parameter manager.
+        /// </summary>
+        /// <param name="identifier">identifier to query</param>
+        /// <typeparam name="T">type to query</typeparam>
+        /// <returns>the parameter if it exists</returns>
         public static T Get<T>(string identifier) where T : class, IBaseInfo => s_parameterManager.Get<T>(identifier);
 
-        public static T GetWithGUID<T>(string guid) where T : class, IBaseInfo => s_parameterManager.GetWithGUID<T>(guid);
+        /// <summary>
+        /// Get a particular parameter object by identifier from the globally set parameter manager.
+        /// </summary>
+        /// <param name="identifier">identifier to query</param>
+        /// <param name="parameter">the parameter if it exists, otherwise null</param>
+        /// <typeparam name="T">type to query</typeparam>
+        /// <returns>true if the parameter exists</returns>
+        public static bool TryGet<T>(string identifier, out T parameter) where T : class, IBaseInfo => s_parameterManager.TryGet(identifier, out parameter);
 
+        /// <summary>
+        /// Get a particular parameter object by identifier from the globally set parameter manager.
+        /// </summary>
+        /// <param name="type">type of object to return. This is expected to be a subinterface of IBaseInfo</param>
+        /// <param name="identifier">identifier to query</param>
+        /// <returns>object of type IBaseInfo, and implicitly of type Type</returns>
         public static IBaseInfo Get(string identifier, Type type) => s_parameterManager.Get(identifier, type);
 
+        /// <summary>
+        /// Get a particular parameter object by guid from the globally set parameter manager.
+        /// </summary>
+        /// <param name="guid">asset guid to query</param>
+        /// <typeparam name="T">type to query</typeparam>
+        /// <returns>the parameter if it exists</returns>
+        public static T GetWithGUID<T>(string guid) where T : class, IBaseInfo => s_parameterManager.GetWithGUID<T>(guid);
+
+        /// <summary>
+        /// Get an enumerable of parameter objects of the same type from the globally set parameter manager.
+        ///
+        /// There is no guaranteed order.
+        /// </summary>
+        /// <typeparam name="T">type to query</typeparam>
+        /// <returns>enumerator for all parameters the type</returns>
         public static IEnumerable<T> Get<T>() where T : class, IBaseInfo => s_parameterManager.Get<T>();
 
+        /// <summary>
+        /// Get an enumerable of parameter objects of the same type in
+        /// identifier ascending order from the globally set parameter manager.
+        ///
+        /// This call is more expensive than Get() due to extra sorting overhead.
+        /// </summary>
+        /// <typeparam name="T">type to query</typeparam>
+        /// <returns>enumerator for all parameters the type</returns>
         public static IEnumerable<T> GetSorted<T>() where T : class, IBaseInfo => s_parameterManager.GetSorted<T>();
 
         /// <summary>

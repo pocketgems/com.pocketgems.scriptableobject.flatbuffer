@@ -20,6 +20,15 @@ namespace PocketGems.Parameters
         /// <summary>
         /// Get a particular parameter object by identifier.
         /// </summary>
+        /// <param name="identifier">identifier to query</param>
+        /// <param name="parameter">the parameter if it exists, otherwise null</param>
+        /// <typeparam name="T">type to query</typeparam>
+        /// <returns>true if the parameter exists</returns>
+        bool TryGet<T>(string identifier, out T parameter) where T : class, IBaseInfo;
+
+        /// <summary>
+        /// Get a particular parameter object by identifier.
+        /// </summary>
         /// <param name="type">type of object to return. This is expected to be a subinterface of IBaseInfo</param>
         /// <param name="identifier">identifier to query</param>
         /// <returns>object of type IBaseInfo, and implicitly of type Type</returns>
@@ -42,7 +51,7 @@ namespace PocketGems.Parameters
         T GetStructWithGuid<T>(string guid) where T : class, IBaseStruct;
 
         /// <summary>
-        /// Get a list of parameter objects of the same type.
+        /// Get an enumerable of parameter objects of the same type.
         ///
         /// There is no guaranteed order.
         /// </summary>
@@ -51,7 +60,7 @@ namespace PocketGems.Parameters
         IEnumerable<T> Get<T>() where T : class, IBaseInfo;
 
         /// <summary>
-        /// Get a list of parameter objects of the same type in
+        /// Get an enumerable of parameter objects of the same type in
         /// identifier ascending order.
         ///
         /// This call is more expensive than Get() due to extra sorting overhead.

@@ -136,6 +136,13 @@ namespace PocketGems.Parameters
             return (T)Get(typeof(T), identifier);
         }
 
+        /// <inheritdoc cref="IParameterManager.TryGet{T}(string, out T)"/>
+        public bool TryGet<T>(string identifier, out T parameter) where T : class, IBaseInfo
+        {
+            parameter = Get<T>(identifier);
+            return parameter != null;
+        }
+
         /// <inheritdoc cref="IParameterManager.GetWithGUID{T}(string)"/>
         public T GetWithGUID<T>(string guid) where T : class, IBaseInfo
         {
