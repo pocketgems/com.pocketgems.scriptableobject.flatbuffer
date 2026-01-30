@@ -232,7 +232,7 @@ namespace PocketGems.Parameters
             // Currently not supporting renaming of parameters or creating new assets at Editor Runtime.
             if (updatingExistingIdentifier != updatingExistingGuid)
             {
-                Debug.LogError("Loading parameter doesn't match existing mappings.");
+                Debug.LogError("There is a mismatch in guids (possibly due to renaming of assets).  Regenerate all parameters and try again.");
                 return;
             }
 
