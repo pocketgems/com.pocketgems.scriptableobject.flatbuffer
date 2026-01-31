@@ -166,9 +166,11 @@ namespace PocketGems.Parameters.DataGeneration.LocalCSV.Editor
         }
 
         [Test]
-        [TestCase(false)]
-        [TestCase(true)]
-        public void CreateNew(bool requireIdentifier)
+        [TestCase(false, "blah", "my_id", "5", "my_id,5,blah")]
+        [TestCase(true, "blah", "my_id", "5", "my_id,5,blah")]
+        [TestCase(false, "blah, 2", "my, id", "6", "\"my, id\",6,\"blah, 2\"")]
+        [TestCase(true, "blah, 2", "my, id", "6", "\"my, id\",6,\"blah, 2\"")]
+        public void CreateNew(bool requireIdentifier, string guid, string firstValue, string secondValue, string expectedRow)
         {
             string firstColumnName = requireIdentifier ? "Identifier" : "Name";
 
@@ -184,17 +186,21 @@ namespace PocketGems.Parameters.DataGeneration.LocalCSV.Editor
             csvFile.DefineSchema(
                 new[] { firstColumnName, "Amount" },
                 new[] { "string", "int" });
-            var guid = "blah";
+
+            // create row
             Assert.IsFalse(csvFile.HasRow(guid));
             var row = csvFile.GetOrCreateRow(guid);
             Assert.IsTrue(csvFile.HasRow(guid));
-            row.UpdateData(new[] { "my_id", "5" });
+            row.UpdateData(new[] { firstValue, secondValue });
+
+            // write
             Assert.True(csvFile.Write());
 
+            // expect
             var lines = File.ReadAllLines(kTestFileName);
-            Assert.True(lines[0].StartsWith($"\"{firstColumnName}\",\"Amount\""));
-            Assert.True(lines[1].StartsWith("\"string\",\"int\""));
-            Assert.True(lines[2].StartsWith("\"my_id\",\"5\",\"blah\""));
+            Assert.True(lines[0].StartsWith($"{firstColumnName},Amount"));
+            Assert.True(lines[1].StartsWith("string,int"));
+            Assert.True(lines[2].StartsWith(expectedRow));
         }
 
         [Test]

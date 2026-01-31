@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace PocketGems.Parameters.LocalCSV
 {
-    public partial class CSVValueConversionTest
+    public partial class CSVValueConverterTest
     {
         [Test]
         [TestCase(false, null)]

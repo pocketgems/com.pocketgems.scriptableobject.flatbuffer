@@ -5,15 +5,15 @@ using UnityEngine.AddressableAssets;
 
 namespace PocketGems.Parameters.LocalCSV
 {
-    public partial class CSVValueConversionTest
+    public partial class CSVValueConverterTest
     {
         [Test]
-        [TestCase("blah", "objName", "blah-objName")]
-        [TestCase("blah", "objName-", "blah-objName-")]
-        [TestCase("blah", "", "blah-")]
-        [TestCase("blah", null, "blah-")]
-        [TestCase("", null, "-")]
-        [TestCase(null, null, "-")]
+        [TestCase("blah", "objName", "blah:objName")]
+        [TestCase("blah", "objName-", "blah:objName-")]
+        [TestCase("blah", "", "blah:")]
+        [TestCase("blah", null, "blah:")]
+        [TestCase("", null, ":")]
+        [TestCase(null, null, ":")]
         public void AssetReferenceToString(string guid, string subObjectName, string expected)
         {
             var reference = new AssetReference(guid);
@@ -27,9 +27,9 @@ namespace PocketGems.Parameters.LocalCSV
         }
 
         [Test]
-        [TestCase("blah-", "blah", null)]
-        [TestCase("blah-boo", "blah", "boo")]
-        [TestCase("blah-boo-", "blah", "boo-")]
+        [TestCase("blah:", "blah", null)]
+        [TestCase("blah:boo", "blah", "boo")]
+        [TestCase("blah:boo-", "blah", "boo-")]
         [TestCase("", "", null)]
         [TestCase(null, "", null)]
         public void AssetReferenceFromString(string value, string expectedGUID, string expectedSubObjectName)
@@ -42,12 +42,12 @@ namespace PocketGems.Parameters.LocalCSV
         }
 
         [Test]
-        [TestCase("blah", "objName", "blah-objName")]
-        [TestCase("blah", "objName-", "blah-objName-")]
-        [TestCase("blah", "", "blah-")]
-        [TestCase("blah", null, "blah-")]
-        [TestCase("", null, "-")]
-        [TestCase(null, null, "-")]
+        [TestCase("blah", "objName", "blah:objName")]
+        [TestCase("blah", "objName-", "blah:objName-")]
+        [TestCase("blah", "", "blah:")]
+        [TestCase("blah", null, "blah:")]
+        [TestCase("", null, ":")]
+        [TestCase(null, null, ":")]
         public void AssetReferenceGameObjectToString(string guid, string subObjectName, string expected)
         {
             var reference = new AssetReferenceGameObject(guid);
@@ -61,9 +61,9 @@ namespace PocketGems.Parameters.LocalCSV
         }
 
         [Test]
-        [TestCase("blah-", "blah", null)]
-        [TestCase("blah-boo", "blah", "boo")]
-        [TestCase("blah-boo-", "blah", "boo-")]
+        [TestCase("blah:", "blah", null)]
+        [TestCase("blah:boo", "blah", "boo")]
+        [TestCase("blah:boo-", "blah", "boo-")]
         [TestCase("", "", null)]
         [TestCase(null, "", null)]
         public void AssetReferenceGameObjectFromString(string value, string expectedGUID, string expectedSubObjectName)
@@ -82,12 +82,12 @@ namespace PocketGems.Parameters.LocalCSV
         }
 
         [Test]
-        [TestCase("blah", "objName", "blah-objName")]
-        [TestCase("blah", "objName-", "blah-objName-")]
-        [TestCase("blah", "", "blah-")]
-        [TestCase("blah", null, "blah-")]
-        [TestCase("", null, "-")]
-        [TestCase(null, null, "-")]
+        [TestCase("blah", "objName", "blah:objName")]
+        [TestCase("blah", "objName-", "blah:objName-")]
+        [TestCase("blah", "", "blah:")]
+        [TestCase("blah", null, "blah:")]
+        [TestCase("", null, ":")]
+        [TestCase(null, null, ":")]
         public void AssetReferenceSpriteToString(string guid, string subObjectName, string expected)
         {
             var reference = new AssetReferenceSprite(guid);
@@ -101,9 +101,9 @@ namespace PocketGems.Parameters.LocalCSV
         }
 
         [Test]
-        [TestCase("blah-", "blah", null)]
-        [TestCase("blah-boo", "blah", "boo")]
-        [TestCase("blah-boo-", "blah", "boo-")]
+        [TestCase("blah:", "blah", null)]
+        [TestCase("blah:boo", "blah", "boo")]
+        [TestCase("blah:boo-", "blah", "boo-")]
         [TestCase("", "", null)]
         [TestCase(null, "", null)]
         public void AssetReferenceSpriteFromString(string value, string expectedGUID, string expectedSubObjectName)
@@ -116,12 +116,12 @@ namespace PocketGems.Parameters.LocalCSV
         }
 
         [Test]
-        [TestCase("blah", "objName", "blah-objName")]
-        [TestCase("blah", "objName-", "blah-objName-")]
-        [TestCase("blah", "", "blah-")]
-        [TestCase("blah", null, "blah-")]
-        [TestCase("", null, "-")]
-        [TestCase(null, null, "-")]
+        [TestCase("blah", "objName", "blah:objName")]
+        [TestCase("blah", "objName-", "blah:objName-")]
+        [TestCase("blah", "", "blah:")]
+        [TestCase("blah", null, "blah:")]
+        [TestCase("", null, ":")]
+        [TestCase(null, null, ":")]
         public void AssetReferenceAtlasedSpriteToString(string guid, string subObjectName, string expected)
         {
             var reference = new AssetReferenceAtlasedSprite(guid);
@@ -135,9 +135,9 @@ namespace PocketGems.Parameters.LocalCSV
         }
 
         [Test]
-        [TestCase("blah-", "blah", null)]
-        [TestCase("blah-boo", "blah", "boo")]
-        [TestCase("blah-boo-", "blah", "boo-")]
+        [TestCase("blah:", "blah", null)]
+        [TestCase("blah:boo", "blah", "boo")]
+        [TestCase("blah:boo-", "blah", "boo-")]
         [TestCase("", "", null)]
         [TestCase(null, "", null)]
         public void AssetReferenceAtlasedSpriteFromString(string value, string expectedGUID, string expectedSubObjectName)
@@ -164,9 +164,9 @@ namespace PocketGems.Parameters.LocalCSV
             var refEmpty = new AssetReference("");
 
             Test("", null);
-            Test("guid1-", new[] { refNormal1 });
-            Test("guid1-|-", new[] { refNormal1, refNull });
-            Test("guid1-|-|-|guid2-sub", new[] { refNormal1, refNull, refEmpty, refNormal2 });
+            Test("guid1:", new[] { refNormal1 });
+            Test("guid1:|:", new[] { refNormal1, refNull });
+            Test("guid1:|:|:|guid2:sub", new[] { refNormal1, refNull, refEmpty, refNormal2 });
         }
 
         [Test]
@@ -175,7 +175,7 @@ namespace PocketGems.Parameters.LocalCSV
             Assert.AreEqual(Array.Empty<AssetReference>(), CSVValueConverter.AssetReferenceArray.FromString(null));
             Assert.AreEqual(Array.Empty<AssetReference>(), CSVValueConverter.AssetReferenceArray.FromString(""));
             Assert.AreEqual(Array.Empty<AssetReference>(), CSVValueConverter.AssetReferenceArray.FromString(" "));
-            var result = CSVValueConverter.AssetReferenceArray.FromString("guid-|-|-|guid2-sub");
+            var result = CSVValueConverter.AssetReferenceArray.FromString("guid:|:|:|guid2:sub");
             Assert.AreEqual("guid", result[0].AssetGUID);
             Assert.AreEqual(null, result[0].SubObjectName);
             Assert.AreEqual("", result[1].AssetGUID);
@@ -201,9 +201,9 @@ namespace PocketGems.Parameters.LocalCSV
             var refEmpty = new AssetReferenceGameObject("");
 
             Test("", null);
-            Test("guid1-", new[] { refNormal1 });
-            Test("guid1-|-", new[] { refNormal1, refNull });
-            Test("guid1-|-|-|guid2-sub", new[] { refNormal1, refNull, refEmpty, refNormal2 });
+            Test("guid1:", new[] { refNormal1 });
+            Test("guid1:|:", new[] { refNormal1, refNull });
+            Test("guid1:|:|:|guid2:sub", new[] { refNormal1, refNull, refEmpty, refNormal2 });
         }
 
         [Test]
@@ -215,7 +215,7 @@ namespace PocketGems.Parameters.LocalCSV
                 CSVValueConverter.AssetReferenceGameObjectArray.FromString(""));
             Assert.AreEqual(Array.Empty<AssetReferenceGameObject>(),
                 CSVValueConverter.AssetReferenceGameObjectArray.FromString(" "));
-            var result = CSVValueConverter.AssetReferenceGameObjectArray.FromString("guid-|-|-|guid2-sub");
+            var result = CSVValueConverter.AssetReferenceGameObjectArray.FromString("guid:|:|:|guid2:sub");
             Assert.AreEqual("guid", result[0].AssetGUID);
             Assert.AreEqual(null, result[0].SubObjectName);
             Assert.AreEqual("", result[1].AssetGUID);
@@ -241,9 +241,9 @@ namespace PocketGems.Parameters.LocalCSV
             var refEmpty = new AssetReferenceSprite("");
 
             Test("", null);
-            Test("guid1-", new[] { refNormal1 });
-            Test("guid1-|-", new[] { refNormal1, refNull });
-            Test("guid1-|-|-|guid2-sub", new[] { refNormal1, refNull, refEmpty, refNormal2 });
+            Test("guid1:", new[] { refNormal1 });
+            Test("guid1:|:", new[] { refNormal1, refNull });
+            Test("guid1:|:|:|guid2:sub", new[] { refNormal1, refNull, refEmpty, refNormal2 });
         }
 
         [Test]
@@ -252,7 +252,7 @@ namespace PocketGems.Parameters.LocalCSV
             Assert.AreEqual(Array.Empty<AssetReferenceSprite>(), CSVValueConverter.AssetReferenceSpriteArray.FromString(null));
             Assert.AreEqual(Array.Empty<AssetReferenceSprite>(), CSVValueConverter.AssetReferenceSpriteArray.FromString(""));
             Assert.AreEqual(Array.Empty<AssetReferenceSprite>(), CSVValueConverter.AssetReferenceSpriteArray.FromString(" "));
-            var result = CSVValueConverter.AssetReferenceSpriteArray.FromString("guid-|-|-|guid2-sub");
+            var result = CSVValueConverter.AssetReferenceSpriteArray.FromString("guid:|:|:|guid2:sub");
             Assert.AreEqual("guid", result[0].AssetGUID);
             Assert.AreEqual(null, result[0].SubObjectName);
             Assert.AreEqual("", result[1].AssetGUID);
@@ -278,9 +278,9 @@ namespace PocketGems.Parameters.LocalCSV
             var refEmpty = new AssetReferenceAtlasedSprite("");
 
             Test("", null);
-            Test("guid1-", new[] { refNormal1 });
-            Test("guid1-|-", new[] { refNormal1, refNull });
-            Test("guid1-|-|-|guid2-sub", new[] { refNormal1, refNull, refEmpty, refNormal2 });
+            Test("guid1:", new[] { refNormal1 });
+            Test("guid1:|:", new[] { refNormal1, refNull });
+            Test("guid1:|:|:|guid2:sub", new[] { refNormal1, refNull, refEmpty, refNormal2 });
         }
 
         [Test]
@@ -292,7 +292,7 @@ namespace PocketGems.Parameters.LocalCSV
                 CSVValueConverter.AssetReferenceAtlasedSpriteArray.FromString(""));
             Assert.AreEqual(Array.Empty<AssetReferenceAtlasedSprite>(),
                 CSVValueConverter.AssetReferenceAtlasedSpriteArray.FromString(" "));
-            var result = CSVValueConverter.AssetReferenceAtlasedSpriteArray.FromString("guid-|-|-|guid2-sub");
+            var result = CSVValueConverter.AssetReferenceAtlasedSpriteArray.FromString("guid:|:|:|guid2:sub");
             Assert.AreEqual("guid", result[0].AssetGUID);
             Assert.AreEqual(null, result[0].SubObjectName);
             Assert.AreEqual("", result[1].AssetGUID);

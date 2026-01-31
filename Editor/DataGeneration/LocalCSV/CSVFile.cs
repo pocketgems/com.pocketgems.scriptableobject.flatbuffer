@@ -192,6 +192,15 @@ namespace PocketGems.Parameters.DataGeneration.LocalCSV.Editor
             }
         }
 
+        private CsvConfiguration CreateCSVConfig()
+        {
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture);
+            config.Delimiter = ",";
+            config.TrimOptions = TrimOptions.None;
+            config.Mode = CsvMode.RFC4180;
+            return config;
+        }
+
         public bool Write()
         {
             if (!_dirty)
@@ -204,11 +213,7 @@ namespace PocketGems.Parameters.DataGeneration.LocalCSV.Editor
             CacheMD5(true);
             using (var writer = new StreamWriter(FilePath))
             {
-
-                var config = new CsvConfiguration(CultureInfo.InvariantCulture);
-                config.ShouldQuote = args => true;
-                config.TrimOptions = TrimOptions.None;
-                using (var csv = new CsvWriter(writer, config))
+                using (var csv = new CsvWriter(writer, CreateCSVConfig()))
                 {
                     void WriteRow(CSVRow csvRow)
                     {
@@ -250,7 +255,7 @@ namespace PocketGems.Parameters.DataGeneration.LocalCSV.Editor
         {
             CacheMD5(true);
             using (var reader = new StreamReader(FilePath))
-            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+            using (var csv = new CsvReader(reader, CreateCSVConfig()))
             {
                 csv.Read();
                 csv.ReadHeader();
