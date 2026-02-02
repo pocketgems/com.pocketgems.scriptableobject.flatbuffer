@@ -130,7 +130,7 @@ namespace {{namespace}}
             {
                 keyPathBuilder.PushKey(propertyName, j);
                 T defaultStruct;
-                if (j < originalArray.Length)
+                if (originalArray != null && j < originalArray.Length)
                     defaultStruct = originalArray[j];
                 else
                     defaultStruct = new T();
