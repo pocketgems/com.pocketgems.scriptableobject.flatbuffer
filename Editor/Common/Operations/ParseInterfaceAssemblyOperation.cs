@@ -155,6 +155,14 @@ namespace PocketGems.Parameters.Common.Operations.Editor
                         s.Append($"  {attributes[j]}:");
                     }
 
+                    // this will catch if a localization key was added to a string and code gen was not ran
+                    var localizationCode = propertyType.ScriptableObjectCollectLocalizationStringsCode("str1", "str2");
+                    if (!string.IsNullOrWhiteSpace(localizationCode))
+                    {
+                        s.AppendOSAgnosticNewLine();
+                        s.Append("  Localization");
+                    }
+
                     // append properties
                     s.AppendOSAgnosticNewLine();
                     s.Append($"  {propertyInfo.Name}:");

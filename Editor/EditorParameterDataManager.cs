@@ -479,20 +479,36 @@ namespace PocketGems.Parameters.Editor
             {
                 // find assembly & fetch all types
                 new ParseInterfaceAssemblyOperation<IDataOperationContext>(),
+                // check the hash of the previous parameter generation
+                new CheckGenerateDataTypeOperation(),
                 // read all scriptable object files
                 new ScriptableObjectLoaderOperation(),
                 // collect localization keys from scriptable objects
                 new StringLocalizationOperation(out var localizationKeys, out var localizedScripts),
             }, context);
 
-            DisplayExecutionResults(executor);
-
             ParameterDebug.LogVerbose($"Collecting {nameof(CollectLocalizationStrings)}: Finished");
 
             stopwatch.Stop();
             ParameterDebug.LogVerbose($"{nameof(CollectLocalizationStrings)} duration: {stopwatch.ElapsedMilliseconds}ms");
 
-            return new CollectedLocalizationStrings(localizationKeys, localizedScripts);
+            if (executor.ExecutorState == ExecutorState.Finished)
+                return new CollectedLocalizationStrings(localizationKeys, localizedScripts);
+
+
+            string errorMessage = "Unknown";
+            if (executor.ExecutorState == ExecutorState.Error)
+            {
+                var errors = executor.LastOperation.Errors;
+                if (errors != null)
+                {
+                    if (errors.Count == 1)
+                        errorMessage = errors[0].Message;
+                    else if (errors.Count > 1)
+                        errorMessage = $"There are {errors.Count} parameter errors. See console for error logs.";
+                }
+            }
+            return new CollectedLocalizationStrings(errorMessage);
         }
 
         private static void DisplayExecutionResults<T>(OperationExecutor<T> executor)

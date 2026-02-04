@@ -6,6 +6,7 @@ using PocketGems.Parameters.Common.Editor;
 using PocketGems.Parameters.Common.Util.Editor;
 using PocketGems.Parameters.DataGeneration.Operation.Editor;
 using PocketGems.Parameters.DataGeneration.Util.Editor;
+using PocketGems.Parameters.Editor.Localization;
 using PocketGems.Parameters.Editor.Validation.Editor;
 using UnityEditor;
 using UnityEngine;
@@ -173,10 +174,17 @@ namespace PocketGems.Parameters.Editor.Editor
             if (GUILayout.Button("Log Localization Strings"))
             {
                 var collectedLocalizationStrings = EditorParameterDataManager.CollectLocalizationStrings();
-                var localizationKeys = collectedLocalizationStrings.LocalizationKeys.ToList();
-                var LocalizableScripts = collectedLocalizationStrings.LocalizableScripts.ToList();
-                Debug.Log($"{nameof(collectedLocalizationStrings.LocalizationKeys)}[{localizationKeys.Count}]: {string.Join(" | ", localizationKeys)}");
-                Debug.Log($"{nameof(collectedLocalizationStrings.LocalizableScripts)}[{LocalizableScripts.Count}]: {string.Join(" | ", LocalizableScripts)}");
+                if (collectedLocalizationStrings.Result == ICollectedLocalizationStrings.State.Success)
+                {
+                    var localizationKeys = collectedLocalizationStrings.LocalizationKeys.ToList();
+                    var LocalizableScripts = collectedLocalizationStrings.LocalizableScripts.ToList();
+                    Debug.Log($"{nameof(collectedLocalizationStrings.LocalizationKeys)}[{localizationKeys.Count}]: {string.Join(" | ", localizationKeys)}");
+                    Debug.Log($"{nameof(collectedLocalizationStrings.LocalizableScripts)}[{LocalizableScripts.Count}]: {string.Join(" | ", LocalizableScripts)}");
+                }
+                else
+                {
+                    Debug.LogError($"{nameof(EditorParameterDataManager.CollectLocalizationStrings)}[{collectedLocalizationStrings.Result}]:{collectedLocalizationStrings.ErrorMessage}");
+                }
             }
             if (GUILayout.Button("Disable code Interface Implementations"))
                 EditorParameterDataManager.DisableInterfaceImplementations();
