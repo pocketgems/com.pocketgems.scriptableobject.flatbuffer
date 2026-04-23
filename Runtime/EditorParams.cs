@@ -50,6 +50,9 @@ namespace PocketGems.Parameters
             IParameterDataLoader dataLoader = CreateParameterDataLoader();
 
             Init(parameterManager, hotLoader, dataLoader);
+
+            ParameterLocalizationHandler.GlobalTranslateLocalizationKeyDelegate ??= localizationKey => localizationKey;
+            ParameterLocalizationHandler.GlobalTranslateLocalizableScriptDelegate ??= localizableScript => localizableScript;
         }
 
         /// <summary>
