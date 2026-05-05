@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using NSubstitute;
 using NUnit.Framework;
@@ -14,6 +15,9 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
         private string LegacyResourcesDirectory => Path.Combine(new[] { "Assets", "Parameters", "Resources" });
         private string MiscDirectory1 => Path.Combine(new[] { "Assets", "Parameters", "GeneratedAssets", "Blah1" });
         private string MiscDirectory2 => Path.Combine(new[] { "Assets", "Parameters", "GeneratedAssets", "Blah2" });
+        private string TempBackupPath => Path.Combine(new[] { "Assets", "Parameters", "_TestBackup" });
+
+        private List<(string original, string backup)> _preservedDirectories;
 
         [SetUp]
         public override void SetUp()
@@ -21,7 +25,21 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
             base.SetUp();
             _contextMock.GeneratedAssetDirectory.Returns(RootPath);
 
-            TearDown();
+            // Move any real project directories that the operation would delete into a temp
+            // backup so the test doesn't permanently destroy them.
+            _preservedDirectories = new List<(string, string)>();
+            PreserveDirectory(LegacyResourcesDirectory);
+            var generatedAssetsRoot = Path.Combine(new[] { "Assets", "Parameters", "GeneratedAssets" });
+            if (Directory.Exists(generatedAssetsRoot))
+            {
+                foreach (var dir in Directory.GetDirectories(generatedAssetsRoot, "*", SearchOption.TopDirectoryOnly))
+                {
+                    if (!RootPath.StartsWith(dir))
+                        PreserveDirectory(dir);
+                }
+            }
+
+            CleanupTestDirectories();
             Directory.CreateDirectory(LegacyResourcesDirectory);
             AssetDatabase.ImportAsset(LegacyResourcesDirectory);
             Directory.CreateDirectory(MiscDirectory1);
@@ -30,16 +48,43 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
             AssetDatabase.ImportAsset(MiscDirectory2);
         }
 
-        [TearDown]
-        public void TearDown()
+        private void PreserveDirectory(string path)
         {
-            // delete test folders
+            if (!Directory.Exists(path))
+                return;
+            if (!Directory.Exists(TempBackupPath))
+            {
+                Directory.CreateDirectory(TempBackupPath);
+                AssetDatabase.ImportAsset(TempBackupPath);
+            }
+            var backupPath = Path.Combine(TempBackupPath, Path.GetFileName(path));
+            AssetDatabase.MoveAsset(path, backupPath);
+            _preservedDirectories.Add((path, backupPath));
+        }
+
+        private void CleanupTestDirectories()
+        {
             if (Directory.Exists(LegacyResourcesDirectory))
                 AssetDatabase.DeleteAsset(LegacyResourcesDirectory);
             if (Directory.Exists(MiscDirectory1))
                 AssetDatabase.DeleteAsset(MiscDirectory1);
             if (Directory.Exists(MiscDirectory2))
                 AssetDatabase.DeleteAsset(MiscDirectory2);
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            CleanupTestDirectories();
+
+            if (_preservedDirectories != null)
+            {
+                foreach (var (original, backup) in _preservedDirectories)
+                    AssetDatabase.MoveAsset(backup, original);
+                _preservedDirectories = null;
+            }
+            if (Directory.Exists(TempBackupPath))
+                AssetDatabase.DeleteAsset(TempBackupPath);
         }
 
         [Test]
