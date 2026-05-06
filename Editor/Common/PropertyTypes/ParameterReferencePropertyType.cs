@@ -42,7 +42,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         }
 
         public override string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName) =>
-            $"return TrySetOverride<{SanitizedPropertyTypeName()}<{_genericType.Name}>>({propertyIndex}, {FromStringCode(variableName)}, {maxPropertyIndex}, out error);";
+            $"return TrySetOverride<{SanitizedPropertyTypeName()}<{_genericType.Name}>>({propertyIndex}, {FromStringCode(variableName, "FromString")}, {maxPropertyIndex}, out error);";
 
         public override string FlatBufferBuilderPrepareCode(string tableName)
         {
@@ -57,7 +57,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         public override string CSVBridgeColumnTypeText => _genericType.Name;
 
         public override string CSVBridgeReadFromCSVCode(string variableName) =>
-            $"data.{FieldName} = {FromStringCode(variableName)};";
+            $"data.{FieldName} = {FromStringCode(variableName, "FromCSVString")};";
 
         public override string CSVBridgeUpdateCSVRowCode(string variableName) =>
             $"{variableName} = {nameof(CSVValueConverter)}.{TypeString()}.ToString<{_genericType.Name}>(data.{FieldName});";
@@ -67,7 +67,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             schemaBuilder.DefineField(tableName, FlatBufferStructPropertyName, FlatBufferFieldType.String);
         }
 
-        private string FromStringCode(string variableName) =>
-            $"{nameof(CSVValueConverter)}.{TypeString()}.FromString<{_genericType.Name}>(parameterManager, {variableName})";
+        private string FromStringCode(string variableName, string methodName) =>
+            $"{nameof(CSVValueConverter)}.{TypeString()}.{methodName}<{_genericType.Name}>(parameterManager, {variableName})";
     }
 }
