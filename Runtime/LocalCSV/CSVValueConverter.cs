@@ -49,7 +49,8 @@ namespace PocketGems.Parameters.LocalCSV
 
         public static class Vector2
         {
-            public static string ToString(UnityEngine.Vector2 value) => $"{value.x}{ValueDelimiter}{value.y}";
+            public static string ToString(UnityEngine.Vector2 value) =>
+                string.Format(CultureInfo.InvariantCulture, "{0}{1}{2}", value.x, ValueDelimiter, value.y);
 
             public static UnityEngine.Vector2 FromString(string value)
             {
@@ -57,8 +58,8 @@ namespace PocketGems.Parameters.LocalCSV
                     return new UnityEngine.Vector2();
                 var splitValues = value.Split(ValueDelimiter);
                 return new UnityEngine.Vector2(
-                    float.Parse(splitValues[0]),
-                    float.Parse(splitValues[1]));
+                    float.Parse(splitValues[0], CultureInfo.InvariantCulture),
+                    float.Parse(splitValues[1], CultureInfo.InvariantCulture));
             }
         }
 
@@ -80,7 +81,7 @@ namespace PocketGems.Parameters.LocalCSV
         public static class Vector3
         {
             public static string ToString(UnityEngine.Vector3 value) =>
-                $"{value.x}{ValueDelimiter}{value.y}{ValueDelimiter}{value.z}";
+                string.Format(CultureInfo.InvariantCulture, "{0}{1}{2}{3}{4}", value.x, ValueDelimiter, value.y, ValueDelimiter, value.z);
 
             public static UnityEngine.Vector3 FromString(string value)
             {
@@ -88,9 +89,9 @@ namespace PocketGems.Parameters.LocalCSV
                     return new UnityEngine.Vector3();
                 var splitValues = value.Split(ValueDelimiter);
                 return new UnityEngine.Vector3(
-                    float.Parse(splitValues[0]),
-                    float.Parse(splitValues[1]),
-                    float.Parse(splitValues[2]));
+                    float.Parse(splitValues[0], CultureInfo.InvariantCulture),
+                    float.Parse(splitValues[1], CultureInfo.InvariantCulture),
+                    float.Parse(splitValues[2], CultureInfo.InvariantCulture));
             }
         }
 
@@ -183,7 +184,8 @@ namespace PocketGems.Parameters.LocalCSV
 
         public static class Numeric<T>
         {
-            public static string ToString(T value) => value.ToString();
+            public static string ToString(T value) =>
+                (value as IFormattable)?.ToString(null, CultureInfo.InvariantCulture) ?? value.ToString();
 
             public static T FromString(string value)
             {
@@ -206,7 +208,7 @@ namespace PocketGems.Parameters.LocalCSV
                 else if (typeof(T) == typeof(long))
                     o = long.Parse(value);
                 else if (typeof(T) == typeof(float))
-                    o = float.Parse(value);
+                    o = float.Parse(value, CultureInfo.InvariantCulture);
                 else
                     throw new Exception($"Unsupported type {typeof(T)}");
                 return (T)o;
