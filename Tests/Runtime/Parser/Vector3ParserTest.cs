@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace PocketGems.Parameters.Parser
 {
-    public class Vector3ParserTest
+    public partial class Vector3ParserTest
     {
         [Test]
         public void ParseVector3Int_Valid()
