@@ -38,6 +38,20 @@ namespace PocketGems.Parameters.Interface
             return _parameterOverrides.SetEditedProperty(index, parameterOverride, maxIndex, out error);
         }
 
+        protected bool TryRemoveOverride<T>(int index, out string error)
+        {
+            if (_parameterOverrides == null)
+            {
+                error = "No overrides to remove.";
+                return false;
+            }
+
+            var success = _parameterOverrides.RemoveOverride(index, out error);
+            if (success && _parameterOverrides.OverrideCount == 0)
+                _parameterOverrides = null;
+            return success;
+        }
+
         public void RemoveAllEdits()
         {
             _parameterOverrides = null;
