@@ -92,6 +92,7 @@ namespace PocketGems.Parameters
 
             if (edits != null)
             {
+                List<(string csvName, string identifierOrGuid, string propertyName, string interfaceType)> successfulOverrides = new();
                 foreach (var dataOverride in edits)
                 {
                     var array = (JArray)dataOverride;
@@ -107,9 +108,21 @@ namespace PocketGems.Parameters
                     var value = (string)array[3];
                     var interfaceType = LocalCSV.CSVUtil.CSVToInterfaceFileName(csvName);
 
-                    IMutableParameter mutableParameter;
+                    // apply all overrides even if an error occurs so we surface all errors for developers rather than one by one
                     if (!ApplyOverride(csvName, interfaceType, identifierOrGuid, propertyName, value, out string error))
                         Error(error);
+                    else
+                        successfulOverrides.Add((csvName, identifierOrGuid, propertyName, interfaceType));
+                }
+
+                if (!success)
+                {
+                    // revert changes if any of the overrides failed
+                    foreach (var (csvName, identifierOrGuid, propertyName, interfaceType) in successfulOverrides)
+                    {
+                        if (!RemoveOverride(csvName, interfaceType, identifierOrGuid, propertyName, out string error))
+                            Error(error);
+                    }
                 }
             }
 
@@ -336,6 +349,24 @@ namespace PocketGems.Parameters
                 return false;
             }
 
+            return true;
+        }
+
+        protected virtual bool RemoveOverride(string csvName, string interfaceType, string identifierOrGuid, string propertyName, out string error)
+        {
+            var mutableParameter = Get(interfaceType, identifierOrGuid) ??
+                                   GetWithGUID(interfaceType, identifierOrGuid);
+            if (mutableParameter == null)
+            {
+                error = $"Cannot find parameter for csv [{csvName}] and identifier/guid [{identifierOrGuid}].";
+                return false;
+            }
+
+            if (!mutableParameter.RevertEditedProperty(propertyName, out error))
+            {
+                error = $"Error reverting edit ({interfaceType})[{identifierOrGuid}] property [{propertyName}]: {error}";
+                return false;
+            }
             return true;
         }
 

@@ -106,7 +106,7 @@ namespace PocketGems.Parameters
         {
             // get the original mutable parameter that it would've applied to for mapping
             var mutableParameter = base.Get(interfaceType, identifierOrGuid) ??
-                                   base.GetWithGUID(interfaceType, identifierOrGuid);
+                               base.GetWithGUID(interfaceType, identifierOrGuid);
             if (mutableParameter == null)
             {
                 error = $"Cannot find parameter for csv [{csvName}] and identifier/guid [{identifierOrGuid}].";
@@ -118,6 +118,14 @@ namespace PocketGems.Parameters
             {
                 overridesToApply = new();
                 _overridesToApplyByParameter[mutableParameter] = overridesToApply;
+            }
+            foreach (var (existingProperty, _) in overridesToApply)
+            {
+                if (existingProperty == propertyName)
+                {
+                    error = $"({interfaceType})[{identifierOrGuid}] has more than one value for [{propertyName}] assigned ";
+                    return false;
+                }
             }
             overridesToApply.Add((propertyName, value));
 
@@ -132,6 +140,43 @@ namespace PocketGems.Parameters
                         {
                             error =
                                 $"Error editing ({interfaceType})[{identifierOrGuid}] property [{propertyName}] with value [{value}]: {error}";
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            error = null;
+            return true;
+        }
+
+        protected override bool RemoveOverride(string csvName, string interfaceType, string identifierOrGuid, string propertyName, out string error)
+        {
+            // get the original mutable parameter that it would've applied to for mapping
+            var mutableParameter = base.Get(interfaceType, identifierOrGuid) ??
+                                   base.GetWithGUID(interfaceType, identifierOrGuid);
+            if (mutableParameter == null)
+            {
+                error = $"Cannot find parameter for csv [{csvName}] and identifier/guid [{identifierOrGuid}].";
+                return false;
+            }
+
+            if (_overridesToApplyByParameter.TryGetValue(mutableParameter, out var overridesToApply))
+            {
+                overridesToApply.RemoveAll(o => o.Item1 == propertyName);
+                if (overridesToApply.Count == 0)
+                    _overridesToApplyByParameter.Remove(mutableParameter);
+            }
+
+            lock (_linkedMutableParameterCache)
+            {
+                if (_linkedMutableParameterCache.TryGetValue(mutableParameter, out WeakReference weakReference))
+                {
+                    if (weakReference.Target is IMutableParameter linkedParameter)
+                    {
+                        if (!linkedParameter.RevertEditedProperty(propertyName, out error))
+                        {
+                            error = $"Error reverting edit ({interfaceType})[{identifierOrGuid}] property [{propertyName}]: {error}";
                             return false;
                         }
                     }

@@ -12,6 +12,8 @@ namespace PocketGems.Parameters.Interface
 
         public abstract bool EditProperty(IParameterManager parameterManager, string propertyName, string value, out string error);
 
+        public abstract bool RevertEditedProperty(string propertyName, out string error);
+
         protected bool TryGetOverride<T>(int index, out T parameterOverride)
         {
             if (_parameterOverrides == null)
@@ -38,7 +40,7 @@ namespace PocketGems.Parameters.Interface
             return _parameterOverrides.SetEditedProperty(index, parameterOverride, maxIndex, out error);
         }
 
-        protected bool TryRemoveOverride<T>(int index, out string error)
+        protected bool TryRemoveOverride(int index, out string error)
         {
             if (_parameterOverrides == null)
             {

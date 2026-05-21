@@ -366,6 +366,39 @@ namespace PocketGems.Parameters
         }
 
         [Test]
+        public void ApplyOverrides_PartialFailure_RevertsSuccessful()
+        {
+            LoadInfos();
+
+            // first edit will succeed, second will fail
+            _mockSubclassBInfo.ReturnEditPropertyError = "some error";
+
+            var success = _parameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
+                                                           "[" +
+                                                           "  [\"SubInterfaceAInfo.csv\"," +
+                                                           $"  \"{SubclassAId}\"," +
+                                                           "   \"SomeColumnName\"," +
+                                                           "   \"SomeValue\"]," +
+                                                           "  [\"SubInterfaceBInfo.csv\"," +
+                                                           $"  \"{SubclassBId}\"," +
+                                                           "   \"SomeColumnName2\"," +
+                                                           "   \"SomeValue2\"]" +
+                                                           "]" +
+                                                           "}"), out IReadOnlyList<string> errors);
+            Assert.IsFalse(success);
+            Assert.AreEqual(1, errors.Count);
+
+            // first edit succeeded then was rolled back
+            Assert.AreEqual(1, _mockSubclassAInfo.EditPropertyCalls);
+            Assert.AreEqual(1, _mockSubclassAInfo.RevertEditPropertyCalls);
+            Assert.AreEqual("SomeColumnName", _mockSubclassAInfo.RevertEditPropertyPropertyName);
+
+            // second edit failed — no revert needed
+            Assert.AreEqual(1, _mockSubclassBInfo.EditPropertyCalls);
+            Assert.AreEqual(0, _mockSubclassBInfo.RevertEditPropertyCalls);
+        }
+
+        [Test]
         public void ApplyAndClearOverrides()
         {
             LoadInfos();
@@ -404,6 +437,10 @@ namespace PocketGems.Parameters
             Assert.AreEqual(0, _mockKeyValueStruct.RemoveAllEditCalls);
             Assert.AreEqual("SomeColumnName2", _mockKeyValueStruct.EditPropertyPropertyName);
             Assert.AreEqual("SomeValue2", _mockKeyValueStruct.EditPropertyValue);
+
+            // no reverts on success
+            Assert.AreEqual(0, _mockSubclassAInfo.RevertEditPropertyCalls);
+            Assert.AreEqual(0, _mockKeyValueStruct.RevertEditPropertyCalls);
 
             _parameterManager.ClearAllOverrides();
 

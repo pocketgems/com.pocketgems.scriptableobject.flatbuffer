@@ -16,14 +16,20 @@ namespace PocketGems.Parameters.Interface
                 return true;
             }
 
+            public override bool RevertEditedProperty(string propertyName, out string error)
+            {
+                error = null;
+                return true;
+            }
+
             public bool TestTryGetOverride<T>(int index, out T parameterOverride) =>
                 TryGetOverride(index, out parameterOverride);
 
             public bool TestTrySetOverride<T>(int index, T parameterOverride, int maxIndex, out string error) =>
-                TrySetOverride<T>(index, parameterOverride, maxIndex, out error);
+                TrySetOverride(index, parameterOverride, maxIndex, out error);
 
-            public bool TestTryRemoveOverride<T>(int index, out string error) =>
-                TryRemoveOverride<T>(index, out error);
+            public bool TestTryRemoveOverride(int index, out string error) =>
+                TryRemoveOverride(index, out error);
 
             public override IMutableParameter CreateLinkedMutableParameter(IParameterManager parameterManager) => new BaseInfoFlatBufferSubclass(
                 parameterManager);
@@ -82,12 +88,12 @@ namespace PocketGems.Parameters.Interface
             const int index = 2;
 
             // remove with no overrides initialized
-            Assert.That(_infoFlatBuffer.TestTryRemoveOverride<int>(index, out var error), Is.False);
+            Assert.That(_infoFlatBuffer.TestTryRemoveOverride(index, out var error), Is.False);
             Assert.That(error, Is.EqualTo("No overrides to remove."));
 
             // set then remove
             Assert.That(_infoFlatBuffer.TestTrySetOverride<int>(index, 99, max, out _), Is.True);
-            Assert.That(_infoFlatBuffer.TestTryRemoveOverride<int>(index, out error), Is.True);
+            Assert.That(_infoFlatBuffer.TestTryRemoveOverride(index, out error), Is.True);
             Assert.That(error, Is.Null);
             Assert.That(_infoFlatBuffer.TestTryGetOverride<int>(index, out _), Is.False);
 
@@ -95,8 +101,8 @@ namespace PocketGems.Parameters.Interface
             Assert.That(_infoFlatBuffer.TestTrySetOverride<int>(index, 100, max, out error), Is.True);
 
             // double remove
-            Assert.That(_infoFlatBuffer.TestTryRemoveOverride<int>(index, out _), Is.True);
-            Assert.That(_infoFlatBuffer.TestTryRemoveOverride<int>(index, out error), Is.False);
+            Assert.That(_infoFlatBuffer.TestTryRemoveOverride(index, out _), Is.True);
+            Assert.That(_infoFlatBuffer.TestTryRemoveOverride(index, out error), Is.False);
             Assert.That(error, Is.EqualTo("No overrides to remove."));
         }
     }

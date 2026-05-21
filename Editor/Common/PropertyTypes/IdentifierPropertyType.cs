@@ -28,6 +28,9 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         public override string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName) =>
             $"throw new Exception(\"Cannot edit {PropertyName}.\");";
 
+        public override string FlatBufferRevertEditPropertyCode(int propertyIndex) =>
+            $"throw new Exception(\"Cannot revert edit {PropertyName}.\");";
+
         public override string CSVBridgeReadFromCSVCode(string variableName)
         {
             // must rename the scriptable object to rename identifier

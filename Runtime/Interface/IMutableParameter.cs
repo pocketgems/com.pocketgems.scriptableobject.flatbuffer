@@ -13,6 +13,14 @@ namespace PocketGems.Parameters.Interface
         bool EditProperty(IParameterManager parameterManager, string propertyName, string value, out string error);
 
         /// <summary>
+        /// Reverts a single property edit that was applied with the EditProperty call.
+        /// </summary>
+        /// <param name="propertyName">the property name to revert</param>
+        /// <param name="error">any errors if the return value is false</param>
+        /// <returns>true if successful</returns>
+        bool RevertEditedProperty(string propertyName, out string error);
+
+        /// <summary>
         /// Remove all edits that were applied with the EditProperty call.
         /// </summary>
         void RemoveAllEdits();

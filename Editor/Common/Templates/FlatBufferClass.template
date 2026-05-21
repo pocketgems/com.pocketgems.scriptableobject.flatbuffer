@@ -91,6 +91,38 @@ end
             return error == null;
         }
 
+        public override bool RevertEditedProperty(string propertyName, out string error)
+        {
+            error = null;
+            try
+            {
+                switch (propertyName)
+                {
+                    {{~for propertyTypeDict in propertyTypeDicts~}}
+                    case "{{propertyTypeDict.propertyName}}":
+                        {
+                        {{~ lines = propertyTypeDict.revertEditPropertyCode | regex.split `\n` ~}}
+                        {{~ for line in lines ~}}
+                            {{ line }}
+                        {{~ end ~}}
+                        }
+#pragma warning disable CS0162 // Unreachable code detected
+                        break;
+#pragma warning restore CS0162 // Unreachable code detected
+                    {{~end~}}
+                    default:
+                        error = "property doesn't exist";
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                error = e.Message;
+            }
+
+            return error == null;
+        }
+
         public override IMutableParameter CreateLinkedMutableParameter(IParameterManager parameterManager)
         {
             // cast needed if interface implementations are disabled

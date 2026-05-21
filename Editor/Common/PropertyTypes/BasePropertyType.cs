@@ -87,6 +87,8 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         public virtual string FlatBufferFieldDefinitionCode() => null;
         public abstract string FlatBufferPropertyImplementationCode(int propertyIndex);
         public abstract string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName);
+        public virtual string FlatBufferRevertEditPropertyCode(int propertyIndex) =>
+            $"return TryRemoveOverride({propertyIndex}, out error);";
 
         public abstract string FlatBufferBuilderPrepareCode(string tableName);
         public abstract string FlatBufferBuilderCode(string tableName);
