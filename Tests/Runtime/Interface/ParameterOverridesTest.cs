@@ -83,6 +83,61 @@ namespace PocketGems.Parameters.Interface
         }
 
         [Test]
+        public void OverrideCount()
+        {
+            Assert.That(_parameterOverrides.OverrideCount, Is.EqualTo(0));
+
+            _parameterOverrides.SetEditedProperty(0, "a", MaxSize, out _);
+            Assert.That(_parameterOverrides.OverrideCount, Is.EqualTo(1));
+
+            _parameterOverrides.SetEditedProperty(1, "b", MaxSize, out _);
+            Assert.That(_parameterOverrides.OverrideCount, Is.EqualTo(2));
+
+            _parameterOverrides.RemoveOverride(0, out _);
+            Assert.That(_parameterOverrides.OverrideCount, Is.EqualTo(1));
+
+            _parameterOverrides.RemoveOverride(1, out _);
+            Assert.That(_parameterOverrides.OverrideCount, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void RemoveOverride()
+        {
+            _parameterOverrides.SetEditedProperty(2, "val", MaxSize, out _);
+            Assert.That(_parameterOverrides.TryGetOverride(2, out _), Is.True);
+
+            Assert.That(_parameterOverrides.RemoveOverride(2, out var error), Is.True);
+            Assert.That(error, Is.Null);
+            Assert.That(_parameterOverrides.TryGetOverride(2, out _), Is.False);
+        }
+
+        [Test]
+        public void RemoveOverride_Errors()
+        {
+            // no overrides initialized
+            Assert.That(_parameterOverrides.RemoveOverride(0, out var error), Is.False);
+            Assert.That(error, Is.EqualTo("No overrides to remove."));
+
+            _parameterOverrides.SetEditedProperty(1, "val", MaxSize, out _);
+
+            // out of bounds
+            Assert.That(_parameterOverrides.RemoveOverride(-1, out error), Is.False);
+            Assert.That(error, Is.EqualTo("Attempting to fetch index outside of bounds."));
+
+            Assert.That(_parameterOverrides.RemoveOverride(MaxSize, out error), Is.False);
+            Assert.That(error, Is.EqualTo("Attempting to fetch index outside of bounds."));
+
+            // index in bounds but never overridden
+            Assert.That(_parameterOverrides.RemoveOverride(0, out error), Is.False);
+            Assert.That(error, Is.EqualTo("No overrides to remove."));
+
+            // index was overridden then removed (double-remove)
+            Assert.That(_parameterOverrides.RemoveOverride(1, out error), Is.True);
+            Assert.That(_parameterOverrides.RemoveOverride(1, out error), Is.False);
+            Assert.That(error, Is.EqualTo("No overrides to remove."));
+        }
+
+        [Test]
         public void SetEditedProperty_Errors()
         {
             Assert.That(_parameterOverrides.SetEditedProperty(1, "string", -1, out var error), Is.False);

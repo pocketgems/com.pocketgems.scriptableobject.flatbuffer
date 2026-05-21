@@ -69,6 +69,34 @@ namespace PocketGems.Parameters.Interface
             return true;
         }
 
+        public int OverrideCount => _overridesDict?.Count ?? 0;
+
+        public bool RemoveOverride(int index, out string error)
+        {
+            if (_overridesFlag == null)
+            {
+                error = "No overrides to remove.";
+                return false;
+            }
+
+            if (index < 0 || index >= _overridesFlag.Count)
+            {
+                error = "Attempting to fetch index outside of bounds.";
+                return false;
+            }
+
+            if (!_overridesFlag[index])
+            {
+                error = "No overrides to remove.";
+                return false;
+            }
+
+            error = null;
+            _overridesFlag[index] = false;
+            _overridesDict.Remove(index);
+            return true;
+        }
+
         public bool SetEditedProperty(int index, object obj, int maxSize, out string error)
         {
             if (maxSize <= 0)
