@@ -4,6 +4,10 @@ All package updates & migration steps will be listed in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.6] - 2026-05-21
+### Fixed
+- Failed calls to the `IMutableParameterManager.ApplyOverrides()` will now revert any partial overridesn upon failure.
+
 ## [5.0.5] - 2026-05-19
 ### Fixed
 - `float.Parse` calls in `CSVValueConverter` and `Vector3Parser` now use `CultureInfo.InvariantCulture`, fixing "Input string was not in a correct format" errors when applying parameter overrides on machines with a non-English locale (e.g. German, French) where `.` is not the decimal separator.
