@@ -37,6 +37,10 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
                 var outputPath = Path.Combine(outputDirectory, outputFilename);
 
                 var typeToSoDict = context.ScriptableObjectMetadatas.ToDictionary(kvp => kvp.Key.Type, kvp => kvp.Value);
+
+                // sort by GUID so FlatBuffer output is deterministic across runs
+                foreach (var kvp in typeToSoDict)
+                    kvp.Value.Sort((a, b) => string.Compare(a.GUID, b.GUID, StringComparison.Ordinal));
                 var log = GenerateAndWrite(context, outputPath, typeToSoDict);
                 ParameterDebug.Log(log);
             }
