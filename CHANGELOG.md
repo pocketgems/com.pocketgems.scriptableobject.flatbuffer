@@ -4,6 +4,27 @@ All package updates & migration steps will be listed in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.1.0] - 2026-07-24
+### Added
+- Generate CSVs on demand via `Pocket Gems → Parameters → Generate CSVs` (or the button in the Config window).
+- Syncing CSV edits now asks for confirmation before renaming, creating, or deleting more than 20 Scriptable Objects, guarding against accidental bulk edits. (Skipped in batch/headless builds.)
+### Changed
+- Performance:
+    - CSVs are no longer auto-synced. They're now an opt-in working copy: generate them on demand, and editing a Scriptable Object prompts to delete the now-outdated CSVs.
+    - Scriptable Object edits are much faster now that CSVs aren't auto-synced.
+    - Saving a Scriptable Object validates only what changed (full validation still runs on a full regeneration and at build time).
+    - Intermediate parameter data files are no longer imported into the project.
+    - The parameter asset watcher now bails out early when there's nothing to do, instead of scanning every changed file first.
+    - Deleting a CSV row skips redundant work when a full regeneration is already queued.
+    - Addressable setup only saves when something actually changed.
+    - Faster EditorParams loading.
+    - Removed a slow full-project asset refresh (up to ~1s on large projects) in favor of targeted updates.
+- Verbose log lines are now tagged with a `[Verbose]` prefix.
+### Fixed
+- More accurate data-generation timing logs.
+- Detect simultaneous CSV and Scriptable Object edits and prompt for how to proceed.
+- CSV syncing correctly applies when the project is running with remote addressables.
+
 ## [5.0.7] - 2026-06-02
 ### Fixed
 - Sort ScriptableObject lists by GUID before building FlatBuffer data so output is deterministic across runs.
