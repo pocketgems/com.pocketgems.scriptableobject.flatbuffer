@@ -51,9 +51,17 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
                 /*
                  * generate one data file for each Scriptable Object
                  *
-                 * this goes hand in hand with ResourcesParameterDataLoader.cs which searches for each individual
+                 * this goes hand in hand with EditorAssetLoaderUtil which searches for each individual
                  * file only in the editor.
+                 *
+                 * These iteration files are written into a Unity-ignored subfolder (trailing '~'), so they
+                 * are never imported into the AssetDatabase and don't require an AssetDatabase.Refresh() - the
+                 * editor loads them directly via System.IO. See ParameterConstants.GeneratedAsset.IterationDirectory.
                  */
+                var iterationDirectory = ParameterConstants.GeneratedAsset.IterationDirectory;
+                if (!Directory.Exists(iterationDirectory))
+                    Directory.CreateDirectory(iterationDirectory);
+
                 foreach (var typeToObjects in context.ScriptableObjectMetadatas)
                 {
                     var scriptableObjects = typeToObjects.Value;
@@ -62,7 +70,7 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
                         var metadata = scriptableObjects[i];
                         var scriptableObject = metadata.ScriptableObject;
                         var fileName = EditorParameterConstants.GeneratedAsset.AdditiveFileName(typeToObjects.Key, scriptableObject);
-                        var outputPath = Path.Combine(outputDirectory, fileName);
+                        var outputPath = Path.Combine(iterationDirectory, fileName);
 
                         var soDict = new Dictionary<Type, List<IScriptableObjectMetadata>>();
                         soDict[typeToObjects.Key.Type] = new List<IScriptableObjectMetadata> { metadata };

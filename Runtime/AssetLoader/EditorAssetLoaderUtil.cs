@@ -41,7 +41,10 @@ namespace PocketGems.Parameters.AssetLoader
             var files = new List<string>();
             if (!Directory.Exists(directoryPath))
                 return files;
-            var editorFiles = Directory.GetFiles(directoryPath);
+            // Search recursively so files kept in subfolders (e.g. the editor-only iteration files, which
+            // live in a Unity-ignored subfolder to avoid being imported) are found without this method
+            // needing to know their exact location. The main file lives at the root of directoryPath.
+            var editorFiles = Directory.GetFiles(directoryPath, "*", SearchOption.AllDirectories);
             var extension = ParameterConstants.GeneratedParameterAssetFileExtension;
             for (int i = 0; i < editorFiles.Length; i++)
             {

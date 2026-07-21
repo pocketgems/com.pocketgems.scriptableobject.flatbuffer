@@ -18,5 +18,21 @@ namespace PocketGems.Parameters.AssetLoader
             MockDataLoader.Received(3).LoadData(MockParameterManager, Arg.Any<byte[]>());
             Assert.AreEqual(ParameterAssetLoaderStatus.Loaded, ParameterAssetLoader.Status);
         }
+
+        [Test]
+        public void LoadEditorParameterFilesWithIterationSubfolder()
+        {
+            // Mirrors the production layout: the main file lives at the root while the editor-only
+            // iteration files live in the Unity-ignored subfolder and are found via a recursive search.
+            CreateByteFile(ParameterConstants.GeneratedAssetName);
+            CreateByteFileInSubDirectory(ParameterConstants.GeneratedAsset.IterationDirectoryName, "test1");
+            CreateByteFileInSubDirectory(ParameterConstants.GeneratedAsset.IterationDirectoryName, "test2");
+
+            Assert.AreEqual(ParameterAssetLoaderStatus.NotStarted, ParameterAssetLoader.Status);
+            ParameterAssetLoader.LoadData(MockParameterManager, MockDataLoader);
+
+            MockDataLoader.Received(3).LoadData(MockParameterManager, Arg.Any<byte[]>());
+            Assert.AreEqual(ParameterAssetLoaderStatus.Loaded, ParameterAssetLoader.Status);
+        }
     }
 }

@@ -49,6 +49,17 @@ namespace PocketGems.Parameters.AssetLoader
             AssetDatabase.ImportAsset(filePath);
         }
 
+        protected void CreateByteFileInSubDirectory(string subDirectory, string fileName)
+        {
+            var ext = ParameterConstants.GeneratedParameterAssetFileExtension;
+            var directory = Path.Combine(TestDirectoryPath, subDirectory);
+            Directory.CreateDirectory(directory);
+            var filePath = Path.Combine(directory, $"{fileName}{ext}");
+            File.WriteAllText(filePath, "");
+            // Intentionally not imported into the AssetDatabase: iteration files live in a Unity-ignored
+            // subfolder in production and are loaded directly from disk via System.IO.
+        }
+
         [Test]
         public void NoParameterFile()
         {
