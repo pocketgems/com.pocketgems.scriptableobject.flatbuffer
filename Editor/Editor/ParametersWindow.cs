@@ -30,6 +30,12 @@ namespace PocketGems.Parameters.Editor.Editor
             EditorParameterDataManager.GenerateCodeFiles(GenerateCodeType.IfNeeded, GenerateDataType.All);
         }
 
+        [MenuItem(MenuItemConstants.GenerateCSVsPath, false, MenuItemConstants.GenerateCSVsPriority)]
+        public static void GenerateCSVs()
+        {
+            EditorParameterDataManager.GenerateData(GenerateDataType.All, out _, generateCSVs: true);
+        }
+
         [MenuItem(MenuItemConstants.RegenerateCodePath, false, MenuItemConstants.RegenerateCodePriority)]
         public static void GenerateCode()
         {
@@ -171,6 +177,8 @@ namespace PocketGems.Parameters.Editor.Editor
                 EditorParameterDataManager.GenerateCodeFiles(GenerateCodeType.Generate, GenerateDataType.None);
             if (GUILayout.Button("Generate Data Only"))
                 GenerateData();
+            if (GUILayout.Button("Generate CSVs"))
+                GenerateCSVs();
             if (GUILayout.Button("Log Localization Strings"))
             {
                 var collectedLocalizationStrings = EditorParameterDataManager.CollectLocalizationStrings();

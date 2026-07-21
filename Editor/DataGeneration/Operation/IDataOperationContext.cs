@@ -11,6 +11,8 @@ namespace PocketGems.Parameters.DataGeneration.Operation.Editor
         // generation type used by the generate data operation
         GenerateDataType GenerateDataType { get; set; }
         bool GenerateAllAgain { get; set; }
+        bool GenerateCSVs { get; set; }
+
         List<string> ModifiedCSVPaths { get; set; }
         List<string> ModifiedScriptableObjectPaths { get; set; }
 

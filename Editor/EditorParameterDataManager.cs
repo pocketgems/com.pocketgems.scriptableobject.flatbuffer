@@ -342,11 +342,13 @@ namespace PocketGems.Parameters.Editor
         /// <param name="failedOperation">operation that failed during generation, null if there was no failure</param>
         /// <param name="soCreatedOrChanged">scriptable object paths for those that were created or changed</param>
         /// <param name="csvCreatedOrChanged">csv paths for those that were created or changed</param>
+        /// <param name="generateCSVs">when true, (re)write all local CSVs from the current Scriptable Objects (the "Generate CSVs" action)</param>
         /// <returns>true if the generation was successful, false otherwise. if false is returned, failedOperation will have the failed operation</returns>
         public static bool GenerateData(GenerateDataType generateType,
             out IParameterOperation<IDataOperationContext> failedOperation,
             List<string> soCreatedOrChanged = null,
-            List<string> csvCreatedOrChanged = null)
+            List<string> csvCreatedOrChanged = null,
+            bool generateCSVs = false)
         {
             s_runningGenerateData = true;
             failedOperation = null;
@@ -362,6 +364,7 @@ namespace PocketGems.Parameters.Editor
             context.GenerateDataType = generateType;
             context.ModifiedScriptableObjectPaths = soCreatedOrChanged;
             context.ModifiedCSVPaths = csvCreatedOrChanged;
+            context.GenerateCSVs = generateCSVs;
             var executor = new OperationExecutor<IDataOperationContext>();
             executor.ExecuteOperations(new List<IParameterOperation<IDataOperationContext>>()
             {
@@ -435,19 +438,8 @@ namespace PocketGems.Parameters.Editor
                     throw new ArgumentOutOfRangeException();
             }
 
-            /*
-             * Call refresh so that any newly created/modified assets during this process are imported
-             * now while s_runningGenerateData is true.  This will prevent trying to generate data again
-             * for files we changed during this process since s_runningGenerateData is still true.
-             */
-            Stopwatch assetDatabaseStopwatch = Stopwatch.StartNew();
-            AssetDatabase.Refresh();
-            assetDatabaseStopwatch.Stop();
-            ParameterDebug.LogVerbose($"AssetDatabase.Refresh duration: {assetDatabaseStopwatch.ElapsedMilliseconds}ms");
-
-            profilerMarker.End();
-
             var generateDataDuration = stopwatch.ElapsedMilliseconds;
+            profilerMarker.End();
 
             /*************************
              * output/display results
@@ -459,7 +451,10 @@ namespace PocketGems.Parameters.Editor
             ParameterDebug.LogVerbose($"{nameof(GenerateData)}({context.GenerateDataType}) duration: {generateDataDuration}ms");
 
             if (generateAllAgain)
-                GenerateData(GenerateDataType.All, out _);
+            {
+                GenerateData(GenerateDataType.All, out _,
+                    generateCSVs: generateCSVs || context.GenerateDataType == GenerateDataType.CSVDiff);
+            }
 
             return success;
         }
