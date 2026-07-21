@@ -353,7 +353,7 @@ namespace PocketGems.Parameters.Editor
             Stopwatch stopwatch = Stopwatch.StartNew();
             var profilerMarker = new ProfilerMarker($"Parameters.{nameof(GenerateData)}");
             profilerMarker.Begin();
-            ParameterDebug.LogVerbose("Generating Runtime Data");
+            ParameterDebug.LogVerbose($"{nameof(GenerateData)}({generateType})");
 
             if (ParameterPrefs.ShouldGenerateAllData)
                 generateType = GenerateDataType.All;
@@ -435,19 +435,19 @@ namespace PocketGems.Parameters.Editor
                     throw new ArgumentOutOfRangeException();
             }
 
-            var generateDataDuration = stopwatch.ElapsedMilliseconds;
-
             /*
              * Call refresh so that any newly created/modified assets during this process are imported
              * now while s_runningGenerateData is true.  This will prevent trying to generate data again
              * for files we changed during this process since s_runningGenerateData is still true.
              */
-            stopwatch.Restart();
+            Stopwatch assetDatabaseStopwatch = Stopwatch.StartNew();
             AssetDatabase.Refresh();
-            stopwatch.Stop();
+            assetDatabaseStopwatch.Stop();
+            ParameterDebug.LogVerbose($"AssetDatabase.Refresh duration: {assetDatabaseStopwatch.ElapsedMilliseconds}ms");
+
             profilerMarker.End();
-            if (stopwatch.ElapsedMilliseconds > 3000)
-                ParameterDebug.LogVerbose($"AssetDatabase.Refresh duration: {stopwatch.ElapsedMilliseconds}ms");
+
+            var generateDataDuration = stopwatch.ElapsedMilliseconds;
 
             /*************************
              * output/display results
@@ -456,7 +456,7 @@ namespace PocketGems.Parameters.Editor
             DisplayValidationResults(executor, context);
 
             s_runningGenerateData = false;
-            ParameterDebug.LogVerbose($"{nameof(GenerateData)} duration: {generateDataDuration}ms");
+            ParameterDebug.LogVerbose($"{nameof(GenerateData)}({context.GenerateDataType}) duration: {generateDataDuration}ms");
 
             if (generateAllAgain)
                 GenerateData(GenerateDataType.All, out _);
