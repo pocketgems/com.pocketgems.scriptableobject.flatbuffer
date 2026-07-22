@@ -30,7 +30,10 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
             if (context.GenerateDataType == GenerateDataType.All)
             {
                 var outputFilename = context.GeneratedAssetFileName;
-                // delete all other intermediate parameter files since this is re-generating all data into one byte file
+                // Delete all other intermediate parameter files since this is re-generating all data into one
+                // byte file. A raw filesystem delete is used (no AssetDatabase churn): the only tracked asset
+                // here is the main byte file, which is re-created at the same path below and reconciled by the
+                // AssetDatabase.ImportAsset call after it is written.
                 if (Directory.Exists(outputDirectory))
                     FileUtil.DeleteFileOrDirectory(outputDirectory);
 
@@ -43,6 +46,10 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
                     kvp.Value.Sort((a, b) => string.Compare(a.GUID, b.GUID, StringComparison.Ordinal));
                 var log = GenerateAndWrite(context, outputPath, typeToSoDict);
                 ParameterDebug.Log(log);
+
+                // Import the main parameter file at creation so it is registered with the AssetDatabase
+                // here, rather than relying on the final whole-project AssetDatabase.Refresh().
+                AssetDatabase.ImportAsset(NamingUtil.RelativePath(outputPath));
             }
             else if (context.GenerateDataType == GenerateDataType.ScriptableObjectDiff ||
                      context.GenerateDataType == GenerateDataType.CSVDiff)
