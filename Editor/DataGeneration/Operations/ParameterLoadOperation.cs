@@ -18,6 +18,10 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
         {
             base.Execute(context);
 
+            // skip loading now if generation will occur again (loading will occur on the next run).
+            if (context.GenerateAllAgain)
+                return;
+
             LoadEditorParams(context);
             HotloadPlayMode(context);
         }

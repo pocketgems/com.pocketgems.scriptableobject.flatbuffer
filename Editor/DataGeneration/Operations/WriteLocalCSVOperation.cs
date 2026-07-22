@@ -22,6 +22,11 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
             _context = context;
             base.Execute(context);
 
+            // A full regeneration is already queued (a CSV row deletion removed Scriptable Objects). That pass
+            // regenerates all CSVs from scratch (GenerateCSVs), so skip the redundant CSV write here.
+            if (context.GenerateAllAgain)
+                return;
+
             if (context.GenerateDataType == GenerateDataType.IfNeeded)
                 return;
 

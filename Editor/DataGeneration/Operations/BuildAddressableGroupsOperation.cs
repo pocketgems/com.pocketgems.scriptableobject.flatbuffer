@@ -21,6 +21,10 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
         {
             base.Execute(context);
 
+            // A full regeneration is queued and will rebuild + reconfigure the addressable group afterward.
+            if (context.GenerateAllAgain)
+                return;
+
             // check addressable is set up
             var settings = AddressableAssetSettingsDefaultObject.Settings;
             if (settings == null)

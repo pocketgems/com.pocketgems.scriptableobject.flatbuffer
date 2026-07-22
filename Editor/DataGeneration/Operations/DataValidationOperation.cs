@@ -23,6 +23,10 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
             if (!ParameterPrefs.AutoValidateDataOnAssetChange)
                 return;
 
+            // skip validation now if generation will occur again (validation will occur on the next run).
+            if (context.GenerateAllAgain)
+                return;
+
             var prevKeyDelegate = ParameterLocalizationHandler.GlobalTranslateLocalizationKeyDelegate;
             var prevScriptDelegate = ParameterLocalizationHandler.GlobalTranslateLocalizableScriptDelegate;
             ParameterLocalizationHandler.GlobalTranslateLocalizationKeyDelegate = localizationKey => localizationKey;

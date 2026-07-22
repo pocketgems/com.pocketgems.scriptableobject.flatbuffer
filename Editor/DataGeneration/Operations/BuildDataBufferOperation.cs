@@ -26,6 +26,11 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
         {
             base.Execute(context);
 
+            // A full regeneration is already queued (e.g. a CSV row deletion removed Scriptable Objects) and
+            // will rebuild all data from scratch - skip building intermediate byte files that would be discarded.
+            if (context.GenerateAllAgain)
+                return;
+
             var outputDirectory = context.GeneratedAssetDirectory;
             if (context.GenerateDataType == GenerateDataType.All)
             {
