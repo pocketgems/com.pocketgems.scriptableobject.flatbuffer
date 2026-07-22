@@ -39,7 +39,7 @@ Create and modify Scriptable Objects directly in the Editor.
 
 ![Scriptable Object Inspector](README/.img/readme_scriptable_object.png)
 
-Alternatively, modify CSVs that sync with ScriptableObjects for bulk editing.
+Alternatively, generate CSVs on demand (`Pocket Gems` → `Parameters` → `Generate CSVs`) and edit them for bulk editing; changes sync back to the Scriptable Objects.
 
 | Identifier | IsPremiumCurrency | DisplayName     | Description     | StartingAmount | Icon                                  |
 | ---------- | ----------------- | --------------- | --------------- | -------------- | ------------------------------------- |

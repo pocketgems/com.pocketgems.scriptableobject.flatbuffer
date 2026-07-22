@@ -47,14 +47,16 @@ In the editor, these Scriptable Objects can be modified via the inspector like a
 The package managed Scriptable Objects can be identified with the custom inspector options at the top:
 
 **Pocket Gems Parameter**
--  *Open CSV*: Opens the respective CSV that this Scriptable Object is sync'd with.
+-  *Open CSV*: Opens the respective CSV that this Scriptable Object is sync'd with (if CSVs have been generated - see [CSV Tool](#csv-tool)).
 -  *Save & Hot Load if Playing*: If making modifications while the Unity Editor is playing, this button saves changes to this Scriptable Object and hot loads the changes into the current running app.
 
 ### Editor Runtime
 The Scriptable Objects can be modified at editor runtime for live debugging and tweaks.  The changes will take when the Scriptable Object is saved (see above).
 
 ### CSV Tool
-For ease of editing Scriptable Objects bulk, the Scriptable Objects are sync'd to CSV files upon Unity asset import.  If a change is made in a CSV, the change will automatically be applied to the Scriptable Object upon the Unity application regaining focus in the operating system.  The reverse direction is also true - changes to Scriptable Objects will be reflected in the CSVs.
+For ease of editing Scriptable Objects in bulk, you can generate CSV files from the current Scriptable Objects on demand via the menu `Pocket Gems` --> `Parameters` --> `Generate CSVs` (or the **Generate CSVs** button in the Config Panel).  While the CSVs exist, editing a CSV applies the change back to the corresponding Scriptable Object when the Unity application regains focus in the operating system.
+
+> ℹ️ CSVs are a temporary working copy, not a continuously-synced mirror.  Editing a Scriptable Object directly does **not** update the CSVs.  Because that would leave them out of date, changing any Scriptable Object deletes the local CSVs (after a confirmation prompt, so you can sync unsaved CSV edits first).  Regenerate the CSVs whenever you want to work in them again.
 
 **Example Folder Structure**
 
@@ -103,7 +105,7 @@ Functionality
 
 #### Struct
 
-Structs serialized in Scriptable Objects are also sync'd to their own individual CSVs to better represent the nesting nature of Structs.
+When CSVs are generated, structs serialized in Scriptable Objects are also written to their own individual CSVs to better represent the nesting nature of Structs.
 
 This is an example generated CSV located at `Assets/Parameters/LocalCSV/RewardStruct.csv`.
 > 🛑 The last columns is used for book keeping and should not be modified.
