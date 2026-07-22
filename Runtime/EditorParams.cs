@@ -1,7 +1,7 @@
 #if UNITY_EDITOR
 using System;
-using System.Reflection;
 using PocketGems.Parameters.AssetLoader;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 
@@ -92,44 +92,26 @@ namespace PocketGems.Parameters
             return (IParameterDataLoader)Activator.CreateInstance(s_cachedParameterDataLoader);
         }
 
+        /// <summary>
+        /// Finds the single non-abstract implementation of <paramref name="searchInterfaceType"/> using
+        /// Unity's prebuilt <see cref="TypeCache"/> - fast and does not scan every type in every assembly.
+        /// Logs an error and returns the first match if more than one is found; returns null if none exist.
+        /// </summary>
         internal static Type FindSingleInterfaceImplementation(Type searchInterfaceType)
         {
-            Type parameterDataLoaderType = null;
-
-            AppDomain currentDomain = AppDomain.CurrentDomain;
-            Assembly[] assemblies = currentDomain.GetAssemblies();
-            for (int i = 0; i < assemblies.Length; i++)
+            Type implementationType = null;
+            foreach (var type in TypeCache.GetTypesDerivedFrom(searchInterfaceType))
             {
-                var assembly = assemblies[i];
-                // GetType() dies when iterating through BrotliSharpLib due to a struct being over 1MB
-                // DynamicProxyGenAssembly2 can hold NSubstitute proxy interfaces which we don't want
-                if (assembly.FullName.StartsWith("BrotliSharpLib") ||
-                    assembly.FullName.StartsWith("DynamicProxyGenAssembly2")
-                    )
+                if (type.IsAbstract)
                     continue;
-                var types = assembly.GetTypes();
-                for (int j = 0; j < types.Length; j++)
-                {
-                    var type = types[j];
-                    if (type.IsAbstract)
-                        continue;
-                    var interfaces = type.GetInterfaces();
-                    for (int k = 0; k < interfaces.Length; k++)
-                    {
-                        var interfaceType = interfaces[k];
-                        if (interfaceType != searchInterfaceType)
-                            continue;
 
-                        if (parameterDataLoaderType == null)
-                            parameterDataLoaderType = type;
-                        else
-                            Debug.LogError($"Found more than one implementation of {searchInterfaceType}");
-                        break;
-                    }
-                }
+                if (implementationType == null)
+                    implementationType = type;
+                else
+                    Debug.LogError($"Found more than one implementation of {searchInterfaceType}");
             }
 
-            return parameterDataLoaderType;
+            return implementationType;
         }
     }
 }
