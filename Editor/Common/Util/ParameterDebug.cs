@@ -12,7 +12,7 @@ namespace PocketGems.Parameters.Common.Util.Editor
         {
             if (ParameterPrefs.VerboseLogs)
             {
-                Debug.Log(log);
+                Log($"[Verbose] {log}");
             }
         }
 
