@@ -702,12 +702,13 @@ namespace PocketGems.Parameters.Editor
                 generateDataType = GenerateDataType.All;
 
 #if ADDRESSABLE_PARAMS
-            // if we're using remote bundles, always generate the whole file so that it can be uploaded with to addressables
             var editorDataBuilder = AddressableAssetSettingsDefaultObject.Settings.ActivePlayModeDataBuilder;
             bool isUsingRemoteBundles =  !(editorDataBuilder is BuildScriptFastMode || editorDataBuilder is BuildScriptVirtualMode);
             if (isUsingRemoteBundles)
             {
-                generateDataType = GenerateDataType.All;
+                if (generateDataType != GenerateDataType.CSVDiff)
+                    // if we're using remote bundles, always generate the whole file so that it can be easily uploaded to addressables
+                    generateDataType = GenerateDataType.All;
             }
 #endif
 
