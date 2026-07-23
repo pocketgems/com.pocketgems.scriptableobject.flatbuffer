@@ -678,10 +678,26 @@ namespace PocketGems.Parameters.Editor
             for (int i = 0; i < movedFrom?.Count; i++)
                 ParameterDebug.LogVerbose($"MovedFrom: {movedFrom[i]} MovedTo: {movedTo[i]}");
 
-
-            // if both Scriptable Object & CSV files changed, regenerate parameters with Scriptable Objects as the source of truth.
+            // If both Scriptable Object & CSV files changed in the same batch, it's ambiguous which is the
+            // intended source of truth. Regenerating uses the Scriptable Objects and discards the CSV changes,
+            // so confirm before doing so (defaulting to proceed where a dialog can't be shown, e.g. batch mode).
+            bool generateCSVs = false;
             if (soFiles?.Count > 0 && csvFiles?.Count > 0)
+            {
+                if (!Application.isBatchMode && !UnitTestListener.AreUnitTestsRunning && !EditorUtility.DisplayDialog(
+                        "Parameter Source Conflict",
+                        "Both parameter Scriptable Object(s) and CSV(s) changed at the same time.\n\n" +
+                        "Regenerating will use the Scriptable Objects as the source of truth and discard the " +
+                        "CSV changes.\n\n" +
+                        "Choose Cancel to reconcile the changes yourself first (e.g. regenerate CSVs afterward).",
+                        "Regenerate from Scriptable Objects", "Cancel"))
+                {
+                    ParameterDebug.LogVerbose("Skipping parameter generation - SO/CSV source conflict was cancelled.");
+                    return;
+                }
                 generateDataType = GenerateDataType.All;
+                generateCSVs = true;
+            }
             else if (deleted?.Count > 0 || movedFrom?.Count > 0)
                 generateDataType = GenerateDataType.All;
 
@@ -710,7 +726,7 @@ namespace PocketGems.Parameters.Editor
                 InvokeOnNextEditorUpdate(() =>
                 {
                     s_waitingGenerateData = false;
-                    GenerateData(generateDataType, out _, soFiles, csvFiles);
+                    GenerateData(generateDataType, out _, soFiles, csvFiles, generateCSVs: generateCSVs);
                 });
             }
         }
