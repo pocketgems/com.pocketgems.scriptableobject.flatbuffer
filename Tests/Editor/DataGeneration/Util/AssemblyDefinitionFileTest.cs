@@ -44,5 +44,52 @@ namespace PocketGems.Parameters.DataGeneration.Util.Editor
             // compare
             Assert.AreEqual(createdAssembly, loadedAssembly);
         }
+
+        [Test]
+        public void GetHashCode_BasedOnName()
+        {
+            var assembly = new AssemblyDefinitionFile(_name);
+            Assert.AreEqual(_name.GetHashCode(), assembly.GetHashCode());
+        }
+
+        [Test]
+        public void Equals_Null_ReturnsFalse()
+        {
+            var assembly = new AssemblyDefinitionFile(_name);
+            Assert.IsFalse(assembly.Equals(null));
+        }
+
+        [Test]
+        public void Equals_DifferentType_ReturnsFalse()
+        {
+            var assembly = new AssemblyDefinitionFile(_name);
+            Assert.IsFalse(assembly.Equals("not an assembly definition"));
+        }
+
+        [Test]
+        public void Equals_SameValues_ReturnsTrue()
+        {
+            var a = new AssemblyDefinitionFile(_name);
+            var b = new AssemblyDefinitionFile(_name);
+            Assert.IsTrue(a.Equals(b));
+        }
+
+        [Test]
+        public void Equals_DifferentFields_ReturnsFalse()
+        {
+            var a = new AssemblyDefinitionFile(_name);
+
+            var differentName = new AssemblyDefinitionFile("OtherName");
+            Assert.IsFalse(a.Equals(differentName));
+
+            var differentReferences = new AssemblyDefinitionFile(_name) { references = new[] { "SomeRef" } };
+            Assert.IsFalse(a.Equals(differentReferences));
+
+            var differentPlatforms = new AssemblyDefinitionFile(_name) { includePlatforms = new[] { "Android" } };
+            Assert.IsFalse(a.Equals(differentPlatforms));
+
+            var differentUnsafeCode = new AssemblyDefinitionFile(_name) { allowUnsafeCode = true };
+            Assert.IsFalse(a.Equals(differentUnsafeCode));
+        }
     }
 }
