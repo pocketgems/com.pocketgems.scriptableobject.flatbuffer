@@ -699,18 +699,9 @@ namespace PocketGems.Parameters.Editor
                 generateCSVs = true;
             }
             else if (deleted?.Count > 0 || movedFrom?.Count > 0)
-                generateDataType = GenerateDataType.All;
-
-#if ADDRESSABLE_PARAMS
-            var editorDataBuilder = AddressableAssetSettingsDefaultObject.Settings.ActivePlayModeDataBuilder;
-            bool isUsingRemoteBundles =  !(editorDataBuilder is BuildScriptFastMode || editorDataBuilder is BuildScriptVirtualMode);
-            if (isUsingRemoteBundles)
             {
-                if (generateDataType != GenerateDataType.CSVDiff)
-                    // if we're using remote bundles, always generate the whole file so that it can be easily uploaded to addressables
-                    generateDataType = GenerateDataType.All;
+                generateDataType = GenerateDataType.All;
             }
-#endif
 
             /*
              * Dispatch the GenerateData call on the next update loop.
