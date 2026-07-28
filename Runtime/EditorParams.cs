@@ -1,5 +1,8 @@
 #if UNITY_EDITOR
 using System;
+#if !UNITY_2019_2_OR_NEWER
+using System.Reflection;
+#endif
 using PocketGems.Parameters.AssetLoader;
 using UnityEditor;
 using UnityEngine;
@@ -100,6 +103,7 @@ namespace PocketGems.Parameters
         internal static Type FindSingleInterfaceImplementation(Type searchInterfaceType)
         {
             Type implementationType = null;
+#if UNITY_2019_2_OR_NEWER
             foreach (var type in TypeCache.GetTypesDerivedFrom(searchInterfaceType))
             {
                 if (type.IsAbstract)
@@ -110,7 +114,40 @@ namespace PocketGems.Parameters
                 else
                     Debug.LogError($"Found more than one implementation of {searchInterfaceType}");
             }
+#else
+            AppDomain currentDomain = AppDomain.CurrentDomain;
+            Assembly[] assemblies = currentDomain.GetAssemblies();
+            for (int i = 0; i < assemblies.Length; i++)
+            {
+                var assembly = assemblies[i];
+                // GetType() dies when iterating through BrotliSharpLib due to a struct being over 1MB
+                // DynamicProxyGenAssembly2 can hold NSubstitute proxy interfaces which we don't want
+                if (assembly.FullName.StartsWith("BrotliSharpLib") ||
+                    assembly.FullName.StartsWith("DynamicProxyGenAssembly2")
+                    )
+                    continue;
+                var types = assembly.GetTypes();
+                for (int j = 0; j < types.Length; j++)
+                {
+                    var type = types[j];
+                    if (type.IsAbstract)
+                        continue;
+                    var interfaces = type.GetInterfaces();
+                    for (int k = 0; k < interfaces.Length; k++)
+                    {
+                        var interfaceType = interfaces[k];
+                        if (interfaceType != searchInterfaceType)
+                            continue;
 
+                        if (implementationType == null)
+                            implementationType = type;
+                        else
+                            Debug.LogError($"Found more than one implementation of {searchInterfaceType}");
+                        break;
+                    }
+                }
+            }
+#endif
             return implementationType;
         }
     }
