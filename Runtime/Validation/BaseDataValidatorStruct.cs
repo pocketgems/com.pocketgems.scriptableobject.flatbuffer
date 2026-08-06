@@ -30,14 +30,7 @@ namespace PocketGems.Parameters.Validation
         /// <param name="message">user facing message about the error</param>
         protected void Error(string propertyName, string message)
         {
-            var error = new ValidationError(
-                _currentValidationObjectData.InfoType,
-                _currentValidationObjectData.Info.Identifier,
-                _currentValidationObjectData.StructParentInfoReferenceProperty,
-                message,
-                _currentValidationObjectData.StructKeyPath,
-                propertyName);
-            _errors.Add(error);
+            AddError(propertyName, message, ValidationError.Severity.Error);
         }
 
         /// <summary>
@@ -46,20 +39,50 @@ namespace PocketGems.Parameters.Validation
         /// <param name="message">user facing message about the error</param>
         protected void Error(string message)
         {
-            var error = new ValidationError(
-                _currentValidationObjectData.InfoType,
-                _currentValidationObjectData.Info.Identifier,
-                _currentValidationObjectData.StructParentInfoReferenceProperty,
-                message,
-                _currentValidationObjectData.StructKeyPath,
-                null);
-            _errors.Add(error);
+            AddError(message, ValidationError.Severity.Error);
+        }
+
+        /// <summary>
+        /// Log a warning during validation.
+        /// </summary>
+        /// <param name="propertyName">property name with the warning</param>
+        /// <param name="message">user facing message about the warning</param>
+        protected void Warn(string propertyName, string message)
+        {
+            AddError(propertyName, message, ValidationError.Severity.Warning);
+        }
+
+        /// <summary>
+        /// General warning during validation.
+        /// </summary>
+        /// <param name="message">user facing message about the warning</param>
+        protected void Warn(string message)
+        {
+            AddError(message, ValidationError.Severity.Warning);
         }
 
         public void ValidateStruct(IParameterManager parameterManager, ValidationObjectData validationObjectData)
         {
             _currentValidationObjectData = validationObjectData;
             ValidateStruct(parameterManager, (T)validationObjectData.Struct);
+        }
+
+        private void AddError(string message, ValidationError.Severity severity)
+        {
+            AddError(null, message, severity);
+        }
+
+        private void AddError(string propertyName, string message, ValidationError.Severity severity)
+        {
+            var error = new ValidationError(
+                _currentValidationObjectData.InfoType,
+                _currentValidationObjectData.Info.Identifier,
+                _currentValidationObjectData.StructParentInfoReferenceProperty,
+                message,
+                _currentValidationObjectData.StructKeyPath,
+                propertyName,
+                severity:severity);
+            _errors.Add(error);
         }
 
         private ValidationObjectData _currentValidationObjectData;

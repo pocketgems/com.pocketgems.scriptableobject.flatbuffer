@@ -5,13 +5,13 @@ namespace PocketGems.Parameters.Validation
 {
     public class BaseDataValidatorStructTest
     {
+        private const string infoIdentifier = "some id";
+        private const string parentPropertyName = "parent property name";
+        private const string structPath = "some path";
+
         [Test]
         public void ValidateStruct()
         {
-            const string infoIdentifier = "some id";
-            const string parentPropertyName = "parent property name";
-            const string structPath = "some path";
-
             var infoMock = Substitute.For<IMySpecialInfo>();
             infoMock.Identifier.Returns(infoIdentifier);
 
@@ -28,25 +28,50 @@ namespace PocketGems.Parameters.Validation
             validator.ValidateStruct(null, validationObjectData);
 
             var errors = validator.Errors;
-            Assert.AreEqual(2, errors.Count);
-            var error1 = errors[0];
-            Assert.AreEqual(typeof(IMySpecialInfo), error1.InfoType);
-            Assert.AreEqual(infoIdentifier, error1.InfoIdentifier);
-            Assert.AreEqual(parentPropertyName, error1.InfoProperty);
-            Assert.AreEqual(structPath, error1.StructKeyPath);
-            Assert.AreEqual(TestBaseDataValidatorStruct<IKeyValueStruct>.StructPropertyName,
-                error1.StructProperty);
-            Assert.AreEqual(TestBaseDataValidatorStruct<IKeyValueStruct>.ErrorMessage1,
-                error1.Message);
+            Assert.AreEqual(4, errors.Count);
 
-            var error2 = errors[1];
-            Assert.AreEqual(typeof(IMySpecialInfo), error2.InfoType);
-            Assert.AreEqual(infoIdentifier, error2.InfoIdentifier);
-            Assert.AreEqual(parentPropertyName, error2.InfoProperty);
-            Assert.AreEqual(structPath, error2.StructKeyPath);
-            Assert.IsNull(error2.StructProperty);
-            Assert.AreEqual(TestBaseDataValidatorStruct<IKeyValueStruct>.ErrorMessage2,
-                error2.Message);
+            ValidateError(
+                errors[0],
+                TestBaseDataValidatorStruct<IKeyValueStruct>.ErrorMessage1,
+                true,
+                ValidationError.Severity.Error);
+            ValidateError(
+                errors[1],
+                TestBaseDataValidatorStruct<IKeyValueStruct>.ErrorMessage2,
+                false,
+                ValidationError.Severity.Error);
+            ValidateError(
+                errors[2],
+                TestBaseDataValidatorStruct<IKeyValueStruct>.WarningMessage1,
+                true,
+                ValidationError.Severity.Warning);
+            ValidateError(
+                errors[3],
+                TestBaseDataValidatorStruct<IKeyValueStruct>.WarningMessage2,
+                false,
+                ValidationError.Severity.Warning);
+        }
+
+        private void ValidateError(
+            ValidationError error,
+            string errorMessage,
+            bool shouldHaveStructProperty,
+            ValidationError.Severity severity)
+        {
+            Assert.AreEqual(typeof(IMySpecialInfo), error.InfoType);
+            Assert.AreEqual(infoIdentifier, error.InfoIdentifier);
+            Assert.AreEqual(parentPropertyName, error.InfoProperty);
+            Assert.AreEqual(structPath, error.StructKeyPath);
+            if (shouldHaveStructProperty)
+            {
+                Assert.AreEqual(TestBaseDataValidatorStruct<IKeyValueStruct>.StructPropertyName, error.StructProperty);
+            }
+            else
+            {
+                Assert.IsNull(error.StructProperty);
+            }
+            Assert.AreEqual(errorMessage, error.Message);
+            Assert.AreEqual(severity, error.ErrorSeverity);
         }
     }
 }
