@@ -4,6 +4,10 @@ All package updates & migration steps will be listed in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.1.2] - 2026-08-05
+### Fixed
+- "Open CSV" in the Scriptable Object inspector now offers to generate the CSVs when the file doesn't exist, instead of only logging an error.
+
 ## [5.1.1] - 2026-07-27
 ### Fixed
 - Restored the reflection-based `EditorParams.FindSingleInterfaceImplementation` fallback for Unity versions without `TypeCache` (pre-2019.2).

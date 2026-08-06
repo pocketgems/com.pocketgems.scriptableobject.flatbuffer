@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using PocketGems.Parameters.Common.Editor;
 using PocketGems.Parameters.Common.Util.Editor;
+using PocketGems.Parameters.DataGeneration.Operation.Editor;
 using PocketGems.Parameters.Interface;
 using PocketGems.Parameters.Interface.Attributes;
 using PocketGems.Parameters.Validation;
@@ -54,9 +55,26 @@ namespace PocketGems.Parameters.Editor.Editor
 
                 var absoluteCSVPath = Path.Combine(projectPath, relativeCSVPath);
                 if (File.Exists(absoluteCSVPath))
+                {
                     Application.OpenURL($"file://{absoluteCSVPath}");
-                else
-                    ParameterDebug.LogError($"File doesn't exist: {absoluteCSVPath}");
+                }
+                else if (EditorUtility.DisplayDialog("CSV Not Found",
+                             $"The CSV file \"{csvFileName}\" doesn't exist.\n\nWould you like to generate the CSVs now?",
+                             "Yes", "No"))
+                {
+                    EditorParameterDataManager.GenerateData(GenerateDataType.All, out _, generateCSVs: true);
+                    if (File.Exists(absoluteCSVPath))
+                    {
+                        Application.OpenURL($"file://{absoluteCSVPath}");
+                    }
+                    else
+                    {
+                        ParameterDebug.LogError($"File doesn't exist after generating CSVs: {absoluteCSVPath}");
+                        EditorUtility.DisplayDialog("CSV Still Missing",
+                            $"The CSV file \"{csvFileName}\" still doesn't exist after generating CSVs.\n\nThis is likely a bug in the parameters package — please report it.",
+                            "Okay");
+                    }
+                }
             }
             EditorGUILayout.EndHorizontal();
 
