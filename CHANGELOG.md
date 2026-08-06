@@ -4,6 +4,10 @@ All package updates & migration steps will be listed in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.7] - 2026-06-02
+### Fixed
+- Sort ScriptableObject lists by GUID before building FlatBuffer data so output is deterministic across runs.
+
 ## [5.0.6] - 2026-05-21
 ### Fixed
 - Failed calls to the `IMutableParameterManager.ApplyOverrides()` will now revert any partial overridesn upon failure.
