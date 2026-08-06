@@ -138,7 +138,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
 
         private void AssertPropertyType(IPropertyType propertyType,
             bool expectNullPrepareSource = false,
-            bool expectImmutableFlatBufferData = false,
+            bool expectFlatBufferFieldDefinition = false,
             bool expectLocalization = false,
             bool isBaseInfoIdentifier = false)
         {
@@ -158,16 +158,12 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             else
                 Assert.IsNull(localizationStrings);
 
-            if (expectImmutableFlatBufferData)
-                Assert.IsNull(propertyType.FlatBufferFieldDefinitionCode());
-            else
+            if (expectFlatBufferFieldDefinition)
                 Assert.IsNotEmpty(propertyType.FlatBufferFieldDefinitionCode());
-            Assert.IsNotEmpty(propertyType.FlatBufferPropertyImplementationCode());
-            Assert.IsNotEmpty(propertyType.FlatBufferEditPropertyCode("value"));
-            if (isBaseInfoIdentifier || expectImmutableFlatBufferData)
-                Assert.IsNull(propertyType.FlatBufferRemoveEditCode());
             else
-                Assert.IsNotEmpty(propertyType.FlatBufferRemoveEditCode());
+                Assert.IsNull(propertyType.FlatBufferFieldDefinitionCode());
+            Assert.IsNotEmpty(propertyType.FlatBufferPropertyImplementationCode(1));
+            Assert.IsNotEmpty(propertyType.FlatBufferEditPropertyCode(1, 10, "value"));
 
             if (expectNullPrepareSource)
                 Assert.IsNull(propertyType.FlatBufferBuilderPrepareCode(TableName));
@@ -198,7 +194,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         public void ValidateIdentifier()
         {
             var identifierPropertyType = CreatePropertyType(nameof(IBaseInfo.Identifier), typeof(IBaseInfo));
-            AssertPropertyType(identifierPropertyType, isBaseInfoIdentifier: true);
+            AssertPropertyType(identifierPropertyType, isBaseInfoIdentifier: true, expectFlatBufferFieldDefinition: true);
 
             identifierPropertyType = CreatePropertyType(nameof(ITestStruct.Identifier), typeof(ITestStruct));
             AssertPropertyType(identifierPropertyType);
@@ -246,7 +242,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         [TestCase(nameof(ITestInfo.MyTestInfo))]
         [TestCase(nameof(ITestInfo.MyTestInfos))]
         [TestCase(nameof(ITestInfo.MyTestInfos))]
-        [TestCase(nameof(ITestInfo.MyStruct), false, true, true)]
+        [TestCase(nameof(ITestInfo.MyStruct), false, false, true)]
         [TestCase(nameof(ITestInfo.MyStructs), false, false, true)]
 #if ADDRESSABLE_PARAMS
         [TestCase(nameof(ITestInfo.MyAsset))]
@@ -260,13 +256,13 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
 #endif
         public void ValidateTypes(string propertyName,
             bool expectNullPrepareSource = false,
-            bool expectNullFlatBufferFieldDefinitionCode = false,
+            bool expectFlatBufferFieldDefinition = false,
             bool expectLocalization = false)
         {
             var propertyType = CreatePropertyType(propertyName);
             AssertPropertyType(propertyType,
                 expectNullPrepareSource: expectNullPrepareSource,
-                expectImmutableFlatBufferData: expectNullFlatBufferFieldDefinitionCode,
+                expectFlatBufferFieldDefinition: expectFlatBufferFieldDefinition,
                 expectLocalization: expectLocalization);
         }
 

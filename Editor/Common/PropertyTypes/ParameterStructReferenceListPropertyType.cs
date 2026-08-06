@@ -61,16 +61,16 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
                    $"        {FieldName}[i].{nameof(IParameterScriptableObjectStruct.CollectLocalizationStrings)}({localizationKeysArgumentName}, {localizedScriptArgumentName});";
         }
 
-        public override string FlatBufferPropertyImplementationCode()
+        public override string FlatBufferPropertyImplementationCode(int propertyIndex)
         {
             return $"public IReadOnlyList<ParameterStructReference<{_genericType.Name}>> {PropertyName}\n" +
                    $"{{\n" +
                    $"    get\n" +
                    $"    {{\n" +
-                   $"        if ({OverrideFieldName} != null)\n" +
+                   $"        if (TryGetOverride<string[]>({propertyIndex}, out var val))\n" +
                    $"            return new ReadOnlyListContainer<ParameterStructReference<{_genericType.Name}>>(\n" +
-                   $"                () => {OverrideFieldName}.Length,\n" +
-                   $"                i => new ParameterStructReferenceRuntime<{_genericType.Name}>(_parameterManager, {OverrideFieldName}[i]));\n" +
+                   $"                () => val.Length,\n" +
+                   $"                i => new ParameterStructReferenceRuntime<{_genericType.Name}>(_parameterManager, val[i]));\n" +
                    $"        return new ReadOnlyListContainer<ParameterStructReference<{_genericType.Name}>>(\n" +
                    $"            () => _fb.{FlatBufferStructPropertyName}Length,\n" +
                    $"                i => new ParameterStructReferenceRuntime<{_genericType.Name}>(_parameterManager, _fb.{FlatBufferStructPropertyName}(i)));\n" +

@@ -31,10 +31,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             return null;
         }
 
-        public override string FlatBufferFieldDefinitionCode() =>
-            $"private string[] {OverrideFieldName};";
-
-        public override string FlatBufferPropertyImplementationCode()
+        public override string FlatBufferPropertyImplementationCode(int propertyIndex)
         {
             if (HasLocalizationKeyAttribute || HasLocalizedScriptAttribute)
             {
@@ -48,10 +45,10 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
                      $"{{\n" +
                      $"    get\n" +
                      $"    {{\n" +
-                     $"        if ({OverrideFieldName} != null)\n" +
+                     $"        if (TryGetOverride<string[]>({propertyIndex}, out var val))\n" +
                      $"            return new ReadOnlyListContainer<string>(\n" +
-                     $"                () => {OverrideFieldName}.Length,\n" +
-                     $"                i => {localizationCall}({OverrideFieldName}[i]));\n" +
+                     $"                () => val.Length,\n" +
+                     $"                i => {localizationCall}(val[i]));\n" +
                      $"        return new ReadOnlyListContainer<string>(\n" +
                      $"            () => _fb.{FlatBufferStructPropertyName}Length,\n" +
                      $"            i => {localizationCall}(_fb.{FlatBufferStructPropertyName}(i)));\n" +
@@ -63,8 +60,8 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
                    $"{{\n" +
                    $"    get\n" +
                    $"    {{\n" +
-                   $"        if ({OverrideFieldName} != null)\n" +
-                   $"            return {OverrideFieldName};\n" +
+                   $"        if (TryGetOverride<string[]>({propertyIndex}, out var val))\n" +
+                   $"            return val;\n" +
                    $"        return new ReadOnlyListContainer<string>(\n" +
                    $"            () => _fb.{FlatBufferStructPropertyName}Length,\n" +
                    $"            i => _fb.{FlatBufferStructPropertyName}(i));\n" +
@@ -72,11 +69,8 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
                    $"}}";
         }
 
-        public override string FlatBufferEditPropertyCode(string variableName) =>
-            $"{OverrideFieldName} = {FromStringCode(variableName)};";
-
-        public override string FlatBufferRemoveEditCode() =>
-            $"{OverrideFieldName} = null;";
+        public override string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName) =>
+            $"return TrySetOverride<string[]>({propertyIndex}, {FromStringCode(variableName)}, {maxPropertyIndex}, out error);";
 
         public override string FlatBufferBuilderPrepareCode(string tableName)
         {

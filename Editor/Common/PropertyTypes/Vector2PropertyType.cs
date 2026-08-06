@@ -24,17 +24,11 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         public override string ScriptableObjectPropertyImplementationCode() =>
             $"public {VectorStructName} {PropertyName} => {FieldName};";
 
-        public override string FlatBufferFieldDefinitionCode() =>
-            $"private {VectorStructName}? {OverrideFieldName};";
+        public override string FlatBufferPropertyImplementationCode(int propertyIndex) =>
+            $"public {VectorStructName} {PropertyName} => TryGetOverride<{VectorStructName}>({propertyIndex}, out var val) ? val : new {VectorStructName}(_fb.{fbPropertyX}, _fb.{fbPropertyY});";
 
-        public override string FlatBufferPropertyImplementationCode() =>
-            $"public {VectorStructName} {PropertyName} => {OverrideFieldName} ?? new {VectorStructName}(_fb.{fbPropertyX}, _fb.{fbPropertyY});";
-
-        public override string FlatBufferEditPropertyCode(string variableName) =>
-            $"{OverrideFieldName} = {FromStringCode(variableName)};";
-
-        public override string FlatBufferRemoveEditCode() =>
-            $"{OverrideFieldName} = null;";
+        public override string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName) =>
+            $"return TrySetOverride<{VectorStructName}>({propertyIndex}, {FromStringCode(variableName)}, {maxPropertyIndex}, out error);";
 
         public override string FlatBufferBuilderPrepareCode(string tableName) => null;
 

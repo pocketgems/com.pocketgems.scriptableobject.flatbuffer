@@ -29,14 +29,14 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             return false;
         }
 
-        public override string FlatBufferPropertyImplementationCode()
+        public override string FlatBufferPropertyImplementationCode(int propertyIndex)
         {
             return $"public IReadOnlyList<{_typeKeyword}> {PropertyName}\n" +
                    $"{{\n" +
                    $"    get\n" +
                    $"    {{\n" +
-                   $"        if ({OverrideFieldName} != null)\n" +
-                   $"            return {OverrideFieldName};\n" +
+                   $"        if (TryGetOverride<{_typeKeyword}[]>({propertyIndex}, out var val))\n" +
+                   $"            return val;\n" +
                    $"        return new ReadOnlyListContainer<{_typeKeyword}>(\n" +
                    $"            () => _fb.{FlatBufferStructPropertyName}Length,\n" +
                    $"            i => ({_typeKeyword})_fb.{FlatBufferStructPropertyName}(i));\n" +

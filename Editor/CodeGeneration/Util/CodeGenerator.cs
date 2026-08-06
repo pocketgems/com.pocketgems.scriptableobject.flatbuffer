@@ -286,15 +286,10 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
                     propertyTypeDict["fieldDefinitionCode"] = fieldDefinition;
 
                 // property implementation
-                propertyTypeDict["propertyImplementationCode"] = propertyType.FlatBufferPropertyImplementationCode();
+                propertyTypeDict["propertyImplementationCode"] = propertyType.FlatBufferPropertyImplementationCode(i);
 
                 // edit property
-                propertyTypeDict["editPropertyCode"] = propertyType.FlatBufferEditPropertyCode("value");
-
-                // remove edit property
-                var removeEdit = propertyType.FlatBufferRemoveEditCode();
-                if (!string.IsNullOrWhiteSpace(removeEdit))
-                    propertyTypeDict["removeEditCode"] = removeEdit;
+                propertyTypeDict["editPropertyCode"] = propertyType.FlatBufferEditPropertyCode(i, propertyTypes.Count, "value");
             }
 
             var args = new Dictionary<string, object>
@@ -307,7 +302,8 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
                 { "interfaceName", parameterInterface.InterfaceName },
                 { "flatBufferStructName", parameterInterface.FlatBufferStructName(false) },
                 { "propertyTypeDicts", propertyTypeDicts },
-                { "parameterManagerType", nameof(IParameterManager) },
+                { "baseClassName", nameof(BaseInfoFlatBuffer) },
+                { "parameterManagerType", nameof(IParameterManager) }
             };
             var fileName = parameterInterface.FlatBufferClassName(true);
             var filePath = Path.Combine(outputDirectory, fileName);

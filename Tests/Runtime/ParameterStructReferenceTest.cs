@@ -55,7 +55,7 @@ namespace PocketGems.Parameters
         {
             var reference = new ParameterStructReferenceRuntime<IBaseStruct>(_parameterManagerMock, null);
             Assert.That(reference.Struct, Is.Null);
-            Assert.That(reference.ToString(), Is.Not.Null);
+            Assert.That(reference.ToString(), Does.Contain("not assigned"));
         }
 
         [Test]

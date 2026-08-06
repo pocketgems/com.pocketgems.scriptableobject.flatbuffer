@@ -20,16 +20,13 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             $"public {_typeKeyword} {PropertyName} => name;";
 
         public override string FlatBufferFieldDefinitionCode() =>
-            "// cached identifier\n" +
-            $"private string {CachedFieldName};";
+            $"private string {CachedFieldName}; // cached identifier";
 
-        public override string FlatBufferPropertyImplementationCode() =>
+        public override string FlatBufferPropertyImplementationCode(int propertyIndex) =>
             $"public {_typeKeyword} {PropertyName} => {CachedFieldName} ??= _fb.{FlatBufferStructPropertyName};";
 
-        public override string FlatBufferEditPropertyCode(string variableName) =>
+        public override string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName) =>
             $"throw new Exception(\"Cannot edit {PropertyName}.\");";
-
-        public override string FlatBufferRemoveEditCode() => null;
 
         public override string CSVBridgeReadFromCSVCode(string variableName)
         {

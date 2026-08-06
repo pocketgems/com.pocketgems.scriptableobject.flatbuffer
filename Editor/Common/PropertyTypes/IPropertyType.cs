@@ -21,9 +21,8 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
 
         // flat buffer class interface implementation code
         string FlatBufferFieldDefinitionCode();
-        string FlatBufferPropertyImplementationCode();
-        string FlatBufferEditPropertyCode(string variableName);
-        string FlatBufferRemoveEditCode();
+        string FlatBufferPropertyImplementationCode(int propertyIndex);
+        string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName);
 
         // FlatBufferBuilder code generation
         string FlatBufferBuilderPrepareCode(string tableName);

@@ -69,9 +69,8 @@ namespace PocketGems.Parameters.Editor
             mock.FlatBufferBuilderPrepareCode(default).ReturnsForAnyArgs("");
             mock.FlatBufferBuilderCode(default).ReturnsForAnyArgs("");
             mock.FlatBufferFieldDefinitionCode().ReturnsForAnyArgs("code");
-            mock.FlatBufferPropertyImplementationCode().ReturnsForAnyArgs("");
-            mock.FlatBufferEditPropertyCode("value").ReturnsForAnyArgs("");
-            mock.FlatBufferRemoveEditCode().ReturnsForAnyArgs("code");
+            mock.FlatBufferPropertyImplementationCode(default).ReturnsForAnyArgs("");
+            mock.FlatBufferEditPropertyCode(1, 10, "value").ReturnsForAnyArgs("");
             mock.ScriptableObjectFieldAttributesCode().ReturnsForAnyArgs(new List<string> { "attribute" });
             mock.ScriptableObjectFieldDefinitionCode().ReturnsForAnyArgs("field");
             mock.ScriptableObjectPropertyImplementationCode().ReturnsForAnyArgs("");

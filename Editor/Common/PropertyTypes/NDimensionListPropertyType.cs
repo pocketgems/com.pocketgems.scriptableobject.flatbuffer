@@ -24,10 +24,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         public override string ScriptableObjectPropertyImplementationCode() =>
             $"public IReadOnlyList<{_typeKeyword}> {PropertyName} => {FieldName};";
 
-        public override string FlatBufferFieldDefinitionCode() =>
-            $"private {_typeKeyword}[] {OverrideFieldName};";
-
-        public override string FlatBufferPropertyImplementationCode()
+        public override string FlatBufferPropertyImplementationCode(int propertyIndex)
         {
             int dimensions = ObjectFieldNames().Length;
             StringBuilder s = new StringBuilder();
@@ -35,8 +32,8 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
                      $"{{\n" +
                      $"    get\n" +
                      $"    {{\n" +
-                     $"        if ({OverrideFieldName} != null)\n" +
-                     $"            return {OverrideFieldName};\n" +
+                     $"        if (TryGetOverride<{_typeKeyword}[]>({propertyIndex}, out var val))\n" +
+                     $"            return val;\n" +
                      $"        return new ReadOnlyListContainer<{_typeKeyword}>(\n" +
                      $"            () => _fb.{FlatBufferStructPropertyName}Length / {dimensions},\n");
             s.Append($"            i =>\n" +
@@ -56,11 +53,8 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             return s.ToString();
         }
 
-        public override string FlatBufferEditPropertyCode(string variableName) =>
-            $"{OverrideFieldName} = {FromStringCode(variableName)};";
-
-        public override string FlatBufferRemoveEditCode() =>
-            $"{OverrideFieldName} = null;";
+        public override string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName) =>
+            $"return TrySetOverride<{_typeKeyword}[]>({propertyIndex}, {FromStringCode(variableName)}, {maxPropertyIndex}, out error);";
 
         public override string FlatBufferBuilderPrepareCode(string tableName)
         {

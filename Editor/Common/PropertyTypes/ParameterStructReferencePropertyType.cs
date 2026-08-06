@@ -43,17 +43,15 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         // flat buffer guids are always deterministic and shouldn't change via ab testing
         public override string FlatBufferFieldDefinitionCode() => null;
 
-        public override string FlatBufferPropertyImplementationCode()
+        public override string FlatBufferPropertyImplementationCode(int propertyIndex)
         {
             var referenceClassName = SanitizedPropertyTypeName();
             return
                 $"public {referenceClassName}<{_genericType.Name}> {PropertyName} => new ParameterStructReferenceRuntime<{_genericType.Name}>(_parameterManager, _fb.{FlatBufferStructPropertyName});";
         }
 
-        public override string FlatBufferEditPropertyCode(string variableName) =>
+        public override string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName) =>
             "error = $\"Cannot modify a ParameterStructReference with key-value {propertyName}:{value}. ParameterStructReference always point to a predefined guid based on key path.)\";";
-
-        public override string FlatBufferRemoveEditCode() => null;
 
         public override string FlatBufferBuilderPrepareCode(string tableName)
         {

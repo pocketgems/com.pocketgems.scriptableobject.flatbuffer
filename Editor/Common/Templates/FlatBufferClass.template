@@ -16,12 +16,11 @@ namespace {{namespace}}
 #if {{disableSymbol}}
     internal class {{className}}
 #else
-    internal class {{className}} : {{interfaceName}}, IMutableParameter
+    internal class {{className}} : {{baseClassName}}, {{interfaceName}}
 #endif
     {
-        #region  private fields
+        #region private fields
 
-        private {{parameterManagerType}} _parameterManager;
         private {{flatBufferStructName}} _fb;
 {{~
 for propertyTypeDict in propertyTypeDicts
@@ -39,10 +38,9 @@ end
 
         #endregion
 
-        public {{className}}({{parameterManagerType}} parameterManager, {{flatBufferStructName}} fb)
+        public {{className}}({{parameterManagerType}} parameterManager, {{flatBufferStructName}} fb) : base(parameterManager)
         {
             _fb = fb;
-            _parameterManager = parameterManager;
         }
 
 {{~if isInfo~}}
@@ -62,12 +60,11 @@ end
 
         #region  mutation
 
-        public bool EditProperty(IParameterManager parameterManager, string propertyName, string value, out string error)
+        public override bool EditProperty(IParameterManager parameterManager, string propertyName, string value, out string error)
         {
             error = null;
             try
             {
-                // TODO optimize further if needed
                 switch (propertyName)
                 {
                     {{~for propertyTypeDict in propertyTypeDicts~}}
@@ -94,24 +91,7 @@ end
             return error == null;
         }
 
-        public void RemoveAllEdits()
-        {
-{{~
-    for propertyTypeDict in propertyTypeDicts
-        if propertyTypeDict.removeEditCode == null
-            continue
-        end
-        lines = propertyTypeDict.removeEditCode | regex.split `\n`
-        for line in lines
-~}}
-            {{ line }}
-{{~
-        end
-    end
-~}}
-        }
-
-        public IMutableParameter CreateLinkedMutableParameter(IParameterManager parameterManager)
+        public override IMutableParameter CreateLinkedMutableParameter(IParameterManager parameterManager)
         {
             // cast needed if interface implementations are disabled
             return (IMutableParameter)new {{className}}(parameterManager, _fb);
