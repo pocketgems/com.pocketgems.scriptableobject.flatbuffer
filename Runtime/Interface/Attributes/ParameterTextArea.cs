@@ -6,7 +6,7 @@ namespace PocketGems.Parameters.Interface.Attributes
     /// Attribute to generate a TextArea on the Scriptable Object.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-    public class ParameterTextAreaAttribute : System.Attribute, IAttachScriptableObjectAttribute
+    public class ParameterTextAreaAttribute : Attribute, IAttachScriptableObjectAttribute
     {
         private readonly bool _hasArgs;
         private readonly int _minLines;

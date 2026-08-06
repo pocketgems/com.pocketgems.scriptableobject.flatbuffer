@@ -10,13 +10,6 @@ namespace PocketGems.Parameters.Interface.Attributes
         }
 
         [Test]
-        public void AttachFieldAttributeAttribute()
-        {
-            var a = new AttachFieldAttributeAttribute("[Header(\"test\')");
-            AssertAttribute(a, "[Header(\"test\')");
-        }
-
-        [Test]
         public void ParameterAttachFieldAttributeAttribute()
         {
             var a = new ParameterAttachFieldAttributeAttribute("[Header(\"test\')");

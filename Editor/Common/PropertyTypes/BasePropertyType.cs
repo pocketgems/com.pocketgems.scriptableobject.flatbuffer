@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
+using PocketGems.Parameters.Common.Editor;
 using PocketGems.Parameters.Common.Util.Editor;
 using PocketGems.Parameters.Interface;
 using PocketGems.Parameters.Interface.Attributes;
@@ -9,12 +11,58 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
 {
     internal abstract class BasePropertyType : IPropertyType
     {
+        protected bool HasLocalizationKeyAttribute { get; }
+        protected bool HasLocalizedScriptAttribute { get; }
+        protected virtual bool CanSupportLocalization => false;
+
         protected BasePropertyType(PropertyInfo propertyInfo)
         {
             PropertyInfo = propertyInfo;
+
+            foreach (var data in propertyInfo.CustomAttributes)
+            {
+                Type attrType = data.AttributeType;
+                if (attrType == typeof(ParameterLocalizationKeyAttribute))
+                    HasLocalizationKeyAttribute = true;
+                else if (attrType == typeof(ParameterLocalizableScriptAttribute))
+                    HasLocalizedScriptAttribute = true;
+            }
         }
 
         public PropertyInfo PropertyInfo { get; }
+
+
+        public bool Validate(string interfaceName, out IReadOnlyList<string> errors)
+        {
+            List<string> internalErrors = null;
+            void Error(string error)
+            {
+                if (internalErrors == null)
+                    internalErrors = new();
+                internalErrors.Add(error);
+            }
+
+            var propertyName = PropertyInfo.Name;
+            if (EditorParameterConstants.Interface.PropertyNameRegex.Matches(propertyName).Count != 1)
+                Error($"Property [{propertyName}] in interface [{interfaceName}] must follow naming pattern {EditorParameterConstants.Interface.PropertyNameRegexString}.");
+            if (EditorParameterConstants.Interface.InvalidReservedPropertyNames.Contains(propertyName.ToLower()))
+                Error($"Property name [{propertyName}] is invalid & reserved.  It cannot be used in interface [{interfaceName}].");
+            if ((ParameterReferencePropertyType.IsReferenceType(PropertyInfo, out var genericType) && genericType == typeof(IBaseInfo)) ||
+                (ParameterReferenceListPropertyType.IsListReferenceType(PropertyInfo, out genericType) && genericType == typeof(IBaseInfo)))
+                Error($"Cannot define {propertyName} as {nameof(ParameterReference)} with {nameof(IBaseInfo)} in {interfaceName}.");
+            if ((ParameterStructReferencePropertyType.IsReferenceType(PropertyInfo, out genericType) && genericType == typeof(IBaseStruct)) ||
+                (ParameterStructReferenceListPropertyType.IsListReferenceType(PropertyInfo, out genericType) && genericType == typeof(IBaseStruct)))
+                Error($"Cannot define {propertyName} as {nameof(ParameterStructReference)} with {nameof(IBaseStruct)} in {interfaceName}.");
+            if (HasLocalizationKeyAttribute && HasLocalizedScriptAttribute)
+                Error($"Cannot add both [{nameof(ParameterLocalizationKeyAttribute)}] and [{nameof(ParameterLocalizableScriptAttribute)}] on {propertyName} in {interfaceName}.");
+            if (HasLocalizationKeyAttribute && !CanSupportLocalization)
+                Error($"The property {propertyName} of type {PropertyTypeName} in {interfaceName} cannot support localization attribute [{nameof(ParameterLocalizationKeyAttribute)}].");
+            if (HasLocalizedScriptAttribute && !CanSupportLocalization)
+                Error($"The property {propertyName} of type {PropertyTypeName} in {interfaceName} cannot support localization attribute [{nameof(ParameterLocalizableScriptAttribute)}].");
+
+            errors = internalErrors;
+            return errors == null;
+        }
 
         public virtual IReadOnlyList<string> ScriptableObjectFieldAttributesCode()
         {
@@ -32,6 +80,9 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         }
         public abstract string ScriptableObjectFieldDefinitionCode();
         public abstract string ScriptableObjectPropertyImplementationCode();
+        public virtual string ScriptableObjectCollectLocalizationStringsCode(
+            string localizationKeysArgumentName,
+            string localizedScriptArgumentName) => null;
 
         public abstract string FlatBufferFieldDefinitionCode();
         public abstract string FlatBufferPropertyImplementationCode();

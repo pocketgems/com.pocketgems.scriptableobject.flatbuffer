@@ -5,9 +5,9 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
 {
     internal class StringPropertyType : StandardPropertyType
     {
-        public StringPropertyType(PropertyInfo propertyInfo) : base(propertyInfo, "string", FlatBufferFieldType.String)
-        {
-        }
+        protected override bool CanSupportLocalization => true;
+
+        public StringPropertyType(PropertyInfo propertyInfo) : base(propertyInfo, "string", FlatBufferFieldType.String) { }
 
         /*
          * Return empty string if the field is null. This gives more predictability for the data returned from
@@ -19,8 +19,30 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         public override string ScriptableObjectPropertyImplementationCode() =>
             $"public {_typeKeyword} {PropertyName} => {FieldName} ?? \"\";";
 
+        public override string ScriptableObjectCollectLocalizationStringsCode(string localizationKeysArgumentName, string localizedScriptArgumentName)
+        {
+            if (HasLocalizationKeyAttribute || HasLocalizedScriptAttribute)
+            {
+                return $"if (!string.IsNullOrWhiteSpace({FieldName}))\n" +
+                       $"    {(HasLocalizationKeyAttribute ? localizationKeysArgumentName : localizedScriptArgumentName)}.Add({FieldName});";
+            }
+
+            return null;
+        }
+
         public override string FlatBufferFieldDefinitionCode() =>
             $"private {_typeKeyword} {OverrideFieldName};";
+
+        public override string FlatBufferPropertyImplementationCode()
+        {
+            if (HasLocalizationKeyAttribute)
+                return $"public {_typeKeyword} {PropertyName} => {nameof(ParameterLocalizationHandler)}.{nameof(ParameterLocalizationHandler.GetLocalizationKeyTranslation)}({OverrideFieldName} ?? _fb.{FlatBufferStructPropertyName});";
+
+            if (HasLocalizedScriptAttribute)
+                return $"public {_typeKeyword} {PropertyName} => {nameof(ParameterLocalizationHandler)}.{nameof(ParameterLocalizationHandler.GetLocalizableScriptTranslation)}({OverrideFieldName} ?? _fb.{FlatBufferStructPropertyName});";
+
+            return base.FlatBufferPropertyImplementationCode();
+        }
 
         public override string FlatBufferEditPropertyCode(string variableName) =>
             $"{OverrideFieldName} = {variableName};";

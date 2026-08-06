@@ -9,20 +9,23 @@ namespace PocketGems.Parameters.LocalCSV
 {
     public static partial class CSVValueConverter
     {
+        // using : instead of a - to not confuse csv apps from thinking values are negative
+        internal const char AddrDelimiter = ':';
+
         public static class AssetReference
         {
             public static string ToString(UnityEngine.AddressableAssets.AssetReference value)
             {
                 if (value == null)
-                    return "-";
-                return $"{value.AssetGUID}-{value.SubObjectName}";
+                    return AddrDelimiter.ToString();
+                return $"{value.AssetGUID}{AddrDelimiter}{value.SubObjectName}";
             }
 
             internal static (string, string) ParseString(string value, bool validateGuid)
             {
                 if (string.IsNullOrWhiteSpace(value))
                     return ("", null);
-                var index = value.IndexOf('-');
+                var index = value.IndexOf(AddrDelimiter);
                 if (index == -1)
                     throw new Exception($"Cannot find delimiter");
                 string guid = value.Substring(0, index);

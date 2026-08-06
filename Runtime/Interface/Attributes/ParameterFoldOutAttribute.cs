@@ -6,7 +6,7 @@ namespace PocketGems.Parameters.Interface.Attributes
     /// Attribute to generate an editor foldout around all properties below this one.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
-    public class ParameterFoldOutAttribute : System.Attribute, IAttachScriptableObjectAttribute
+    public class ParameterFoldOutAttribute : Attribute, IAttachScriptableObjectAttribute
     {
         public readonly string NameText;
         public readonly bool InitialFoldout;

@@ -113,7 +113,8 @@ end
 
         public IMutableParameter CreateLinkedMutableParameter(IParameterManager parameterManager)
         {
-            return new {{className}}(parameterManager, _fb);
+            // cast needed if interface implementations are disabled
+            return (IMutableParameter)new {{className}}(parameterManager, _fb);
         }
 
         #endregion

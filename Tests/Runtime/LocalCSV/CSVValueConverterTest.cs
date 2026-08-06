@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace PocketGems.Parameters.LocalCSV
 {
-    public partial class CSVValueConversionTest
+    public partial class CSVValueConverterTest
     {
         [Test]
         [TestCase(false, null)]
@@ -438,24 +438,6 @@ namespace PocketGems.Parameters.LocalCSV
                 Assert.AreEqual(expected, CSVValueConverter.Numeric<float>.FromString(value));
             else
                 Assert.Catch(() => CSVValueConverter.Numeric<float>.FromString(value));
-        }
-
-        [Test]
-        [TestCase("blah")]
-        [TestCase("")]
-        [TestCase(null)]
-        public void LocalizedStringToString(string value)
-        {
-            Assert.AreEqual(value, CSVValueConverter.LocalizedString.ToString(value));
-        }
-
-        [Test]
-        [TestCase("blah")]
-        [TestCase("")]
-        [TestCase(null)]
-        public void LocalizedStringFromString(string value)
-        {
-            Assert.AreEqual(value, CSVValueConverter.LocalizedString.FromString(value));
         }
 
         [Test]

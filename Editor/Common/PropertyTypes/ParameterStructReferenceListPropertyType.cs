@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using PocketGems.Parameters.Common.Util.Editor;
+using PocketGems.Parameters.Interface;
 using PocketGems.Parameters.LocalCSV;
 
 namespace PocketGems.Parameters.Common.PropertyTypes.Editor
@@ -52,6 +53,13 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             $"            i => new ParameterStructReferenceEditor<{_genericType.Name}>(({_genericType.Name})(object)structs[i]));\n" +
             $"    }}\n" +
             $"}}";
+
+        public override string ScriptableObjectCollectLocalizationStringsCode(string localizationKeysArgumentName, string localizedScriptArgumentName)
+        {
+            return $"if ({FieldName} != null)\n" +
+                   $"    for (int i = 0; i < {FieldName}.Length; i++)\n" +
+                   $"        {FieldName}[i].{nameof(IParameterScriptableObjectStruct.CollectLocalizationStrings)}({localizationKeysArgumentName}, {localizedScriptArgumentName});";
+        }
 
         public override string FlatBufferPropertyImplementationCode()
         {

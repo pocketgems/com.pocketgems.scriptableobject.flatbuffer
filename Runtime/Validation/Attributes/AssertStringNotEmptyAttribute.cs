@@ -11,7 +11,7 @@ namespace PocketGems.Parameters.Validation.Attributes
 
         protected override bool CheckType(Type type)
         {
-            return type == typeof(string) || type == typeof(LocalizedString);
+            return type == typeof(string);
         }
 
         protected override string ValidateEmptyList() => null;
@@ -21,13 +21,6 @@ namespace PocketGems.Parameters.Validation.Attributes
             // null string is considered empty
             if (element == null)
                 return ErrorString;
-
-            if (_validationType == typeof(LocalizedString))
-            {
-                if (string.IsNullOrEmpty(((LocalizedString)element).Key))
-                    return ErrorString;
-                return null;
-            }
 
             if (string.IsNullOrEmpty((string)element))
                 return ErrorString;

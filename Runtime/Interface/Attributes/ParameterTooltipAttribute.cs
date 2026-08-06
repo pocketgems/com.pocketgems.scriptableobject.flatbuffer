@@ -6,7 +6,7 @@ namespace PocketGems.Parameters.Interface.Attributes
     /// Attribute to generate a Tooltip on the Scriptable Object.
     /// </summary>
     [AttributeUsage(AttributeTargets.All, AllowMultiple = false)]
-    public class ParameterTooltipAttribute : System.Attribute, IAttachScriptableObjectAttribute
+    public class ParameterTooltipAttribute : Attribute, IAttachScriptableObjectAttribute
     {
         private readonly string _tooltipText;
 

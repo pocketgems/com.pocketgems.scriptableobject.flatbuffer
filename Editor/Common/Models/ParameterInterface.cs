@@ -83,23 +83,16 @@ namespace PocketGems.Parameters.Common.Models.Editor
             }
 
             // validate properties
-            HashSet<string> propertyNames = new HashSet<string>();
+            HashSet<string> propertyNames = new();
             for (int i = 0; i < PropertyTypes.Count; i++)
             {
                 var propertyType = PropertyTypes[i];
+                if (!propertyType.Validate(InterfaceName, out var propertyTypeErrors))
+                    errors.AddRange(propertyTypeErrors);
+
                 var propertyName = propertyType.PropertyInfo.Name;
-                if (EditorParameterConstants.Interface.PropertyNameRegex.Matches(propertyName).Count != 1)
-                    errors.Add($"Property [{propertyName}] in interface [{_type.Name}] must follow naming pattern {EditorParameterConstants.Interface.PropertyNameRegexString}.");
                 if (propertyNames.Contains(propertyName))
                     errors.Add($"Duplicate property [{propertyName}] in interface [{_type.Name}].");
-                if (EditorParameterConstants.Interface.InvalidReservedPropertyNames.Contains(propertyName.ToLower()))
-                    errors.Add($"Property name [{propertyName}] is invalid & reserved.  It cannot be used in interface [{_type.Name}].");
-                if ((ParameterReferencePropertyType.IsReferenceType(propertyType.PropertyInfo, out var genericType) && genericType == typeof(IBaseInfo)) ||
-                    (ParameterReferenceListPropertyType.IsListReferenceType(propertyType.PropertyInfo, out genericType) && genericType == typeof(IBaseInfo)))
-                    errors.Add($"Cannot define {propertyName} as {nameof(ParameterReference)} with {nameof(IBaseInfo)} in {InterfaceName}.");
-                if ((ParameterStructReferencePropertyType.IsReferenceType(propertyType.PropertyInfo, out genericType) && genericType == typeof(IBaseStruct)) ||
-                    (ParameterStructReferenceListPropertyType.IsListReferenceType(propertyType.PropertyInfo, out genericType) && genericType == typeof(IBaseStruct)))
-                    errors.Add($"Cannot define {propertyName} as {nameof(ParameterStructReference)} with {nameof(IBaseStruct)} in {InterfaceName}.");
                 propertyNames.Add(propertyName);
             }
 

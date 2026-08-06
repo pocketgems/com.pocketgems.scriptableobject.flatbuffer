@@ -18,7 +18,7 @@ namespace PocketGems.Parameters.Common.Editor
         /// Ideally it would be the most convenient to use the package version but that requires file I/O to
         /// the package.json which can be costly if we're doing it all of the time.
         /// </summary>
-        public const string InterfaceHashSalt = "ae17396e-929a-486e-b4fe-8eb69ff14ed8";
+        public const string InterfaceHashSalt = "01622d58-770d-4cc0-a581-d8f2be075d29";
 
         public static string SanitizedDataPath()
         {
@@ -221,6 +221,8 @@ namespace PocketGems.Parameters.Common.Editor
             public const string MenuItemsFileName = "ScriptableObjectMenuItems.cs";
             public const string MenuItemsTemplateFileName = "ScriptableObjectMenuItems.template";
             public const string ClassTemplateFileName = "ScriptableObject.template";
+            public const string LocalizationKeysArgumentName = "localizationKeys";
+            public const string LocalizedScriptArgumentName = "localizedScript";
         }
 
         public static class Struct

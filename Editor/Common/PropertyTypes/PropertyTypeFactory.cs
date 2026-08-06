@@ -38,12 +38,6 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             if (propertyType == typeof(IReadOnlyList<string>))
                 return new StringListPropertyType(propertyInfo);
 
-            // localized strings
-            if (propertyType == typeof(LocalizedString))
-                return new LocalizedStringPropertyType(propertyInfo);
-            if (propertyType == typeof(IReadOnlyList<LocalizedString>))
-                return new LocalizedStringListPropertyType(propertyInfo);
-
             // enum
             if (propertyType.IsEnum)
                 return new EnumPropertyType(propertyInfo);

@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace PocketGems.Parameters.Common.PropertyTypes.Editor
 {
-    internal abstract class BaseParameterReferencePropertyType : BasePropertyType, IPropertyType
+    internal abstract class BaseParameterReferencePropertyType : BasePropertyType
     {
         protected readonly Type _genericType;
 

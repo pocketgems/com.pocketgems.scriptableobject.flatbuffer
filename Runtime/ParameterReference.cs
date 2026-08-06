@@ -50,9 +50,6 @@ namespace PocketGems.Parameters
             _createdWithConstructor = true;
         }
 
-        [Obsolete("Use other ParameterReference() constructor.")]
-        public ParameterReference(string value = null, bool isIdentifier = false) : this(Params.ParameterManager, value, isIdentifier) { }
-
         public override string ToString()
         {
             string description = null;

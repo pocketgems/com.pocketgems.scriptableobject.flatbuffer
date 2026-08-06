@@ -101,6 +101,25 @@ namespace PocketGems.Parameters
         }
 
         [Test]
+        public void LoadAndTryGet()
+        {
+            AssertEmptyManager();
+            LoadInfos();
+
+            Assert.That(_parameterManager.TryGet<ISubInterfaceAInfo>(SubclassAId, out var info1), Is.True);
+            Assert.That(info1, Is.EqualTo(_mockSubclassAInfo));
+
+            Assert.That(_parameterManager.TryGet<ISubInterfaceBInfo>(SubclassAId, out var info2), Is.False);
+            Assert.That(info2, Is.Null);
+
+            Assert.That(_parameterManager.TryGet<ISubInterfaceAInfo>(SubclassBId, out var info3), Is.True);
+            Assert.That(info3, Is.EqualTo(_mockSubclassBInfo));
+
+            Assert.That(_parameterManager.TryGet<ISubInterfaceBInfo>(SubclassBId, out var info4), Is.True);
+            Assert.That(info4, Is.EqualTo(_mockSubclassBInfo));
+        }
+
+        [Test]
         public void LoadAndGetWithStruct()
         {
             AssertEmptyManager();

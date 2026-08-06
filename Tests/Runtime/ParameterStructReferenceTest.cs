@@ -45,7 +45,7 @@ namespace PocketGems.Parameters
         public void GetStruct()
         {
             var reference = new ParameterStructReferenceRuntime<IBaseStruct>(_parameterManagerMock, kTestGuid);
-            Assert.AreEqual(_mockStruct, reference.Struct);
+            Assert.That(reference.Struct, Is.EqualTo(_mockStruct));
         }
 
         [Test]
@@ -54,7 +54,8 @@ namespace PocketGems.Parameters
         public void MissingGuid(string guid)
         {
             var reference = new ParameterStructReferenceRuntime<IBaseStruct>(_parameterManagerMock, null);
-            Assert.IsNull(reference.Struct);
+            Assert.That(reference.Struct, Is.Null);
+            Assert.That(reference.ToString(), Is.Not.Null);
         }
 
         [Test]
@@ -64,8 +65,8 @@ namespace PocketGems.Parameters
 
             LogAssert.Expect(LogType.Error, errorString);
             var reference = new ParameterStructReferenceRuntime<IBaseStruct>(null, kTestGuid);
-            Assert.IsNull(reference.Struct);
-            Assert.IsNotEmpty(reference.ToString());
+            Assert.That(reference.Struct, Is.Null);
+            Assert.That(reference.ToString(), Is.Not.Null);
         }
 
         [Test]
@@ -76,7 +77,7 @@ namespace PocketGems.Parameters
 
             var reference = new ParameterStructReferenceEditor<ISomeStruct>(someStruct);
             var fetchedStruct = reference.Struct;
-            Assert.AreEqual(someStruct.Name, fetchedStruct.Name);
+            Assert.That(fetchedStruct.Name, Is.EqualTo(someStruct.Name));
         }
     }
 }

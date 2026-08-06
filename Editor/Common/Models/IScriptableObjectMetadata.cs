@@ -1,4 +1,4 @@
-using UnityEngine;
+using PocketGems.Parameters.Interface;
 
 namespace PocketGems.Parameters.Common.Models.Editor
 {
@@ -6,7 +6,7 @@ namespace PocketGems.Parameters.Common.Models.Editor
     {
         string GUID { get; }
         string FilePath { get; }
-        ScriptableObject ScriptableObject { get; }
+        ParameterScriptableObject ScriptableObject { get; }
 
         public void Rename(string newName);
     }

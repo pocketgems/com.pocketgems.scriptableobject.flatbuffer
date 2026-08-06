@@ -80,6 +80,7 @@ namespace PocketGems.Parameters
         private static IParameterHotLoader s_hotLoader;
         private static Type s_cachedParameterDataLoader;
 
+        [ExcludeFromCoverage]
         internal static IParameterDataLoader CreateParameterDataLoader()
         {
             // find and create data loader

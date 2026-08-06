@@ -8,7 +8,6 @@
   - [Requirements](#requirements-1)
 - [Interface Property Types](#interface-property-types)
   - [Strings](#strings)
-  - [Localized Strings](#localized-strings)
   - [Scalars](#scalars)
   - [Date \& Time](#date--time)
   - [Unity Types](#unity-types)
@@ -22,6 +21,8 @@
   - [ParameterTooltip](#parametertooltip)
   - [ParameterFoldOut](#parameterfoldout)
   - [ParameterAttachFieldAttribute](#parameterattachfieldattribute)
+  - [ParameterLocalizationKey](#parameterlocalizationkey)
+  - [ParameterLocalizableScript](#parameterlocalizablescript)
 - [Enums](#enums-1)
   - [Overview](#overview-2)
   - [Requirements](#requirements-2)
@@ -36,7 +37,8 @@ This is an example interface under `Assets/Parameters/Interfaces/ICurrencyInfo.c
 public interface ICurrencyInfo : IBaseInfo
 {
   // user facing display name for currency
-  LocalizedString DisplayName { get; }
+  [ParameterLocalizationKey]
+  string DisplayName { get; }
   AssetReferenceSprite Icon { get; }
   CurrencyType CurrencyType { get; }
   // amount a new player starts with
@@ -45,17 +47,16 @@ public interface ICurrencyInfo : IBaseInfo
 }
 ```
 
-This is a basic of example of what the auto-generated Scriptable Object that implements the interface would look like.
+This is a basic of example of what the auto-generated Scriptable Object that implements the interface could look like.
 ```C#
 namespace Parameters
 {
-  [CreateAssetMenu(fileName = "CurrencyInfo", menuName = "Parameters/CurrencyInfo")]
   internal class CurrencyInfoScriptableObject : ParameterScriptableObject, ICurrencyInfo
   {
     public string Identifier => name;
 
     public string _displayName;
-    public LocalizedString DisplayName => new LocalizedString(_displayName);
+    public string DisplayName => _displayName;
 
     public AssetReferenceSprite _icon;
     public AssetReferenceSprite Icon => _icon;
@@ -96,7 +97,7 @@ Structs are supported and follow the same workflow as defined infos above.
 public interface ITransactionStruct : IBaseStruct
 {
   string Description { get; }
-  ParameterRefereince<ICurrencyInfo> Currency { get; }
+  ParameterReference<ICurrencyInfo> Currency { get; }
   int Amount { get; }
 }
 ```
@@ -105,7 +106,8 @@ Infos or other Structs can reference the struct via [`ParameterStructReference<>
 ```C#
 public interface IRewardBoxStruct : IBaseStruct
 {
-  LocalizedString DisplayName { get; }
+  [ParameterLocalizationKey]
+  string DisplayName { get; }
   IReadOnlyList<ParameterStructReference<ITransactionStruct>> Transactions { get; }
 }
 
@@ -138,14 +140,6 @@ string Identifier { get; }
 IReadOnlyList<string> Strings { get; }
 ```
 
-### Localized Strings
-Localized strings are used to translate user displayed text.  These values should never be utilized and stored in model data.
-
-```C#
-LocalizedString Description { get; }
-IReadOnlyList<LocalizedString> Names { get; }
-```
-
 **Utilizing LocalizedStrings**
 
 To fetch the translated string, access the `Text` property of the `LocalizedString`.
@@ -175,17 +169,6 @@ IReadOnlyList<float> BonusChances { get; }
 IReadOnlyList<ushort> DayOfWeeks { get; }
 IReadOnlyList<uint> CurrencyAmounts { get; }
 IReadOnlyList<ulong> VeryLargeAmounts { get; }
-```
-
-A `ParameterLocalizationHandler` is provided to provide a delegate to return translated strings.
-```C#
-# setting the translation delegate
-string TheTranslation(string inputString)
-{
-  // return translated string of inputString
-}
-
-ParameterLocalizationHandler.GlobalTranslateStringDelegate = TheTranslation;
 ```
 
 ### Date & Time
@@ -312,6 +295,28 @@ int Scale { get; }
 
 [ParameterAttachFieldAttribute("[TextArea(3)]")]
 string Description { get; }
+```
+
+### ParameterLocalizationKey
+Tag a `string` or `IReadOnlyList<string>` property in the interface to mark it for localization support.  See  more [String Localization README](README/Localization.md) for more details.
+
+```
+[ParameterLocalizationKey]
+string DisplayName { get; }
+
+[ParameterLocalizationKey]
+IReadOnlyList<string> DisplayNames { get; }
+```
+
+### ParameterLocalizableScript
+Tag a `string` or `IReadOnlyList<string>` property in the interface to mark it for localization support.  See  more [String Localization README](README/Localization.md) for more details.
+
+```
+[ParameterLocalizableScript]
+string DialogScript { get; }
+
+[ParameterLocalizableScript]
+IReadOnlyList<string> VictoryDialogScripts { get; }
 ```
 
 ## Enums

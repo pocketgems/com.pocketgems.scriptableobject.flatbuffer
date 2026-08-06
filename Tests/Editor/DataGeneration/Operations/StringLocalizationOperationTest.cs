@@ -3,7 +3,7 @@ using PocketGems.Parameters.DataGeneration.Operation.Editor;
 
 namespace PocketGems.Parameters.DataGeneration.Operations.Editor
 {
-    public class LocalizationScraperOperationTest : BaseOperationTest<IDataOperationContext>
+    public class StringLocalizationOperationTest : BaseOperationTest<IDataOperationContext>
     {
         // private LocalizationScraperOperation _operation;
         // // private List<IParameterFile> _parameterFileContainer;

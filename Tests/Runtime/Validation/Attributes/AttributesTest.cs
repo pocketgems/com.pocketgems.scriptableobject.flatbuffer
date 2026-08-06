@@ -19,8 +19,6 @@ namespace PocketGems.Parameters.Validation.Attributes
 
         private string String { get; set; }
         private IReadOnlyList<string> StringArray { get; set; }
-        private LocalizedString LocalizedString { get; set; }
-        private IReadOnlyList<LocalizedString> LocalizedStringArray { get; set; }
         private ParameterReference<ISubInterfaceAInfo> ParameterReference { get; set; }
         private IReadOnlyList<ParameterReference<ISubInterfaceAInfo>> ParameterReferenceArray { get; set; }
 #if ADDRESSABLE_PARAMS
@@ -45,8 +43,6 @@ namespace PocketGems.Parameters.Validation.Attributes
 
             String = null;
             StringArray = null;
-            LocalizedString = null;
-            LocalizedStringArray = null;
             ParameterReference = null;
             ParameterReferenceArray = null;
 #if ADDRESSABLE_PARAMS
@@ -364,45 +360,29 @@ namespace PocketGems.Parameters.Validation.Attributes
 
             // true
             String = "a string";
-            LocalizedString = new LocalizedString("a string");
             AssertAttribute(attribute, nameof(String), String, true);
-            AssertAttribute(attribute, nameof(LocalizedString), LocalizedString, true);
 
             // true empty arrays
             StringArray = Array.Empty<string>();
-            LocalizedStringArray = Array.Empty<LocalizedString>();
             AssertAttribute(attribute, nameof(StringArray), StringArray, true);
-            AssertAttribute(attribute, nameof(LocalizedStringArray), LocalizedStringArray, true);
             StringArray = null;
-            LocalizedStringArray = null;
             AssertAttribute(attribute, nameof(StringArray), StringArray, true);
-            AssertAttribute(attribute, nameof(LocalizedStringArray), LocalizedStringArray, true);
 
             // true filled arrays
             StringArray = new[] { "blah", "boo" };
-            LocalizedStringArray = new[] { new LocalizedString("blah"), new LocalizedString("boo") };
             AssertAttribute(attribute, nameof(StringArray), StringArray, true);
-            AssertAttribute(attribute, nameof(LocalizedStringArray), LocalizedStringArray, true);
 
             // false - null or empty strings
             String = "";
             AssertAttribute(attribute, nameof(String), String, false);
             String = null;
             AssertAttribute(attribute, nameof(String), String, false);
-            LocalizedString = new LocalizedString("");
-            AssertAttribute(attribute, nameof(LocalizedString), LocalizedString, false);
-            LocalizedString = new LocalizedString(null);
-            AssertAttribute(attribute, nameof(LocalizedString), LocalizedString, false);
 
             // false - null or empty strings in arrays
             StringArray = new[] { "", "boo" };
             AssertAttribute(attribute, nameof(StringArray), StringArray, false);
             StringArray = new[] { null, "boo" };
             AssertAttribute(attribute, nameof(StringArray), StringArray, false);
-            LocalizedStringArray = new[] { null, new LocalizedString("boo") };
-            AssertAttribute(attribute, nameof(LocalizedStringArray), LocalizedStringArray, false);
-            LocalizedStringArray = new[] { new LocalizedString("blah"), new LocalizedString("") };
-            AssertAttribute(attribute, nameof(LocalizedStringArray), LocalizedStringArray, false);
 
             // invalid
             AssertCanValidate(attribute, nameof(Int), false);

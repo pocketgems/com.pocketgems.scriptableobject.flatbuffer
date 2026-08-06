@@ -6,9 +6,9 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
 {
     internal class StringListPropertyType : BasePropertyType, IPropertyType
     {
-        public StringListPropertyType(PropertyInfo propertyInfo) : base(propertyInfo)
-        {
-        }
+        protected override bool CanSupportLocalization => true;
+
+        public StringListPropertyType(PropertyInfo propertyInfo) : base(propertyInfo) { }
 
         protected virtual string StringGetterSnippet => $"data.{FieldName}[j]";
 
@@ -18,11 +18,47 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         public override string ScriptableObjectPropertyImplementationCode() =>
             $"public IReadOnlyList<string> {PropertyName} => {FieldName};";
 
+        public override string ScriptableObjectCollectLocalizationStringsCode(string localizationKeysArgumentName, string localizedScriptArgumentName)
+        {
+            if (HasLocalizationKeyAttribute || HasLocalizedScriptAttribute)
+            {
+                return $"if ({FieldName} != null && {FieldName}.Length > 0)\n" +
+                       $"    foreach (var str in {FieldName})\n" +
+                       $"        if (!string.IsNullOrWhiteSpace(str))\n" +
+                       $"            {(HasLocalizationKeyAttribute ? localizationKeysArgumentName : localizedScriptArgumentName)}.Add(str);";
+            }
+
+            return null;
+        }
+
         public override string FlatBufferFieldDefinitionCode() =>
             $"private string[] {OverrideFieldName};";
 
         public override string FlatBufferPropertyImplementationCode()
         {
+            if (HasLocalizationKeyAttribute || HasLocalizedScriptAttribute)
+            {
+                string localizationCall;
+                if (HasLocalizationKeyAttribute)
+                    localizationCall = $"{nameof(ParameterLocalizationHandler)}.{nameof(ParameterLocalizationHandler.GetLocalizationKeyTranslation)}";
+                else
+                    localizationCall = $"{nameof(ParameterLocalizationHandler)}.{nameof(ParameterLocalizationHandler.GetLocalizableScriptTranslation)}";
+
+                return $"public IReadOnlyList<string> {PropertyName}\n" +
+                     $"{{\n" +
+                     $"    get\n" +
+                     $"    {{\n" +
+                     $"        if ({OverrideFieldName} != null)\n" +
+                     $"            return new ReadOnlyListContainer<string>(\n" +
+                     $"                () => {OverrideFieldName}.Length,\n" +
+                     $"                i => {localizationCall}({OverrideFieldName}[i]));\n" +
+                     $"        return new ReadOnlyListContainer<string>(\n" +
+                     $"            () => _fb.{FlatBufferStructPropertyName}Length,\n" +
+                     $"            i => {localizationCall}(_fb.{FlatBufferStructPropertyName}(i)));\n" +
+                     $"    }}\n" +
+                     $"}}";
+            }
+
             return $"public IReadOnlyList<string> {PropertyName}\n" +
                    $"{{\n" +
                    $"    get\n" +

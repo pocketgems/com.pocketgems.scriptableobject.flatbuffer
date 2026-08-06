@@ -48,5 +48,15 @@ namespace {{namespace}}
             return validator.ValidationErrors.ToArray();
 #endif
         }
+
+        public override void CollectLocalizationStrings(HashSet<string> {{localizationKeysArgumentName}}, HashSet<string> {{localizedScriptArgumentName}})
+        {
+    {{~for localization in localizations~}}
+        {{~lines = localization | regex.split `\n`~}}
+        {{~for line in lines~}}
+            {{line}}
+        {{~end~}}
+    {{~end~}}
+        }
     }
 }

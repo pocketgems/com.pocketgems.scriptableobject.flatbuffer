@@ -213,12 +213,6 @@ namespace PocketGems.Parameters.LocalCSV
             }
         }
 
-        public static class LocalizedString
-        {
-            public static string ToString(string value) => value;
-            public static string FromString(string value) => value;
-        }
-
         [ExcludeFromCoverage]
         public static class ParameterReference
         {
@@ -281,7 +275,7 @@ namespace PocketGems.Parameters.LocalCSV
 
                 throw new Exception($"Cannot find asset with name {value} of type {typeof(T)}");
 #else
-                return new ParameterReference<T>(value, true);
+                return new ParameterReference<T>(parameterManager, value, true);
 #endif
             }
         }

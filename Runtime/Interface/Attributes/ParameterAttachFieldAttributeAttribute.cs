@@ -1,5 +1,4 @@
 using System;
-using PocketGems.Parameters.Interface.Attributes;
 
 namespace PocketGems.Parameters.Interface.Attributes
 {

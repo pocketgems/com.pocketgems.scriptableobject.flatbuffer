@@ -22,6 +22,11 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
             if (!ParameterPrefs.AutoValidateDataOnAssetChange)
                 return;
 
+            var prevKeyDelegate = ParameterLocalizationHandler.GlobalTranslateLocalizationKeyDelegate;
+            var prevScriptDelegate = ParameterLocalizationHandler.GlobalTranslateLocalizableScriptDelegate;
+            ParameterLocalizationHandler.GlobalTranslateLocalizationKeyDelegate = localizationKey => localizationKey;
+            ParameterLocalizationHandler.GlobalTranslateLocalizableScriptDelegate = localizableScript => localizableScript;
+
             // validate assets
             var assetErrors = AssetValidator.ValidateScriptableObjects(context.ScriptableObjectMetadatas);
             for (int i = 0; i < assetErrors?.Count; i++)
@@ -42,6 +47,9 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
                 if (validationError.ErrorSeverity == ValidationError.Severity.Error)
                     Error(parameterErrors[i]);
             }
+
+            ParameterLocalizationHandler.GlobalTranslateLocalizationKeyDelegate = prevKeyDelegate;
+            ParameterLocalizationHandler.GlobalTranslateLocalizableScriptDelegate = prevScriptDelegate;
         }
 
         /// <summary>

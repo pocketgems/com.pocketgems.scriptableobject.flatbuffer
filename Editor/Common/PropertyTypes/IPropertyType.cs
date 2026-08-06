@@ -8,10 +8,16 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
     {
         PropertyInfo PropertyInfo { get; }
 
+        // validation
+        bool Validate(string interfaceName, out IReadOnlyList<string> errors);
+
         // scriptable object interface implementation code
         IReadOnlyList<string> ScriptableObjectFieldAttributesCode();
         string ScriptableObjectFieldDefinitionCode();
         string ScriptableObjectPropertyImplementationCode();
+        string ScriptableObjectCollectLocalizationStringsCode(
+            string localizationKeysArgumentName,
+            string localizedScriptArgumentName);
 
         // flat buffer class interface implementation code
         string FlatBufferFieldDefinitionCode();

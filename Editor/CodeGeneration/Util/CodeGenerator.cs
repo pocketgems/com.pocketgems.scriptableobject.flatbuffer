@@ -171,6 +171,7 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
                 Directory.CreateDirectory(outputDirectory);
 
             var properties = new List<string>();
+            var localizations = new List<string>();
             var propertyTypes = parameterInfo.PropertyTypes;
             for (int i = 0; i < propertyTypes.Count; i++)
             {
@@ -178,9 +179,14 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
                 for (int j = 0; j < attributes?.Count; j++)
                     properties.Add(attributes[j]);
                 var fieldSource = propertyTypes[i].ScriptableObjectFieldDefinitionCode();
-                if (fieldSource != null)
+                if (!string.IsNullOrWhiteSpace(fieldSource))
                     properties.Add(fieldSource);
                 properties.Add(propertyTypes[i].ScriptableObjectPropertyImplementationCode());
+                var localization = propertyTypes[i].ScriptableObjectCollectLocalizationStringsCode(
+                    EditorParameterConstants.ScriptableObjectClass.LocalizationKeysArgumentName,
+                    EditorParameterConstants.ScriptableObjectClass.LocalizedScriptArgumentName);
+                if (!string.IsNullOrWhiteSpace(localization))
+                    localizations.Add(localization);
             }
 
             var args = new Dictionary<string, object>
@@ -191,7 +197,10 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
                 { "baseName", parameterInfo.BaseName },
                 { "className", parameterInfo.ScriptableObjectClassName(false) },
                 { "interfaceName", parameterInfo.InterfaceName },
-                { "properties", properties }
+                { "properties", properties },
+                { "localizationKeysArgumentName", EditorParameterConstants.ScriptableObjectClass.LocalizationKeysArgumentName },
+                { "localizedScriptArgumentName", EditorParameterConstants.ScriptableObjectClass.LocalizedScriptArgumentName },
+                { "localizations", localizations }
             };
             var fileName = parameterInfo.ScriptableObjectClassName(true);
             var filePath = Path.Combine(outputDirectory, fileName);
@@ -212,6 +221,7 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
                 Directory.CreateDirectory(outputDirectory);
 
             var properties = new List<string>();
+            var localizations = new List<string>();
             var propertyTypes = parameterStruct.PropertyTypes;
             for (int i = 0; i < propertyTypes.Count; i++)
             {
@@ -219,9 +229,14 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
                 for (int j = 0; j < attributes?.Count; j++)
                     properties.Add(attributes[j]);
                 var fieldSource = propertyTypes[i].ScriptableObjectFieldDefinitionCode();
-                if (fieldSource != null)
+                if (!string.IsNullOrWhiteSpace(fieldSource))
                     properties.Add(fieldSource);
                 properties.Add(propertyTypes[i].ScriptableObjectPropertyImplementationCode());
+                var localization = propertyTypes[i].ScriptableObjectCollectLocalizationStringsCode(
+                    EditorParameterConstants.ScriptableObjectClass.LocalizationKeysArgumentName,
+                    EditorParameterConstants.ScriptableObjectClass.LocalizedScriptArgumentName);
+                if (!string.IsNullOrWhiteSpace(localization))
+                    localizations.Add(localization);
             }
 
             var args = new Dictionary<string, object>
@@ -233,6 +248,9 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
                 { "structName", parameterStruct.StructName(false) },
                 { "interfaceName", parameterStruct.InterfaceName },
                 { "properties", properties },
+                { "localizationKeysArgumentName", EditorParameterConstants.ScriptableObjectClass.LocalizationKeysArgumentName },
+                { "localizedScriptArgumentName", EditorParameterConstants.ScriptableObjectClass.LocalizedScriptArgumentName },
+                { "localizations", localizations }
             };
             var fileName = parameterStruct.StructName(true);
             var filePath = Path.Combine(outputDirectory, fileName);

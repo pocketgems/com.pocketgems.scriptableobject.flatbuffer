@@ -136,6 +136,13 @@ namespace PocketGems.Parameters
             return (T)Get(typeof(T), identifier);
         }
 
+        /// <inheritdoc cref="IParameterManager.TryGet{T}(string, out T)"/>
+        public bool TryGet<T>(string identifier, out T parameter) where T : class, IBaseInfo
+        {
+            parameter = Get<T>(identifier);
+            return parameter != null;
+        }
+
         /// <inheritdoc cref="IParameterManager.GetWithGUID{T}(string)"/>
         public T GetWithGUID<T>(string guid) where T : class, IBaseInfo
         {
@@ -232,7 +239,7 @@ namespace PocketGems.Parameters
             // Currently not supporting renaming of parameters or creating new assets at Editor Runtime.
             if (updatingExistingIdentifier != updatingExistingGuid)
             {
-                Debug.LogError("Loading parameter doesn't match existing mappings.");
+                Debug.LogError("There is a mismatch in guids (possibly due to renaming of assets).  Regenerate all parameters and try again.");
                 return;
             }
 
@@ -257,6 +264,7 @@ namespace PocketGems.Parameters
             guidDict[guid] = parameter;
         }
 
+        /// <inheritdoc cref="IParameterManager.Get"/>
         public IBaseInfo Get(string identifier, Type type)
         {
             CheckGet();

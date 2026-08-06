@@ -6,7 +6,7 @@ namespace PocketGems.Parameters.Interface.Attributes
     /// Attribute to generate a Header on the Scriptable Object.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
-    public class ParameterHeaderAttribute : System.Attribute, IAttachScriptableObjectAttribute
+    public class ParameterHeaderAttribute : Attribute, IAttachScriptableObjectAttribute
     {
         private readonly string _headerText;
 
