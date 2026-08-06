@@ -3,6 +3,7 @@ using UnityEditor;
 
 namespace PocketGems.Parameters.Processors.Editor
 {
+    internal delegate bool IsEnabled();
     internal delegate bool IsValidFile(string filePath);
     internal delegate void OnFilesChanged(List<string> createdOrChanged, List<string> deleted,
         List<string> movedTo, List<string> movedFrom);
@@ -12,32 +13,34 @@ namespace PocketGems.Parameters.Processors.Editor
     /// </summary>
     internal class FilePostprocessor : AssetPostprocessor
     {
-        private static List<(IsValidFile, OnFilesChanged)> s_callbackDelegates;
+        private static List<(IsEnabled, IsValidFile, OnFilesChanged)> s_callbackDelegates;
 
         /// <summary>
         /// Adds an observer for ".csv" file changes in the specified directory path.
         /// </summary>
+        /// <param name="enabledDelegate">Delegate to check if the observer is enabled and should be notified of changes.</param>
         /// <param name="fileCheckDelegate">Delegate to check if the file is a valid one to trigger a file change event.</param>
         /// <param name="callbackDelegate">Delegate to call upon file changes.</param>
-        public static void AddObserver(IsValidFile fileCheckDelegate, OnFilesChanged callbackDelegate)
+        public static void AddObserver(IsEnabled enabledDelegate, IsValidFile fileCheckDelegate, OnFilesChanged callbackDelegate)
         {
             if (s_callbackDelegates == null)
-                s_callbackDelegates = new List<(IsValidFile, OnFilesChanged)>();
+                s_callbackDelegates = new List<(IsEnabled, IsValidFile, OnFilesChanged)>();
 
-            s_callbackDelegates.Add((fileCheckDelegate, callbackDelegate));
+            s_callbackDelegates.Add((enabledDelegate, fileCheckDelegate, callbackDelegate));
         }
 
         /// <summary>
         /// Remove an observer.
         /// </summary>
+        /// <param name="enabledDelegate">Delegate to remove.</param>
         /// <param name="fileCheckDelegate">Delegate to remove.</param>
         /// <param name="callbackDelegate">Delegate to remove.</param>
-        public static bool RemoveObserver(IsValidFile fileCheckDelegate, OnFilesChanged callbackDelegate)
+        public static bool RemoveObserver(IsEnabled enabledDelegate, IsValidFile fileCheckDelegate, OnFilesChanged callbackDelegate)
         {
             for (int i = 0; i < s_callbackDelegates.Count; i++)
             {
                 var d = s_callbackDelegates[i];
-                if (d.Item1 == fileCheckDelegate && d.Item2 == callbackDelegate)
+                if (d.Item1 == enabledDelegate && d.Item2 == fileCheckDelegate && d.Item3 == callbackDelegate)
                 {
                     s_callbackDelegates.RemoveAt(i);
                     return true;
@@ -61,13 +64,17 @@ namespace PocketGems.Parameters.Processors.Editor
             for (int i = 0; i < s_callbackDelegates.Count; i++)
             {
                 var d = s_callbackDelegates[i];
-                Process(importedAssets, deletedAssets, movedAssets, movedFromAssets, d.Item1, d.Item2);
+                Process(importedAssets, deletedAssets, movedAssets, movedFromAssets, d.Item1, d.Item2, d.Item3);
             }
         }
 
         private static void Process(string[] importedAssets, string[] deletedAssets, string[] movedAssets,
-            string[] movedFromAssets, IsValidFile fileCheckDelegate, OnFilesChanged callbackDelegate)
+            string[] movedFromAssets, IsEnabled enabledDelegate, IsValidFile fileCheckDelegate, OnFilesChanged callbackDelegate)
         {
+            // check enabledDelegate and early return if not enabled
+            if (enabledDelegate != null && !enabledDelegate())
+                return;
+
             List<string> createdOrChanged = null;
             List<string> deleted = null;
             List<string> movedFrom = null;

@@ -14,6 +14,8 @@ namespace PocketGems.Parameters.Processors.Editor
         private string[] _twoValidPaths;
 
         // delegate callback
+        private IsEnabled _enabledDelegate;
+        private bool _enabled;
         private IsValidFile _checkDelegate;
         private OnFilesChanged _callback;
         private bool _delegateCalled;
@@ -36,6 +38,11 @@ namespace PocketGems.Parameters.Processors.Editor
             _twoValidPaths = new[] { _validFilePath, invalidFilePath, invalidFileType, _validFilePath };
 
             // delegate setup
+            _enabledDelegate = delegate ()
+            {
+                return _enabled;
+            };
+
             _checkDelegate = delegate (string filePath)
             {
                 return filePath.ToLower().EndsWith(".csv") && filePath.StartsWith(_testDirPath);
@@ -50,18 +57,19 @@ namespace PocketGems.Parameters.Processors.Editor
                 _movedFrom = movedFrom;
                 _movedTo = movedTo;
             };
-            FilePostprocessor.AddObserver(_checkDelegate, _callback);
+            FilePostprocessor.AddObserver(_enabledDelegate, _checkDelegate, _callback);
         }
 
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            Assert.IsTrue(FilePostprocessor.RemoveObserver(_checkDelegate, _callback));
+            Assert.IsTrue(FilePostprocessor.RemoveObserver(_enabledDelegate, _checkDelegate, _callback));
         }
 
         [SetUp]
         public void SetUp()
         {
+            _enabled = true;
             _delegateCalled = false;
         }
 
@@ -69,13 +77,22 @@ namespace PocketGems.Parameters.Processors.Editor
         public void AddAndRemoveObserver()
         {
             // delegate setup
+            IsEnabled enabledDelegate = () => true;
             IsValidFile checkDelegate = filePath => false;
             OnFilesChanged callback = delegate (List<string> createdOrChanged, List<string> deleted,
                 List<string> movedFrom, List<string> movedTo)
             { };
-            FilePostprocessor.AddObserver(checkDelegate, callback);
-            Assert.IsTrue(FilePostprocessor.RemoveObserver(checkDelegate, callback));
-            Assert.IsFalse(FilePostprocessor.RemoveObserver(checkDelegate, callback));
+            FilePostprocessor.AddObserver(enabledDelegate, checkDelegate, callback);
+            Assert.IsTrue(FilePostprocessor.RemoveObserver(enabledDelegate, checkDelegate, callback));
+            Assert.IsFalse(FilePostprocessor.RemoveObserver(enabledDelegate, checkDelegate, callback));
+        }
+
+        [Test]
+        public void Disabled_DoesNotNotify()
+        {
+            _enabled = false;
+            FilePostprocessor.OnPostprocessAllAssets(_oneValidPath, _emptyList, _emptyList, _emptyList);
+            Assert.IsFalse(_delegateCalled);
         }
 
         [Test]

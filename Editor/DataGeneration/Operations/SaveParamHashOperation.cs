@@ -9,6 +9,11 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
         {
             base.Execute(context);
 
+            // A full regeneration is queued and will save the hash after it completes. Avoid marking the data
+            // as current now - it is both wasted and could mask that the data is mid-regeneration.
+            if (context.GenerateAllAgain)
+                return;
+
             context.InterfaceHash.GeneratedDataHash = context.InterfaceAssemblyHash;
         }
     }

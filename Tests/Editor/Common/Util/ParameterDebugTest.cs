@@ -52,7 +52,7 @@ namespace PocketGems.Parameters.Common.Util.Editor
 
             ParameterPrefs.VerboseLogs = true;
             ParameterDebug.LogVerbose(_logMessage);
-            LogAssert.Expect(LogType.Log, _logMessage);
+            LogAssert.Expect(LogType.Log, $"[Verbose] {_logMessage}");
         }
     }
 }

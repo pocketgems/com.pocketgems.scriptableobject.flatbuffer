@@ -21,6 +21,10 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
         {
             base.Execute(context);
 
+            // A full regeneration is queued and will rebuild + reconfigure the addressable group afterward.
+            if (context.GenerateAllAgain)
+                return;
+
             // check addressable is set up
             var settings = AddressableAssetSettingsDefaultObject.Settings;
             if (settings == null)
@@ -30,6 +34,12 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
             }
 
             var parameterGuid = context.GeneratedAssetGuid;
+
+            // track whether we actually mutated any addressable state; if nothing changed we can skip
+            // the expensive AssetDatabase.SaveAssets() (a full dirty-asset flush) at the end.  In diff
+            // generation the combined data file isn't rewritten, so every check below is a no-op and
+            // this operation was previously paying for a SaveAssets() that had nothing to persist.
+            bool changed = false;
 
             // Set the guid for the parameter.byte file so that it's always the same.
             // This is so the source controlled addressable group reference to the asset isn't broken.
@@ -52,6 +62,7 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
                     return;
                 }
                 ParameterDebug.LogVerbose($"Updated GUID to [{parameterGuid}] for {outputFilePath}");
+                changed = true;
             }
 
             // create addressable group if needed
@@ -61,16 +72,25 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
             {
                 var defaultGroup = settings.DefaultGroup;
                 addressableAssetGroup = settings.CreateGroup(groupName, false, false, true, defaultGroup.Schemas);
+                changed = true;
             }
 
             // add to addressable group
             var parameterEntry = settings.FindAssetEntry(parameterGuid);
             if (parameterEntry == null || parameterEntry.parentGroup != addressableAssetGroup)
+            {
                 parameterEntry = settings.CreateOrMoveEntry(parameterGuid, addressableAssetGroup, true);
-            parameterEntry.address = context.GeneratedAddressableAddress;
+                changed = true;
+            }
+            if (parameterEntry.address != context.GeneratedAddressableAddress)
+            {
+                parameterEntry.address = context.GeneratedAddressableAddress;
+                changed = true;
+            }
 
-            // save addressables changes
-            AssetDatabase.SaveAssets();
+            // save addressables changes (only when something was actually modified)
+            if (changed)
+                AssetDatabase.SaveAssets();
         }
     }
 }

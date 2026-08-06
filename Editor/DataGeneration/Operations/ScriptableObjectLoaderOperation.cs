@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using PocketGems.Parameters.Common.Models.Editor;
 using PocketGems.Parameters.Common.Operations.Editor;
 using PocketGems.Parameters.Common.Util.Editor;
@@ -48,11 +49,27 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
                 foreach (var parameterStruct in context.ParameterStructs)
                     baseNameToParameterStruct[parameterStruct.BaseName] = parameterStruct;
 
+                // Dry-run every info sync first (touching no assets) to size up the batch. Syncing CSV
+                // edits can rename, create, and delete ScriptableObject assets on disk; doing so for many
+                // objects at once is uncommon, expensive, and often an accidental CSV edit — so confirm
+                // with the user before applying for real.
                 foreach (var kvp in context.InfoCSVFileCache.LoadedFiles())
                 {
                     var baseName = kvp.Key;
                     var parameterInfo = baseNameToParameterInfo[baseName];
-                    AttemptToPopulateContext(context, parameterInfo, kvp.Value);
+                    SyncChangeCounts count = AttemptToPopulateContext(context, parameterInfo, kvp.Value, dryRun: true);
+                    if (!ConfirmStructuralChanges(baseName, count))
+                        return;
+                }
+
+                if (Errors.Count > 0)
+                    return;
+
+                foreach (var kvp in context.InfoCSVFileCache.LoadedFiles())
+                {
+                    var baseName = kvp.Key;
+                    var parameterInfo = baseNameToParameterInfo[baseName];
+                    AttemptToPopulateContext(context, parameterInfo, kvp.Value, dryRun: false);
                 }
 
                 foreach (var kvp in context.StructCSVFileCache.LoadedFiles())
@@ -204,15 +221,95 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
         }
 
         /// <summary>
+        /// How many ScriptableObjects a CSV sync touches, broken down by kind. Renames, creations, and
+        /// deletions are the "structural" changes used to gate the confirmation; modifications are ordinary
+        /// value edits.
+        /// </summary>
+        private struct SyncChangeCounts
+        {
+            public int Modified;
+            public int Renamed;
+            public int Created;
+            public int Deleted;
+
+            public void Add(SyncChangeCounts other)
+            {
+                Modified += other.Modified;
+                Renamed += other.Renamed;
+                Created += other.Created;
+                Deleted += other.Deleted;
+            }
+        }
+
+        /// <summary>
+        /// When a single CSV sync would structurally change more than this many ScriptableObjects
+        /// (renames + creations + deletions, i.e. anything beyond editing an existing object's values),
+        /// prompt the user to confirm. Doing this many at once is uncommon, expensive (each mutates an
+        /// asset on disk), and often the result of an accidental CSV edit.
+        /// </summary>
+        private const int StructuralChangeConfirmThreshold = 20;
+
+        /// <summary>
+        /// If a sync would rename, create, or delete more ScriptableObjects than the threshold, asks the
+        /// user to confirm. Returns true to proceed, or false (with the operation marked canceled) to abort
+        /// generation before any assets are touched. Automated/headless generation is never blocked.
+        /// </summary>
+        private bool ConfirmStructuralChanges(string csvName, SyncChangeCounts counts)
+        {
+            // Never block where the modal can't be answered (batch builds, unit tests).
+            if (Application.isBatchMode || UnitTestListener.AreUnitTestsRunning)
+                return true;
+
+            int total = counts.Renamed + counts.Created + counts.Deleted;
+            if (total <= StructuralChangeConfirmThreshold)
+                return true;
+
+            StringBuilder changeSummary = new();
+            if (counts.Modified > 0)
+                changeSummary.Append($"{counts.Modified} modification(s)\n");
+            if (counts.Renamed > 0)
+                changeSummary.Append($"{counts.Renamed} rename(s)\n");
+            if (counts.Created > 0)
+                changeSummary.Append($"{counts.Created} creation(s)\n");
+            if (counts.Deleted > 0)
+                changeSummary.Append($"{counts.Deleted} deletion(s)\n");
+
+            bool proceed = EditorUtility.DisplayDialog(
+                "Confirm CSV Changes",
+                $"Attempting to sync CSV {csvName} will execute:\n" +
+                $"{changeSummary}\n" +
+                "Renaming, creating, and/or deleting this many at once is uncommon and " +
+                "expensive — if it wasn't intentional, cancel and double-check your CSV edits.",
+                "Apply Changes",
+                "Cancel");
+
+            if (!proceed)
+            {
+                Cancel($"User canceled generation after {total + counts.Modified} parameter file changes were detected.");
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Attempts to delete, create, or find scriptable objects that need to be modified based on CSV changes.
         ///
         /// This does not update the values within the Scriptable Objects themselves.
+        ///
+        /// When <paramref name="dryRun"/> is true, no assets or context are mutated — the method only
+        /// reports how many objects <em>would</em> be modified/renamed/created/deleted, so the caller can
+        /// confirm large batches before applying them for real. A dry run must leave all state untouched so
+        /// that the real run behaves identically.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="parameterInfo"></param>
         /// <param name="csvFile"></param>
-        private void AttemptToPopulateContext(IDataOperationContext context, IParameterInfo parameterInfo, CSVFile csvFile)
+        /// <param name="dryRun">When true, count changes without mutating anything.</param>
+        private SyncChangeCounts AttemptToPopulateContext(IDataOperationContext context, IParameterInfo parameterInfo, CSVFile csvFile, bool dryRun)
         {
+            SyncChangeCounts counts = default;
+
             // load all relevant scriptable objects for CSV syncing
             GetMetaMappings(context, parameterInfo,
                 out IReadOnlyDictionary<string, IScriptableObjectMetadata> guidToMeta,
@@ -253,7 +350,7 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
             }
 
             if (Errors.Count > 0)
-                return;
+                return counts;
 
             // matching rows to scriptable objects
             List<CSVRowData> remainingRowDatas = new List<CSVRowData>(csvFile.RowData);
@@ -281,7 +378,11 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
                 matchedMetadatas.Add(guidMetadata);
                 // ParameterDebug.LogVerbose($"Matched on id [{identifier}] & GUID [{guid}]: {guidMetadata.ScriptableObject}");
                 if (!rowData.HashMatches)
-                    PopulateContext(parameterInfo, guidMetadata);
+                {
+                    counts.Modified++;
+                    if (!dryRun)
+                        PopulateContext(parameterInfo, guidMetadata);
+                }
             }
 
             // match rows based on just GUID
@@ -310,11 +411,17 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
                 // MATCHED on GUID
                 matchedMetadatas.Add(metadata);
                 // ParameterDebug.LogVerbose($"Matched on GUID [{guid}]: {metadata.ScriptableObject}");
-                PopulateContext(parameterInfo, metadata);
+                // The asset will be renamed (later, from the CSV value) if its current name no longer matches.
+                if (metadata.ScriptableObject != null && metadata.ScriptableObject.name != rowData.Identifier)
+                    counts.Renamed++;
+                else
+                    counts.Modified++;
+                if (!dryRun)
+                    PopulateContext(parameterInfo, metadata);
             }
 
             if (Errors.Count > 0)
-                return;
+                return counts;
 
             // match rows based identifier
             for (int i = remainingRowDatas.Count - 1; i >= 0; i--)
@@ -327,20 +434,29 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
                     continue;
 
                 remainingRowDatas.RemoveAt(i);
-
-                // Matched on Identifier - the GUID field might be outdated in the CSV or empty
-                rowData.GUID = metadata.GUID;
-                // add _new suffix so it doesn't collide when renaming scriptable objects later
-                metadata.Rename($"{rowData.Identifier}_new");
                 matchedMetadatas.Add(metadata);
-                // ParameterDebug.LogVerbose($"Matched on Identifier [{identifier}]: {metadata.ScriptableObject}");
-                PopulateContext(parameterInfo, metadata);
+
+                // Matched on Identifier - the GUID field might be outdated in the CSV or empty. The
+                // identifier itself is unchanged, so this reconciles the GUID rather than renaming.
+                counts.Modified++;
+                if (!dryRun)
+                {
+                    rowData.GUID = metadata.GUID;
+                    // add _new suffix so it doesn't collide when renaming scriptable objects later
+                    metadata.Rename($"{rowData.Identifier}_new");
+                    // ParameterDebug.LogVerbose($"Matched on Identifier [{identifier}]: {metadata.ScriptableObject}");
+                    PopulateContext(parameterInfo, metadata);
+                }
             }
 
             // create new Scriptable Objects for remaining rows
             string createDirectoryPath = null;
             for (int i = remainingRowDatas.Count - 1; i >= 0; i--)
             {
+                counts.Created++;
+                if (dryRun)
+                    continue;
+
                 if (createDirectoryPath == null)
                 {
                     if (identifierToMeta.Count > 0)
@@ -373,6 +489,11 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
             {
                 if (matchedMetadatas.Contains(kvp.Value))
                     continue;
+
+                counts.Deleted++;
+                if (dryRun)
+                    continue;
+
                 AssetDatabase.DeleteAsset(kvp.Value.FilePath);
                 ParameterDebug.Log($"Deleted Scriptable Object at [{kvp.Value.FilePath}]");
 
@@ -385,6 +506,8 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
                  */
                 context.GenerateAllAgain = true;
             }
+
+            return counts;
         }
 
         private void AttemptToPopulateContext(IDataOperationContext context, IParameterStruct parameterStruct, CSVFile csvFile)

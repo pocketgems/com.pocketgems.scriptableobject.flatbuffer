@@ -26,11 +26,19 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
         {
             base.Execute(context);
 
+            // A full regeneration is already queued (e.g. a CSV row deletion removed Scriptable Objects) and
+            // will rebuild all data from scratch - skip building intermediate byte files that would be discarded.
+            if (context.GenerateAllAgain)
+                return;
+
             var outputDirectory = context.GeneratedAssetDirectory;
             if (context.GenerateDataType == GenerateDataType.All)
             {
                 var outputFilename = context.GeneratedAssetFileName;
-                // delete all other intermediate parameter files since this is re-generating all data into one byte file
+                // Delete all other intermediate parameter files since this is re-generating all data into one
+                // byte file. A raw filesystem delete is used (no AssetDatabase churn): the only tracked asset
+                // here is the main byte file, which is re-created at the same path below and reconciled by the
+                // AssetDatabase.ImportAsset call after it is written.
                 if (Directory.Exists(outputDirectory))
                     FileUtil.DeleteFileOrDirectory(outputDirectory);
 
@@ -43,6 +51,10 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
                     kvp.Value.Sort((a, b) => string.Compare(a.GUID, b.GUID, StringComparison.Ordinal));
                 var log = GenerateAndWrite(context, outputPath, typeToSoDict);
                 ParameterDebug.Log(log);
+
+                // Import the main parameter file at creation so it is registered with the AssetDatabase
+                // here, rather than relying on the final whole-project AssetDatabase.Refresh().
+                AssetDatabase.ImportAsset(NamingUtil.RelativePath(outputPath));
             }
             else if (context.GenerateDataType == GenerateDataType.ScriptableObjectDiff ||
                      context.GenerateDataType == GenerateDataType.CSVDiff)
@@ -51,9 +63,17 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
                 /*
                  * generate one data file for each Scriptable Object
                  *
-                 * this goes hand in hand with ResourcesParameterDataLoader.cs which searches for each individual
+                 * this goes hand in hand with EditorAssetLoaderUtil which searches for each individual
                  * file only in the editor.
+                 *
+                 * These iteration files are written into a Unity-ignored subfolder (trailing '~'), so they
+                 * are never imported into the AssetDatabase and don't require an AssetDatabase.Refresh() - the
+                 * editor loads them directly via System.IO. See ParameterConstants.GeneratedAsset.IterationDirectory.
                  */
+                var iterationDirectory = ParameterConstants.GeneratedAsset.IterationDirectory;
+                if (!Directory.Exists(iterationDirectory))
+                    Directory.CreateDirectory(iterationDirectory);
+
                 foreach (var typeToObjects in context.ScriptableObjectMetadatas)
                 {
                     var scriptableObjects = typeToObjects.Value;
@@ -62,7 +82,7 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
                         var metadata = scriptableObjects[i];
                         var scriptableObject = metadata.ScriptableObject;
                         var fileName = EditorParameterConstants.GeneratedAsset.AdditiveFileName(typeToObjects.Key, scriptableObject);
-                        var outputPath = Path.Combine(outputDirectory, fileName);
+                        var outputPath = Path.Combine(iterationDirectory, fileName);
 
                         var soDict = new Dictionary<Type, List<IScriptableObjectMetadata>>();
                         soDict[typeToObjects.Key.Type] = new List<IScriptableObjectMetadata> { metadata };

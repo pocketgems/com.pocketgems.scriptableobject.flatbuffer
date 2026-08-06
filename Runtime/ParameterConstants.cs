@@ -90,6 +90,19 @@ namespace PocketGems.Parameters
                     return Path.Combine(SubDirectory, fileName);
                 }
             }
+
+            /// <summary>
+            /// Name of the subfolder (within <see cref="SubDirectory"/>) that holds the editor-only
+            /// iteration .bytes files. The trailing '~' makes Unity ignore the folder entirely, so these
+            /// files are never imported into the AssetDatabase — they are written and read directly via
+            /// System.IO during editor iteration.
+            /// </summary>
+            public const string IterationDirectoryName = "Iteration~";
+
+            /// <summary>
+            /// Directory holding the editor-only iteration parameter files (ignored by Unity).
+            /// </summary>
+            public static string IterationDirectory => Path.Combine(SubDirectory, IterationDirectoryName);
         }
 #endif
     }

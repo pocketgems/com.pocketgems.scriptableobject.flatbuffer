@@ -140,7 +140,7 @@ If two developers are making modifications to the parameters interfaces, this ca
 ## One Time Mac Setup
 On MacOS, the first time code generation occurs, a permissions error will occur.
 
-You must go to your mac OS's `System Preferences` --> `Security & Privacy` --> `Allow "flatc"`.  After this, try generating with the menu item `Pocket Gems` --> `Parameters` --> `Regenerate All Data & CSVs`.
+You must go to your mac OS's `System Preferences` --> `Security & Privacy` --> `Allow "flatc"`.  After this, try generating with the menu item `Pocket Gems` --> `Parameters` --> `Regenerate All Data`.
 
 ## Interface Extensions
 Interface extensions can be authored in the application in order to add helper methods to interface objects.

@@ -20,6 +20,7 @@ namespace PocketGems.Parameters.DataGeneration.Operation.Editor
 
         public GenerateDataType GenerateDataType { get; set; }
         public bool GenerateAllAgain { get; set; }
+        public bool GenerateCSVs { get; set; }
         public List<string> ModifiedCSVPaths { get; set; }
         public List<string> ModifiedScriptableObjectPaths { get; set; }
         public IInfoCSVFileCache InfoCSVFileCache { get; }

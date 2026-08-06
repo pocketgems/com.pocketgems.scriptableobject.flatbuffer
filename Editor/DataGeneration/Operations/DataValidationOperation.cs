@@ -7,6 +7,7 @@ using PocketGems.Parameters.Common.Operations.Editor;
 using PocketGems.Parameters.Common.Util.Editor;
 using PocketGems.Parameters.DataGeneration.Operation.Editor;
 using PocketGems.Parameters.DataGeneration.Validation.Editor;
+using PocketGems.Parameters.Interface;
 using PocketGems.Parameters.Validation;
 using UnityEngine.TestTools;
 
@@ -20,6 +21,10 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
             base.Execute(context);
 
             if (!ParameterPrefs.AutoValidateDataOnAssetChange)
+                return;
+
+            // skip validation now if generation will occur again (validation will occur on the next run).
+            if (context.GenerateAllAgain)
                 return;
 
             var prevKeyDelegate = ParameterLocalizationHandler.GlobalTranslateLocalizationKeyDelegate;
@@ -37,9 +42,19 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
                     Error(assetErrors[i]);
             }
 
-            // validate parameters
-            IParameterManager parameterManager = EditorParams.ParameterManager;
-            var parameterErrors = InvokeParamsValidation(context, parameterManager);
+            IReadOnlyList<ValidationError> parameterErrors;
+            if (context.GenerateDataType == GenerateDataType.ScriptableObjectDiff ||
+                context.GenerateDataType == GenerateDataType.CSVDiff)
+            {
+                // Only validate the changed Scriptable Object(s) rather than re-running validation
+                // over the entire parameter set (which is a fixed, multi-second cost regardless of how little changed).
+                parameterErrors = ValidateChangedScriptableObjects(context);
+            }
+            else
+            {
+                IParameterManager parameterManager = EditorParams.ParameterManager;
+                parameterErrors = InvokeParamsValidation(context, parameterManager);
+            }
             for (int i = 0; i < parameterErrors?.Count; i++)
             {
                 var validationError = parameterErrors[i];
@@ -50,6 +65,45 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
 
             ParameterLocalizationHandler.GlobalTranslateLocalizationKeyDelegate = prevKeyDelegate;
             ParameterLocalizationHandler.GlobalTranslateLocalizableScriptDelegate = prevScriptDelegate;
+        }
+
+        /// <summary>
+        /// Validates only the ScriptableObjects that changed in this run (populated in the context by
+        /// <see cref="ScriptableObjectLoaderOperation"/>), using each object's own per-object validation
+        /// (<see cref="ParameterScriptableObject.ValidationErrors"/>) — the same path the custom inspector uses.
+        /// </summary>
+        /// <param name="context">the current context</param>
+        /// <returns>validation errors for the changed objects</returns>
+        private IReadOnlyList<ValidationError> ValidateChangedScriptableObjects(IDataOperationContext context)
+        {
+            List<ValidationError> errors = new();
+            foreach (var kvp in context.ScriptableObjectMetadatas)
+            {
+                var metadatas = kvp.Value;
+                for (int i = 0; i < metadatas.Count; i++)
+                {
+                    var scriptableObject = metadatas[i].ScriptableObject;
+                    if (scriptableObject == null)
+                        continue;
+
+                    ValidationError[] objectErrors;
+                    try
+                    {
+                        objectErrors = scriptableObject.ValidationErrors();
+                    }
+                    catch (Exception e)
+                    {
+                        errors.Add(new ValidationError(scriptableObject.GetType(), scriptableObject.name, null,
+                            $"{nameof(ParameterScriptableObject.ValidationErrors)} threw an exception. See console."));
+                        UnityEngine.Debug.LogError(e);
+                        continue;
+                    }
+
+                    if (objectErrors != null)
+                        errors.AddRange(objectErrors);
+                }
+            }
+            return errors;
         }
 
         /// <summary>

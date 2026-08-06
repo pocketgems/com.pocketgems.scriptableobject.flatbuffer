@@ -3,6 +3,10 @@ using System.Reflection;
 using PocketGems.Parameters.Common.Operations.Editor;
 using PocketGems.Parameters.Common.Util.Editor;
 using PocketGems.Parameters.DataGeneration.Operation.Editor;
+#if ADDRESSABLE_PARAMS
+using UnityEditor.AddressableAssets;
+using UnityEditor.AddressableAssets.Build.DataBuilders;
+#endif
 
 namespace PocketGems.Parameters.DataGeneration.Operations.Editor
 {
@@ -71,7 +75,34 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
             {
                 ParameterDebug.LogVerbose($"Exit early no data generation needed.");
                 ShortCircuit();
+                return;
             }
+
+#if ADDRESSABLE_PARAMS
+            // If we're using remote bundles, the whole combined file must be regenerated so that it can be
+            // uploaded to addressables - the iteration files a diff run produces are editor-only. A CSV diff
+            // can't just switch to All here (the CSV edits must sync into the Scriptable Objects first), so
+            // let it proceed and queue a full regeneration to rebuild the combined file afterward.
+            var settings = AddressableAssetSettingsDefaultObject.Settings;
+            if (settings == null)
+                return;
+            var editorDataBuilder = settings.ActivePlayModeDataBuilder;
+            bool isUsingRemoteBundles =
+                !(editorDataBuilder is BuildScriptFastMode || editorDataBuilder is BuildScriptVirtualMode);
+            if (isUsingRemoteBundles)
+            {
+                if (context.GenerateDataType == GenerateDataType.CSVDiff)
+                {
+                    ParameterDebug.LogVerbose("Remote addressables in use - queueing a full regeneration after this CSV diff run.");
+                    context.GenerateAllAgain = true;
+                }
+                else
+                {
+                    ParameterDebug.LogVerbose($"Switching from {context.GenerateDataType} to {GenerateDataType.All}.");
+                    context.GenerateDataType = GenerateDataType.All;
+                }
+            }
+#endif
         }
     }
 }
