@@ -413,7 +413,20 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
                 // ParameterDebug.LogVerbose($"Matched on GUID [{guid}]: {metadata.ScriptableObject}");
                 // The asset will be renamed (later, from the CSV value) if its current name no longer matches.
                 if (metadata.ScriptableObject != null && metadata.ScriptableObject.name != rowData.Identifier)
+                {
                     counts.Renamed++;
+                    if (!dryRun)
+                    {
+                        /*
+                         * For renamed identifiers, we need to regenerate the whole FlatBuffer again
+                         * after this current run because the old rows will still be in the old FlatBuffer.
+                         *
+                         * We cannot switch to GenerateAll at this point because we still need to update
+                         * the Scriptable Objects from the updated CSV data first.
+                         */
+                        context.GenerateAllAgain = true;
+                    }
+                }
                 else
                     counts.Modified++;
                 if (!dryRun)
