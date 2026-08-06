@@ -164,6 +164,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
                 Assert.IsNull(propertyType.FlatBufferFieldDefinitionCode());
             Assert.IsNotEmpty(propertyType.FlatBufferPropertyImplementationCode(1));
             Assert.IsNotEmpty(propertyType.FlatBufferEditPropertyCode(1, 10, "value"));
+            Assert.IsNotEmpty(propertyType.FlatBufferRevertEditPropertyCode(1));
 
             if (expectNullPrepareSource)
                 Assert.IsNull(propertyType.FlatBufferBuilderPrepareCode(TableName));

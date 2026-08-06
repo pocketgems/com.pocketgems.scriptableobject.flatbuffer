@@ -23,6 +23,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         string FlatBufferFieldDefinitionCode();
         string FlatBufferPropertyImplementationCode(int propertyIndex);
         string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName);
+        string FlatBufferRevertEditPropertyCode(int propertyIndex);
 
         // FlatBufferBuilder code generation
         string FlatBufferBuilderPrepareCode(string tableName);

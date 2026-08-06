@@ -290,6 +290,7 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
 
                 // edit property
                 propertyTypeDict["editPropertyCode"] = propertyType.FlatBufferEditPropertyCode(i, propertyTypes.Count, "value");
+                propertyTypeDict["revertEditPropertyCode"] = propertyType.FlatBufferRevertEditPropertyCode(i);
             }
 
             var args = new Dictionary<string, object>

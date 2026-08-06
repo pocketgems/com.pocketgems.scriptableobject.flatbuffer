@@ -6,10 +6,15 @@ using PocketGems.Parameters.Interface;
 public abstract class MockMutableParameter : IMutableParameter
 {
     public int EditPropertyCalls;
+    public int RevertEditPropertyCalls;
     public int RemoveAllEditCalls;
+
     public string EditPropertyPropertyName;
     public string EditPropertyValue;
     public string ReturnEditPropertyError;
+
+    public string RevertEditPropertyPropertyName;
+    public string ReturnRevertEditPropertyError;
 
     public bool EditProperty(IParameterManager parameterManager, string propertyName, string value, out string error)
     {
@@ -18,6 +23,14 @@ public abstract class MockMutableParameter : IMutableParameter
         EditPropertyValue = value;
         error = ReturnEditPropertyError;
         return string.IsNullOrWhiteSpace(ReturnEditPropertyError);
+    }
+
+    public bool RevertEditedProperty(string propertyName, out string error)
+    {
+        RevertEditPropertyCalls++;
+        RevertEditPropertyPropertyName = propertyName;
+        error = ReturnRevertEditPropertyError;
+        return string.IsNullOrWhiteSpace(ReturnRevertEditPropertyError);
     }
 
     public void RemoveAllEdits() => RemoveAllEditCalls++;
@@ -123,6 +136,8 @@ public class MockTestValidationInfo : IMutableParameter, ITestValidationInfo
 
     public bool EditProperty(IParameterManager parameterManager, string propertyName, string value, out string error) =>
         throw new System.NotImplementedException();
+    public bool RevertEditedProperty(string propertyName, out string error) =>
+        throw new System.NotImplementedException();
     public void RemoveAllEdits() => throw new System.NotImplementedException();
     public IMutableParameter CreateLinkedMutableParameter(IParameterManager parameterManager) => throw new System.NotImplementedException();
 }
@@ -135,7 +150,7 @@ public class MockSubBadValidationInfo : IMutableParameter, ITestSubInterfaceInfo
 
     public bool EditProperty(IParameterManager parameterManager, string propertyName, string value, out string error) =>
         throw new System.NotImplementedException();
-
+    public bool RevertEditedProperty(string propertyName, out string error) => throw new System.NotImplementedException();
     public void RemoveAllEdits() => throw new System.NotImplementedException();
     public IMutableParameter CreateLinkedMutableParameter(IParameterManager parameterManager) => throw new System.NotImplementedException();
 }
