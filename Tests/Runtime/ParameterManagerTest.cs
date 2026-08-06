@@ -11,19 +11,19 @@ namespace PocketGems.Parameters
 {
     public class ParameterManagerTest
     {
-        private MockMySpecialInfo _mockMySpecialInfo;
-        private MockMyVerySpecialInfo _mockMyVerySpecialInfo;
+        private MockSubclassAInfo _mockSubclassAInfo;
+        private MockSubclassBInfo _mockSubclassBInfo;
         private MockKeyValueStruct _mockKeyValueStruct;
 
         private const string BaseInterfaceErrorMsg = "Cannot use IBaseInfo or IBaseStruct as type.";
         private const string BaseStructErrorMsg = "Cannot use IBaseStruct as type.";
         private const string BaseInfoErrorMsg = "Cannot use IBaseInfo as type.";
 
-        private const string SpecialId = "id1";
-        private const string SpecialGuid = "guid1";
+        private const string SubclassAId = "id1";
+        private const string SubclassAGuid = "guid1";
 
-        private const string VerySpecialId = "id2";
-        private const string VerySpecialGuid = "guid2";
+        private const string SubclassBId = "id2";
+        private const string SubclassBGuid = "guid2";
 
         private const string StructGuid = "guid3";
 
@@ -33,8 +33,8 @@ namespace PocketGems.Parameters
         public void SetUp()
         {
             _parameterManager = new ParameterManager();
-            _mockMySpecialInfo = new MockMySpecialInfo();
-            _mockMyVerySpecialInfo = new MockMyVerySpecialInfo();
+            _mockSubclassAInfo = new MockSubclassAInfo(SubclassAId);
+            _mockSubclassBInfo = new MockSubclassBInfo(SubclassBId);
             _mockKeyValueStruct = new MockKeyValueStruct(_parameterManager, "desc", 10, "guid", new string[0]);
         }
 
@@ -43,34 +43,34 @@ namespace PocketGems.Parameters
             _parameterManager.Load<IKeyValueStruct, MockKeyValueStruct>(_mockKeyValueStruct, StructGuid);
 
             // load under one interface
-            _parameterManager.Load<IMySpecialInfo, MockMySpecialInfo>(_mockMySpecialInfo, SpecialId, SpecialGuid);
+            _parameterManager.Load<ISubInterfaceAInfo, MockSubclassAInfo>(_mockSubclassAInfo, _mockSubclassAInfo.Identifier, SubclassAGuid);
 
             // load under two interfaces
-            _parameterManager.Load<IMySpecialInfo, MockMyVerySpecialInfo>(_mockMyVerySpecialInfo, VerySpecialId, VerySpecialGuid);
-            _parameterManager.Load<IMyVerySpecialInfo, MockMyVerySpecialInfo>(_mockMyVerySpecialInfo, VerySpecialId, VerySpecialGuid);
+            _parameterManager.Load<ISubInterfaceAInfo, MockSubclassBInfo>(_mockSubclassBInfo, _mockSubclassBInfo.Identifier, SubclassBGuid);
+            _parameterManager.Load<ISubInterfaceBInfo, MockSubclassBInfo>(_mockSubclassBInfo, _mockSubclassBInfo.Identifier, SubclassBGuid);
         }
 
         private void AssertEmptyManager()
         {
-            Assert.IsNull(_parameterManager.Get<IMySpecialInfo>(SpecialId));
-            Assert.IsNull(_parameterManager.Get<IMyVerySpecialInfo>(SpecialId));
-            Assert.IsNull(_parameterManager.Get(SpecialId, typeof(IMySpecialInfo)));
-            Assert.IsNull(_parameterManager.Get(SpecialId, typeof(IMyVerySpecialInfo)));
+            Assert.IsNull(_parameterManager.Get<ISubInterfaceAInfo>(SubclassAId));
+            Assert.IsNull(_parameterManager.Get<ISubInterfaceBInfo>(SubclassAId));
+            Assert.IsNull(_parameterManager.Get(SubclassAId, typeof(ISubInterfaceAInfo)));
+            Assert.IsNull(_parameterManager.Get(SubclassAId, typeof(ISubInterfaceBInfo)));
 
-            Assert.IsNull(_parameterManager.Get<IMySpecialInfo>(VerySpecialId));
-            Assert.IsNull(_parameterManager.Get<IMyVerySpecialInfo>(VerySpecialId));
-            Assert.IsNull(_parameterManager.Get(VerySpecialId, typeof(IMySpecialInfo)));
-            Assert.IsNull(_parameterManager.Get(VerySpecialId, typeof(IMyVerySpecialInfo)));
-
-            LogAssert.Expect(LogType.Error, new Regex(".*"));
-            Assert.IsNull(_parameterManager.GetWithGUID<IMySpecialInfo>(SpecialGuid));
-            LogAssert.Expect(LogType.Error, new Regex(".*"));
-            Assert.IsNull(_parameterManager.GetWithGUID<IMyVerySpecialInfo>(SpecialGuid));
+            Assert.IsNull(_parameterManager.Get<ISubInterfaceAInfo>(SubclassBId));
+            Assert.IsNull(_parameterManager.Get<ISubInterfaceBInfo>(SubclassBId));
+            Assert.IsNull(_parameterManager.Get(SubclassBId, typeof(ISubInterfaceAInfo)));
+            Assert.IsNull(_parameterManager.Get(SubclassBId, typeof(ISubInterfaceBInfo)));
 
             LogAssert.Expect(LogType.Error, new Regex(".*"));
-            Assert.IsNull(_parameterManager.GetWithGUID<IMySpecialInfo>(VerySpecialGuid));
+            Assert.IsNull(_parameterManager.GetWithGUID<ISubInterfaceAInfo>(SubclassAGuid));
             LogAssert.Expect(LogType.Error, new Regex(".*"));
-            Assert.IsNull(_parameterManager.GetWithGUID<IMyVerySpecialInfo>(VerySpecialGuid));
+            Assert.IsNull(_parameterManager.GetWithGUID<ISubInterfaceBInfo>(SubclassAGuid));
+
+            LogAssert.Expect(LogType.Error, new Regex(".*"));
+            Assert.IsNull(_parameterManager.GetWithGUID<ISubInterfaceAInfo>(SubclassBGuid));
+            LogAssert.Expect(LogType.Error, new Regex(".*"));
+            Assert.IsNull(_parameterManager.GetWithGUID<ISubInterfaceBInfo>(SubclassBGuid));
 
             LogAssert.Expect(LogType.Error, new Regex(".*"));
             Assert.IsNull(_parameterManager.GetStructWithGuid<IKeyValueStruct>(StructGuid));
@@ -82,22 +82,22 @@ namespace PocketGems.Parameters
             AssertEmptyManager();
             LoadInfos();
 
-            Assert.AreEqual(_mockMySpecialInfo, _parameterManager.Get<IMySpecialInfo>(SpecialId));
-            Assert.AreEqual(_mockMySpecialInfo, _parameterManager.Get(SpecialId, typeof(IMySpecialInfo)));
-            Assert.IsNull(_parameterManager.Get<IMyVerySpecialInfo>(SpecialId));
-            Assert.IsNull(_parameterManager.Get(SpecialId, typeof(IMyVerySpecialInfo)));
+            Assert.AreEqual(_mockSubclassAInfo, _parameterManager.Get<ISubInterfaceAInfo>(SubclassAId));
+            Assert.AreEqual(_mockSubclassAInfo, _parameterManager.Get(SubclassAId, typeof(ISubInterfaceAInfo)));
+            Assert.IsNull(_parameterManager.Get<ISubInterfaceBInfo>(SubclassAId));
+            Assert.IsNull(_parameterManager.Get(SubclassAId, typeof(ISubInterfaceBInfo)));
 
-            Assert.AreEqual(_mockMyVerySpecialInfo, _parameterManager.Get(VerySpecialId, typeof(IMySpecialInfo)));
-            Assert.AreEqual(_mockMyVerySpecialInfo, _parameterManager.Get(VerySpecialId, typeof(IMyVerySpecialInfo)));
-            Assert.AreEqual(_mockMyVerySpecialInfo, _parameterManager.Get<IMySpecialInfo>(VerySpecialId));
-            Assert.AreEqual(_mockMyVerySpecialInfo, _parameterManager.Get<IMyVerySpecialInfo>(VerySpecialId));
+            Assert.AreEqual(_mockSubclassBInfo, _parameterManager.Get(SubclassBId, typeof(ISubInterfaceAInfo)));
+            Assert.AreEqual(_mockSubclassBInfo, _parameterManager.Get(SubclassBId, typeof(ISubInterfaceBInfo)));
+            Assert.AreEqual(_mockSubclassBInfo, _parameterManager.Get<ISubInterfaceAInfo>(SubclassBId));
+            Assert.AreEqual(_mockSubclassBInfo, _parameterManager.Get<ISubInterfaceBInfo>(SubclassBId));
 
-            Assert.AreEqual(_mockMySpecialInfo, _parameterManager.GetWithGUID<IMySpecialInfo>(SpecialGuid));
+            Assert.AreEqual(_mockSubclassAInfo, _parameterManager.GetWithGUID<ISubInterfaceAInfo>(SubclassAGuid));
             LogAssert.Expect(LogType.Error, new Regex(".*"));
-            Assert.IsNull(_parameterManager.GetWithGUID<IMyVerySpecialInfo>(SpecialGuid));
+            Assert.IsNull(_parameterManager.GetWithGUID<ISubInterfaceBInfo>(SubclassAGuid));
 
-            Assert.AreEqual(_mockMyVerySpecialInfo, _parameterManager.GetWithGUID<IMySpecialInfo>(VerySpecialGuid));
-            Assert.AreEqual(_mockMyVerySpecialInfo, _parameterManager.GetWithGUID<IMyVerySpecialInfo>(VerySpecialGuid));
+            Assert.AreEqual(_mockSubclassBInfo, _parameterManager.GetWithGUID<ISubInterfaceAInfo>(SubclassBGuid));
+            Assert.AreEqual(_mockSubclassBInfo, _parameterManager.GetWithGUID<ISubInterfaceBInfo>(SubclassBGuid));
         }
 
         [Test]
@@ -129,7 +129,7 @@ namespace PocketGems.Parameters
             Assert.AreEqual(0, _parameterManager.GetSorted<IBaseInfo>().ToArray().Length);
 
             LogAssert.Expect(LogType.Error, BaseInfoErrorMsg);
-            _parameterManager.Load<IBaseInfo, MockMySpecialInfo>(null, "some_id", "some guid");
+            _parameterManager.Load<IBaseInfo, MockSubclassAInfo>(null, "some_id", "some guid");
         }
 
         [Test]
@@ -150,30 +150,30 @@ namespace PocketGems.Parameters
             AssertEmptyManager();
             LoadInfos();
 
-            var specialInfos = _parameterManager.Get<IMySpecialInfo>().ToList();
+            var specialInfos = _parameterManager.Get<ISubInterfaceAInfo>().ToList();
             Assert.AreEqual(2, specialInfos.Count);
-            Assert.IsTrue(specialInfos.Contains(_mockMySpecialInfo));
-            Assert.IsTrue(specialInfos.Contains(_mockMyVerySpecialInfo));
+            Assert.IsTrue(specialInfos.Contains(_mockSubclassAInfo));
+            Assert.IsTrue(specialInfos.Contains(_mockSubclassBInfo));
 
-            var verySpecialInfos = _parameterManager.Get<IMyVerySpecialInfo>().ToList();
+            var verySpecialInfos = _parameterManager.Get<ISubInterfaceBInfo>().ToList();
             Assert.AreEqual(1, verySpecialInfos.Count);
-            Assert.AreEqual(_mockMyVerySpecialInfo, verySpecialInfos[0]);
+            Assert.AreEqual(_mockSubclassBInfo, verySpecialInfos[0]);
         }
 
         [Test]
         public void GetSortedIEnumerable()
         {
-            var info1 = new MockMySpecialInfo { Identifier = "b" };
-            var info2 = new MockMySpecialInfo { Identifier = "0" };
-            var info3 = new MockMySpecialInfo { Identifier = "a" };
-            var info4 = new MockMySpecialInfo { Identifier = "1" };
+            var info1 = new MockSubclassAInfo("b");
+            var info2 = new MockSubclassAInfo("0");
+            var info3 = new MockSubclassAInfo("a");
+            var info4 = new MockSubclassAInfo("1");
 
-            _parameterManager.Load<IMySpecialInfo, MockMySpecialInfo>(info1, info1.Identifier, "guid1");
-            _parameterManager.Load<IMySpecialInfo, MockMySpecialInfo>(info2, info2.Identifier, "guid2");
-            _parameterManager.Load<IMySpecialInfo, MockMySpecialInfo>(info3, info3.Identifier, "guid3");
-            _parameterManager.Load<IMySpecialInfo, MockMySpecialInfo>(info4, info4.Identifier, "guid4");
+            _parameterManager.Load<ISubInterfaceAInfo, MockSubclassAInfo>(info1, info1.Identifier, "guid1");
+            _parameterManager.Load<ISubInterfaceAInfo, MockSubclassAInfo>(info2, info2.Identifier, "guid2");
+            _parameterManager.Load<ISubInterfaceAInfo, MockSubclassAInfo>(info3, info3.Identifier, "guid3");
+            _parameterManager.Load<ISubInterfaceAInfo, MockSubclassAInfo>(info4, info4.Identifier, "guid4");
 
-            var infos = _parameterManager.GetSorted<IMySpecialInfo>().ToArray();
+            var infos = _parameterManager.GetSorted<ISubInterfaceAInfo>().ToArray();
             Assert.AreEqual(4, infos.Length);
             Assert.AreEqual(info2, infos[0]);
             Assert.AreEqual(info4, infos[1]);
@@ -186,31 +186,31 @@ namespace PocketGems.Parameters
         {
             LoadInfos();
 
-            Assert.AreEqual(_mockMyVerySpecialInfo, _parameterManager.Get<IMySpecialInfo>(VerySpecialId));
-            Assert.AreEqual(_mockMyVerySpecialInfo, _parameterManager.Get(VerySpecialId, typeof(IMySpecialInfo)));
-            Assert.AreEqual(_mockMyVerySpecialInfo, _parameterManager.GetWithGUID<IMySpecialInfo>(VerySpecialGuid));
+            Assert.AreEqual(_mockSubclassBInfo, _parameterManager.Get<ISubInterfaceAInfo>(SubclassBId));
+            Assert.AreEqual(_mockSubclassBInfo, _parameterManager.Get(SubclassBId, typeof(ISubInterfaceAInfo)));
+            Assert.AreEqual(_mockSubclassBInfo, _parameterManager.GetWithGUID<ISubInterfaceAInfo>(SubclassBGuid));
             Assert.AreEqual(_mockKeyValueStruct, _parameterManager.GetStructWithGuid<IKeyValueStruct>(StructGuid));
 
             // override an existing loaded object
             // load new object with the same identifier & guid
-            var newInfo = new MockMyVerySpecialInfo();
-            _parameterManager.Load<IMySpecialInfo, MockMyVerySpecialInfo>(newInfo, VerySpecialId, VerySpecialGuid);
-            _parameterManager.Load<IMyVerySpecialInfo, MockMyVerySpecialInfo>(newInfo, VerySpecialId, VerySpecialGuid);
+            var newInfo = new MockSubclassBInfo(SubclassBId);
+            _parameterManager.Load<ISubInterfaceAInfo, MockSubclassBInfo>(newInfo, newInfo.Identifier, SubclassBGuid);
+            _parameterManager.Load<ISubInterfaceBInfo, MockSubclassBInfo>(newInfo, newInfo.Identifier, SubclassBGuid);
 
             var newStruct = new MockKeyValueStruct(_parameterManager, "new struct", 100, "guid", new string[0]);
             _parameterManager.Load<IKeyValueStruct, MockKeyValueStruct>(newStruct, StructGuid);
 
-            Assert.AreEqual(newInfo, _parameterManager.Get<IMySpecialInfo>(VerySpecialId));
-            Assert.AreEqual(newInfo, _parameterManager.Get(VerySpecialId, typeof(IMySpecialInfo)));
-            Assert.AreEqual(newInfo, _parameterManager.GetWithGUID<IMySpecialInfo>(VerySpecialGuid));
+            Assert.AreEqual(newInfo, _parameterManager.Get<ISubInterfaceAInfo>(SubclassBId));
+            Assert.AreEqual(newInfo, _parameterManager.Get(SubclassBId, typeof(ISubInterfaceAInfo)));
+            Assert.AreEqual(newInfo, _parameterManager.GetWithGUID<ISubInterfaceAInfo>(SubclassBGuid));
             Assert.AreEqual(newStruct, _parameterManager.GetStructWithGuid<IKeyValueStruct>(StructGuid));
 
-            var specialInfos = _parameterManager.Get<IMySpecialInfo>().ToList();
+            var specialInfos = _parameterManager.Get<ISubInterfaceAInfo>().ToList();
             Assert.AreEqual(2, specialInfos.Count);
-            Assert.IsTrue(specialInfos.Contains(_mockMySpecialInfo));
+            Assert.IsTrue(specialInfos.Contains(_mockSubclassAInfo));
             Assert.IsTrue(specialInfos.Contains(newInfo));
 
-            var verySpecialInfos = _parameterManager.Get<IMyVerySpecialInfo>().ToList();
+            var verySpecialInfos = _parameterManager.Get<ISubInterfaceBInfo>().ToList();
             Assert.AreEqual(1, verySpecialInfos.Count);
             Assert.AreEqual(newInfo, verySpecialInfos[0]);
         }
@@ -222,14 +222,15 @@ namespace PocketGems.Parameters
 
             // currently not supported
             // loading of object with same identifier but different guid
-            var newInfo = new MockMyVerySpecialInfo();
-            var newGuid = "myNewGuid";
+            var newInfo = new MockSubclassBInfo(SubclassBId);
+
+            const string newGuid = "myNewGuid";
 
             LogAssert.Expect(LogType.Error, new Regex(".*"));
-            _parameterManager.Load<IMySpecialInfo, MockMyVerySpecialInfo>(newInfo, VerySpecialId, newGuid);
+            _parameterManager.Load<ISubInterfaceAInfo, MockSubclassBInfo>(newInfo, newInfo.Identifier, newGuid);
 
             LogAssert.Expect(LogType.Error, new Regex(".*"));
-            _parameterManager.Load<IMyVerySpecialInfo, MockMyVerySpecialInfo>(newInfo, VerySpecialId, newGuid);
+            _parameterManager.Load<ISubInterfaceBInfo, MockSubclassBInfo>(newInfo, newInfo.Identifier, newGuid);
         }
 
         [Test]
@@ -239,14 +240,14 @@ namespace PocketGems.Parameters
 
             // currently not supported
             // loading of object with different identifier but same guid
-            var newInfo = new MockMyVerySpecialInfo();
-            var newIdentifier = "myNewIdentifier";
+            const string newIdentifier = "myNewIdentifier";
+            var newInfo = new MockSubclassBInfo(newIdentifier);
 
             LogAssert.Expect(LogType.Error, new Regex(".*"));
-            _parameterManager.Load<IMySpecialInfo, MockMyVerySpecialInfo>(newInfo, newIdentifier, VerySpecialGuid);
+            _parameterManager.Load<ISubInterfaceAInfo, MockSubclassBInfo>(newInfo, newIdentifier, SubclassBGuid);
 
             LogAssert.Expect(LogType.Error, new Regex(".*"));
-            _parameterManager.Load<IMyVerySpecialInfo, MockMyVerySpecialInfo>(newInfo, newIdentifier, VerySpecialGuid);
+            _parameterManager.Load<ISubInterfaceBInfo, MockSubclassBInfo>(newInfo, newIdentifier, SubclassBGuid);
         }
 
         [Test]
@@ -272,10 +273,10 @@ namespace PocketGems.Parameters
             Assert.IsTrue(success);
             Assert.IsNull(errors);
 
-            Assert.AreEqual(0, _mockMySpecialInfo.EditPropertyCalls);
-            Assert.AreEqual(0, _mockMySpecialInfo.RemoveAllEditCalls);
-            Assert.AreEqual(0, _mockMyVerySpecialInfo.EditPropertyCalls);
-            Assert.AreEqual(0, _mockMyVerySpecialInfo.RemoveAllEditCalls);
+            Assert.AreEqual(0, _mockSubclassAInfo.EditPropertyCalls);
+            Assert.AreEqual(0, _mockSubclassAInfo.RemoveAllEditCalls);
+            Assert.AreEqual(0, _mockSubclassBInfo.EditPropertyCalls);
+            Assert.AreEqual(0, _mockSubclassBInfo.RemoveAllEditCalls);
         }
 
         [Test]
@@ -305,44 +306,44 @@ namespace PocketGems.Parameters
             Assert.AreEqual("ParameterManager expects 4 elements in the array of data.", errors[0]);
 
 
-            LogAssert.Expect(LogType.Error, $"Missing: Cannot find parameter by GUID {SpecialId} for type IMySpecialInfo");
+            LogAssert.Expect(LogType.Error, $"Missing: Cannot find parameter by GUID {SubclassAId} for type IMySpecialInfo");
             success = _parameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
                                                        "[" +
                                                        "  [\"MySpecialInfo.csv\"," +
-                                                       $"  \"{SpecialId}\"," +
+                                                       $"  \"{SubclassAId}\"," +
                                                        "   \"SomeColumnName\"," +
                                                        "   \"SomeValue\"]" +
                                                        "]" +
                                                        "}"), out errors);
             Assert.IsFalse(success);
             Assert.AreEqual(1, errors.Count);
-            Assert.AreEqual($"Cannot find parameter for csv [MySpecialInfo.csv] and identifier/guid [{SpecialId}].", errors[0]);
+            Assert.AreEqual($"Cannot find parameter for csv [MySpecialInfo.csv] and identifier/guid [{SubclassAId}].", errors[0]);
 
             LoadInfos();
-            Assert.AreEqual(0, _mockMySpecialInfo.RemoveAllEditCalls);
-            Assert.AreEqual(0, _mockMySpecialInfo.EditPropertyCalls);
+            Assert.AreEqual(0, _mockSubclassAInfo.RemoveAllEditCalls);
+            Assert.AreEqual(0, _mockSubclassAInfo.EditPropertyCalls);
 
             // set an error to be returned by the info
-            _mockMySpecialInfo.ReturnEditPropertyError = "some error";
+            _mockSubclassAInfo.ReturnEditPropertyError = "some error";
 
 
             success = _parameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
                                                        "[" +
-                                                       "  [\"MySpecialInfo.csv\"," +
-                                                       $"   \"{SpecialId}\"," +
+                                                       "  [\"SubInterfaceAInfo.csv\"," +
+                                                       $"   \"{SubclassAId}\"," +
                                                        "   \"SomeColumnName\"," +
                                                        "   \"SomeValue\"]" +
                                                        "]" +
                                                        "}"), out errors);
             Assert.IsFalse(success);
             Assert.AreEqual(1, errors.Count);
-            Assert.AreEqual($"Error editing (IMySpecialInfo)[{SpecialId}] property [SomeColumnName] with value [SomeValue]: {_mockMySpecialInfo.ReturnEditPropertyError}", errors[0]);
+            Assert.AreEqual($"Error editing (ISubInterfaceAInfo)[{SubclassAId}] property [SomeColumnName] with value [SomeValue]: {_mockSubclassAInfo.ReturnEditPropertyError}", errors[0]);
 
             // assert calls to the info
-            Assert.AreEqual(0, _mockMySpecialInfo.RemoveAllEditCalls);
-            Assert.AreEqual(1, _mockMySpecialInfo.EditPropertyCalls);
-            Assert.AreEqual("SomeColumnName", _mockMySpecialInfo.EditPropertyPropertyName);
-            Assert.AreEqual("SomeValue", _mockMySpecialInfo.EditPropertyValue);
+            Assert.AreEqual(0, _mockSubclassAInfo.RemoveAllEditCalls);
+            Assert.AreEqual(1, _mockSubclassAInfo.EditPropertyCalls);
+            Assert.AreEqual("SomeColumnName", _mockSubclassAInfo.EditPropertyPropertyName);
+            Assert.AreEqual("SomeValue", _mockSubclassAInfo.EditPropertyValue);
         }
 
         [Test]
@@ -350,16 +351,16 @@ namespace PocketGems.Parameters
         {
             LoadInfos();
             _parameterManager.ClearAllOverrides();
-            Assert.AreEqual(0, _mockMySpecialInfo.EditPropertyCalls);
-            Assert.AreEqual(0, _mockMySpecialInfo.RemoveAllEditCalls);
-            Assert.AreEqual(0, _mockMyVerySpecialInfo.EditPropertyCalls);
-            Assert.AreEqual(0, _mockMyVerySpecialInfo.RemoveAllEditCalls);
+            Assert.AreEqual(0, _mockSubclassAInfo.EditPropertyCalls);
+            Assert.AreEqual(0, _mockSubclassAInfo.RemoveAllEditCalls);
+            Assert.AreEqual(0, _mockSubclassBInfo.EditPropertyCalls);
+            Assert.AreEqual(0, _mockSubclassBInfo.RemoveAllEditCalls);
 
             // apply to one row
             var success = _parameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
                                                                "[" +
-                                                               "  [\"MySpecialInfo.csv\"," +
-                                                               $"  \"{SpecialId}\"," +
+                                                               $"  [\"SubInterfaceAInfo.csv\"," +
+                                                               $"  \"{SubclassAId}\"," +
                                                                "   \"SomeColumnName1\"," +
                                                                "   \"SomeValue1\"]," +
                                                                "  [\"KeyValueStruct.csv\"," +
@@ -372,12 +373,12 @@ namespace PocketGems.Parameters
             Assert.IsNull(errors);
 
             // assert calls to the info
-            Assert.AreEqual(1, _mockMySpecialInfo.EditPropertyCalls);
-            Assert.AreEqual(0, _mockMySpecialInfo.RemoveAllEditCalls);
-            Assert.AreEqual(0, _mockMyVerySpecialInfo.EditPropertyCalls);
-            Assert.AreEqual(0, _mockMyVerySpecialInfo.RemoveAllEditCalls);
-            Assert.AreEqual("SomeColumnName1", _mockMySpecialInfo.EditPropertyPropertyName);
-            Assert.AreEqual("SomeValue1", _mockMySpecialInfo.EditPropertyValue);
+            Assert.AreEqual(1, _mockSubclassAInfo.EditPropertyCalls);
+            Assert.AreEqual(0, _mockSubclassAInfo.RemoveAllEditCalls);
+            Assert.AreEqual(0, _mockSubclassBInfo.EditPropertyCalls);
+            Assert.AreEqual(0, _mockSubclassBInfo.RemoveAllEditCalls);
+            Assert.AreEqual("SomeColumnName1", _mockSubclassAInfo.EditPropertyPropertyName);
+            Assert.AreEqual("SomeValue1", _mockSubclassAInfo.EditPropertyValue);
 
             // assert calls to the struct
             Assert.AreEqual(1, _mockKeyValueStruct.EditPropertyCalls);
@@ -387,22 +388,22 @@ namespace PocketGems.Parameters
 
             _parameterManager.ClearAllOverrides();
 
-            Assert.AreEqual(1, _mockMySpecialInfo.EditPropertyCalls);
-            Assert.AreEqual(1, _mockMySpecialInfo.RemoveAllEditCalls);
+            Assert.AreEqual(1, _mockSubclassAInfo.EditPropertyCalls);
+            Assert.AreEqual(1, _mockSubclassAInfo.RemoveAllEditCalls);
             Assert.AreEqual(1, _mockKeyValueStruct.EditPropertyCalls);
             Assert.AreEqual(1, _mockKeyValueStruct.RemoveAllEditCalls);
-            Assert.AreEqual(0, _mockMyVerySpecialInfo.EditPropertyCalls);
-            Assert.AreEqual(0, _mockMyVerySpecialInfo.RemoveAllEditCalls);
+            Assert.AreEqual(0, _mockSubclassBInfo.EditPropertyCalls);
+            Assert.AreEqual(0, _mockSubclassBInfo.RemoveAllEditCalls);
 
             // apply to both rows
             success = _parameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
                                                        "[" +
-                                                       "  [\"MySpecialInfo.csv\"," +
-                                                       $"  \"{SpecialId}\"," +
+                                                       "  [\"SubInterfaceAInfo.csv\"," +
+                                                       $"  \"{SubclassAId}\"," +
                                                        "   \"SomeColumnName\"," +
                                                        "   \"SomeValue\"]," +
-                                                       "  [\"MyVerySpecialInfo.csv\"," +
-                                                       $"  \"{VerySpecialId}\"," +
+                                                       "  [\"SubInterfaceBInfo.csv\"," +
+                                                       $"  \"{SubclassBId}\"," +
                                                        "   \"SomeColumnName2\"," +
                                                        "   \"SomeValue2\"]" +
                                                        "]" +
@@ -411,14 +412,14 @@ namespace PocketGems.Parameters
             Assert.IsNull(errors);
 
             // assert calls to the info
-            Assert.AreEqual(2, _mockMySpecialInfo.EditPropertyCalls);
-            Assert.AreEqual(1, _mockMySpecialInfo.RemoveAllEditCalls);
-            Assert.AreEqual(1, _mockMyVerySpecialInfo.EditPropertyCalls);
-            Assert.AreEqual(0, _mockMyVerySpecialInfo.RemoveAllEditCalls);
-            Assert.AreEqual("SomeColumnName", _mockMySpecialInfo.EditPropertyPropertyName);
-            Assert.AreEqual("SomeValue", _mockMySpecialInfo.EditPropertyValue);
-            Assert.AreEqual("SomeColumnName2", _mockMyVerySpecialInfo.EditPropertyPropertyName);
-            Assert.AreEqual("SomeValue2", _mockMyVerySpecialInfo.EditPropertyValue);
+            Assert.AreEqual(2, _mockSubclassAInfo.EditPropertyCalls);
+            Assert.AreEqual(1, _mockSubclassAInfo.RemoveAllEditCalls);
+            Assert.AreEqual(1, _mockSubclassBInfo.EditPropertyCalls);
+            Assert.AreEqual(0, _mockSubclassBInfo.RemoveAllEditCalls);
+            Assert.AreEqual("SomeColumnName", _mockSubclassAInfo.EditPropertyPropertyName);
+            Assert.AreEqual("SomeValue", _mockSubclassAInfo.EditPropertyValue);
+            Assert.AreEqual("SomeColumnName2", _mockSubclassBInfo.EditPropertyPropertyName);
+            Assert.AreEqual("SomeValue2", _mockSubclassBInfo.EditPropertyValue);
 
             // assert no new calls to the struct
             Assert.AreEqual(1, _mockKeyValueStruct.EditPropertyCalls);
@@ -426,12 +427,12 @@ namespace PocketGems.Parameters
 
             _parameterManager.ClearAllOverrides();
 
-            Assert.AreEqual(2, _mockMySpecialInfo.EditPropertyCalls);
-            Assert.AreEqual(2, _mockMySpecialInfo.RemoveAllEditCalls);
+            Assert.AreEqual(2, _mockSubclassAInfo.EditPropertyCalls);
+            Assert.AreEqual(2, _mockSubclassAInfo.RemoveAllEditCalls);
             Assert.AreEqual(1, _mockKeyValueStruct.EditPropertyCalls);
             Assert.AreEqual(1, _mockKeyValueStruct.RemoveAllEditCalls);
-            Assert.AreEqual(1, _mockMyVerySpecialInfo.EditPropertyCalls);
-            Assert.AreEqual(1, _mockMyVerySpecialInfo.RemoveAllEditCalls);
+            Assert.AreEqual(1, _mockSubclassBInfo.EditPropertyCalls);
+            Assert.AreEqual(1, _mockSubclassBInfo.RemoveAllEditCalls);
         }
 
         [Test]
@@ -442,29 +443,29 @@ namespace PocketGems.Parameters
             var regex = new Regex($".*{nameof(IParameterManager.IsGettingSafe)}.*");
 
             LogAssert.Expect(LogType.Error, regex);
-            Assert.IsNull(_parameterManager.Get<IMySpecialInfo>(SpecialId));
+            Assert.IsNull(_parameterManager.Get<ISubInterfaceAInfo>(SubclassAId));
             Assert.IsTrue(_parameterManager.HasGetBeenCalled);
 
             LogAssert.Expect(LogType.Error, regex);
-            Assert.IsNull(_parameterManager.Get(SpecialId, typeof(IMySpecialInfo)));
+            Assert.IsNull(_parameterManager.Get(SubclassAId, typeof(ISubInterfaceAInfo)));
 
             LogAssert.Expect(LogType.Error, regex);
-            Assert.IsEmpty(_parameterManager.Get<IMySpecialInfo>());
+            Assert.IsEmpty(_parameterManager.Get<ISubInterfaceAInfo>());
 
             LogAssert.Expect(LogType.Error, regex);
             LogAssert.Expect(LogType.Error, new Regex(".*"));
-            Assert.IsNull(_parameterManager.GetWithGUID<IMySpecialInfo>(SpecialGuid));
+            Assert.IsNull(_parameterManager.GetWithGUID<ISubInterfaceAInfo>(SubclassAGuid));
 
             LogAssert.Expect(LogType.Error, regex);
             LogAssert.Expect(LogType.Error, new Regex(".*"));
             Assert.IsNull(_parameterManager.GetStructWithGuid<IKeyValueStruct>(StructGuid));
 
             LogAssert.Expect(LogType.Error, regex);
-            Assert.IsEmpty(_parameterManager.GetSorted<IMySpecialInfo>());
+            Assert.IsEmpty(_parameterManager.GetSorted<ISubInterfaceAInfo>());
 
             // no more errors
             _parameterManager.IsGettingSafe = true;
-            Assert.IsNull(_parameterManager.Get<IMySpecialInfo>(SpecialId));
+            Assert.IsNull(_parameterManager.Get<ISubInterfaceAInfo>(SubclassAId));
         }
     }
 }

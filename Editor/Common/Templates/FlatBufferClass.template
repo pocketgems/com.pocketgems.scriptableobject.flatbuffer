@@ -110,6 +110,12 @@ end
     end
 ~}}
         }
+
+        public IMutableParameter CreateLinkedMutableParameter(IParameterManager parameterManager)
+        {
+            return new {{className}}(parameterManager, _fb);
+        }
+
         #endregion
     }
 }

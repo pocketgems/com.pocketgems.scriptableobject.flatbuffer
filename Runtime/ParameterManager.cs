@@ -12,16 +12,27 @@ namespace PocketGems.Parameters
     /// </summary>
     public class ParameterManager : IMutableParameterManager
     {
+        #region Constructors
+
         /// <summary>
-        /// General constructor.
+        /// General public constructor.
         /// </summary>
-        public ParameterManager()
+        public ParameterManager() : this(new(), new()) { }
+
+        /// <summary>
+        /// internal constructor.
+        /// </summary>
+        protected ParameterManager(
+            Dictionary<string, Dictionary<string, IMutableParameter>> identifierMappings,
+            Dictionary<string, Dictionary<string, IMutableParameter>> guidMappings)
         {
             IsGettingSafe = true;
-            _overriddenParameters = new HashSet<IMutableParameter>();
-            _identifierMappings = new Dictionary<string, Dictionary<string, IMutableParameter>>();
-            _guidMappings = new Dictionary<string, Dictionary<string, IMutableParameter>>();
+            _overriddenParameters = new();
+            _identifierMappings = identifierMappings;
+            _guidMappings = guidMappings;
         }
+
+        #endregion
 
         #region IMutableParameterManager
 
@@ -46,7 +57,7 @@ namespace PocketGems.Parameters
         }
 
         /// <inheritdoc cref="IMutableParameterManager.ApplyOverrides"/>
-        public bool ApplyOverrides(JObject json, out IReadOnlyList<string> errors)
+        public virtual bool ApplyOverrides(JObject json, out IReadOnlyList<string> errors)
         {
             if (json == null || !json.HasValues)
             {
@@ -94,21 +105,11 @@ namespace PocketGems.Parameters
                     var identifierOrGuid = (string)array[1];
                     var propertyName = (string)array[2];
                     var value = (string)array[3];
-
                     var interfaceType = LocalCSV.CSVUtil.CSVToInterfaceFileName(csvName);
-                    IMutableParameter mutableParameter;
-                    mutableParameter = Get(interfaceType, identifierOrGuid) ??
-                                       GetWithGUID(interfaceType, identifierOrGuid);
-                    if (mutableParameter == null)
-                    {
-                        Error($"Cannot find parameter for csv [{csvName}] and identifier/guid [{identifierOrGuid}].");
-                        continue;
-                    }
 
-                    _overriddenParameters.Add(mutableParameter);
-                    if (!mutableParameter.EditProperty(this, propertyName, value, out string error))
-                        Error(
-                            $"Error editing ({interfaceType})[{identifierOrGuid}] property [{propertyName}] with value [{value}]: {error}");
+                    IMutableParameter mutableParameter;
+                    if (!ApplyOverride(csvName, interfaceType, identifierOrGuid, propertyName, value, out string error))
+                        Error(error);
                 }
             }
 
@@ -117,7 +118,7 @@ namespace PocketGems.Parameters
         }
 
         /// <inheritdoc cref="IMutableParameterManager.ClearAllOverrides"/>
-        public void ClearAllOverrides()
+        public virtual void ClearAllOverrides()
         {
             foreach (var info in _overriddenParameters)
                 info.RemoveAllEdits();
@@ -150,7 +151,7 @@ namespace PocketGems.Parameters
         }
 
         /// <inheritdoc cref="IParameterManager.Get{T}()"/>
-        public IEnumerable<T> Get<T>() where T : class, IBaseInfo
+        public virtual IEnumerable<T> Get<T>() where T : class, IBaseInfo
         {
             CheckGet();
             var type = typeof(T);
@@ -168,7 +169,7 @@ namespace PocketGems.Parameters
         }
 
         /// <inheritdoc cref="IParameterManager.GetSorted{T}()"/>
-        public IEnumerable<T> GetSorted<T>() where T : class, IBaseInfo
+        public virtual IEnumerable<T> GetSorted<T>() where T : class, IBaseInfo
         {
             CheckGet();
             var type = typeof(T);
@@ -195,8 +196,8 @@ namespace PocketGems.Parameters
         #endregion
 
         private readonly HashSet<IMutableParameter> _overriddenParameters;
-        private readonly Dictionary<string, Dictionary<string, IMutableParameter>> _identifierMappings;
-        private readonly Dictionary<string, Dictionary<string, IMutableParameter>> _guidMappings;
+        protected internal readonly Dictionary<string, Dictionary<string, IMutableParameter>> _identifierMappings;
+        protected internal readonly Dictionary<string, Dictionary<string, IMutableParameter>> _guidMappings;
 
         #region private methods
         /*
@@ -273,7 +274,7 @@ namespace PocketGems.Parameters
             return Get(type.Name, identifier);
         }
 
-        private IMutableParameter Get(string type, string identifier)
+        protected virtual IMutableParameter Get(string type, string identifier)
         {
             if (!_identifierMappings.TryGetValue(type, out Dictionary<string, IMutableParameter> parameters))
                 return null;
@@ -294,7 +295,7 @@ namespace PocketGems.Parameters
             return GetWithGUID(type.Name, guid);
         }
 
-        private IMutableParameter GetWithGUID(string typeName, string guid)
+        protected virtual IMutableParameter GetWithGUID(string typeName, string guid)
         {
             if (!_guidMappings.TryGetValue(typeName, out Dictionary<string, IMutableParameter> parameters))
             {
@@ -308,6 +309,26 @@ namespace PocketGems.Parameters
             }
 
             return parameter;
+        }
+
+        protected virtual bool ApplyOverride(string csvName, string interfaceType, string identifierOrGuid, string propertyName, string value, out string error)
+        {
+            var mutableParameter = Get(interfaceType, identifierOrGuid) ??
+                               GetWithGUID(interfaceType, identifierOrGuid);
+            if (mutableParameter == null)
+            {
+                error = $"Cannot find parameter for csv [{csvName}] and identifier/guid [{identifierOrGuid}].";
+                return false;
+            }
+
+            _overriddenParameters.Add(mutableParameter);
+            if (!mutableParameter.EditProperty(this, propertyName, value, out error))
+            {
+                error = $"Error editing ({interfaceType})[{identifierOrGuid}] property [{propertyName}] with value [{value}]: {error}";
+                return false;
+            }
+
+            return true;
         }
 
         // We need to call this every time a parameter is retrieved with one of the public Get methods above.

@@ -21,8 +21,8 @@ namespace PocketGems.Parameters.Validation.Attributes
         private IReadOnlyList<string> StringArray { get; set; }
         private LocalizedString LocalizedString { get; set; }
         private IReadOnlyList<LocalizedString> LocalizedStringArray { get; set; }
-        private ParameterReference<IMySpecialInfo> ParameterReference { get; set; }
-        private IReadOnlyList<ParameterReference<IMySpecialInfo>> ParameterReferenceArray { get; set; }
+        private ParameterReference<ISubInterfaceAInfo> ParameterReference { get; set; }
+        private IReadOnlyList<ParameterReference<ISubInterfaceAInfo>> ParameterReferenceArray { get; set; }
 #if ADDRESSABLE_PARAMS
         private AssetReference AssetReference { get; set; }
         private AssetReferenceSprite AssetReferenceSprite { get; set; }
@@ -278,7 +278,7 @@ namespace PocketGems.Parameters.Validation.Attributes
             const string testGuid = "abcd";
 
             // true - references
-            AssertAttribute(attribute, nameof(ParameterReference), new ParameterReference<IMySpecialInfo>(_parameterManager, testGuid), true);
+            AssertAttribute(attribute, nameof(ParameterReference), new ParameterReference<ISubInterfaceAInfo>(_parameterManager, testGuid), true);
 #if ADDRESSABLE_PARAMS
             AssertAttribute(attribute, nameof(AssetReference), new AssetReference(testGuid), true);
             AssertAttribute(attribute, nameof(AssetReferenceSprite), new AssetReferenceSprite(testGuid), true);
@@ -286,8 +286,8 @@ namespace PocketGems.Parameters.Validation.Attributes
 
             // true - list of  references
             ParameterReferenceArray = new[] {
-                new ParameterReference<IMySpecialInfo>(_parameterManager, testGuid),
-                new ParameterReference<IMySpecialInfo>(_parameterManager, testGuid) };
+                new ParameterReference<ISubInterfaceAInfo>(_parameterManager, testGuid),
+                new ParameterReference<ISubInterfaceAInfo>(_parameterManager, testGuid) };
             AssertAttribute(attribute, nameof(ParameterReferenceArray), null, true);
             AssertAttribute(attribute, nameof(ParameterReferenceArray), ParameterReferenceArray, true);
 
@@ -304,13 +304,13 @@ namespace PocketGems.Parameters.Validation.Attributes
             AssertAttribute(attribute, nameof(AssetReferenceArray), Array.Empty<AssetReference>(), true);
             AssertAttribute(attribute, nameof(AssetReferenceSpriteArray), Array.Empty<AssetReferenceSprite>(), true);
 #endif
-            AssertAttribute(attribute, nameof(ParameterReferenceArray), Array.Empty<ParameterReference<IMySpecialInfo>>(), true);
+            AssertAttribute(attribute, nameof(ParameterReferenceArray), Array.Empty<ParameterReference<ISubInterfaceAInfo>>(), true);
 
             // false references
             AssertAttribute(attribute, nameof(ParameterReference), null, false);
-            AssertAttribute(attribute, nameof(ParameterReference), new ParameterReference<IMySpecialInfo>(_parameterManager), false);
-            AssertAttribute(attribute, nameof(ParameterReference), new ParameterReference<IMySpecialInfo>(_parameterManager, ""), false);
-            AssertAttribute(attribute, nameof(ParameterReference), new ParameterReference<IMySpecialInfo>(_parameterManager, "identifier", true), false);
+            AssertAttribute(attribute, nameof(ParameterReference), new ParameterReference<ISubInterfaceAInfo>(_parameterManager), false);
+            AssertAttribute(attribute, nameof(ParameterReference), new ParameterReference<ISubInterfaceAInfo>(_parameterManager, ""), false);
+            AssertAttribute(attribute, nameof(ParameterReference), new ParameterReference<ISubInterfaceAInfo>(_parameterManager, "identifier", true), false);
 #if ADDRESSABLE_PARAMS
             AssertAttribute(attribute, nameof(AssetReference), new AssetReference(), false);
             AssertAttribute(attribute, nameof(AssetReference), new AssetReference(""), false);
@@ -319,20 +319,20 @@ namespace PocketGems.Parameters.Validation.Attributes
 
             // false - list of references
             ParameterReferenceArray = new[] {
-                new ParameterReference<IMySpecialInfo>(_parameterManager, testGuid),
+                new ParameterReference<ISubInterfaceAInfo>(_parameterManager, testGuid),
                 null };
             AssertAttribute(attribute, nameof(ParameterReferenceArray), ParameterReferenceArray, false);
             ParameterReferenceArray = new[] {
-                new ParameterReference<IMySpecialInfo>(_parameterManager, testGuid),
-                new ParameterReference<IMySpecialInfo>(_parameterManager) };
+                new ParameterReference<ISubInterfaceAInfo>(_parameterManager, testGuid),
+                new ParameterReference<ISubInterfaceAInfo>(_parameterManager) };
             AssertAttribute(attribute, nameof(ParameterReferenceArray), ParameterReferenceArray, false);
             ParameterReferenceArray = new[] {
-                new ParameterReference<IMySpecialInfo>(_parameterManager, testGuid),
-                new ParameterReference<IMySpecialInfo>(_parameterManager, "") };
+                new ParameterReference<ISubInterfaceAInfo>(_parameterManager, testGuid),
+                new ParameterReference<ISubInterfaceAInfo>(_parameterManager, "") };
             AssertAttribute(attribute, nameof(ParameterReferenceArray), ParameterReferenceArray, false);
             ParameterReferenceArray = new[] {
-                new ParameterReference<IMySpecialInfo>(_parameterManager, testGuid),
-                new ParameterReference<IMySpecialInfo>(_parameterManager, "identifier", true) };
+                new ParameterReference<ISubInterfaceAInfo>(_parameterManager, testGuid),
+                new ParameterReference<ISubInterfaceAInfo>(_parameterManager, "identifier", true) };
             AssertAttribute(attribute, nameof(ParameterReferenceArray), ParameterReferenceArray, false);
 
 #if ADDRESSABLE_PARAMS
@@ -437,8 +437,8 @@ namespace PocketGems.Parameters.Validation.Attributes
 #endif
 
             // valid - unassigned
-            ParameterReference = new ParameterReference<IMySpecialInfo>(_parameterManager);
-            ParameterReferenceArray = new[] { new ParameterReference<IMySpecialInfo>(_parameterManager) };
+            ParameterReference = new ParameterReference<ISubInterfaceAInfo>(_parameterManager);
+            ParameterReferenceArray = new[] { new ParameterReference<ISubInterfaceAInfo>(_parameterManager) };
             AssertAttribute(attribute, nameof(ParameterReference), ParameterReference, true);
             AssertAttribute(attribute, nameof(ParameterReferenceArray), ParameterReferenceArray, true);
 
@@ -460,15 +460,15 @@ namespace PocketGems.Parameters.Validation.Attributes
             // valid - valid references
             const string validGuid = "some_guid";
             const string validIdentifier = "someIdentifier";
-            var info = new MockMySpecialInfo();
-            _parameterManager.Load<IMySpecialInfo, MockMySpecialInfo>(info, validIdentifier, validGuid);
-            ParameterReference = new ParameterReference<IMySpecialInfo>(_parameterManager, validGuid);
+            var info = new MockSubclassAInfo(validIdentifier);
+            _parameterManager.Load<ISubInterfaceAInfo, MockSubclassAInfo>(info, info.Identifier, validGuid);
+            ParameterReference = new ParameterReference<ISubInterfaceAInfo>(_parameterManager, validGuid);
             AssertAttribute(attribute, nameof(ParameterReference), ParameterReference, true);
-            ParameterReference = new ParameterReference<IMySpecialInfo>(_parameterManager, validIdentifier, true);
+            ParameterReference = new ParameterReference<ISubInterfaceAInfo>(_parameterManager, info.Identifier, true);
             AssertAttribute(attribute, nameof(ParameterReference), ParameterReference, true);
-            ParameterReferenceArray = new[] { new ParameterReference<IMySpecialInfo>(_parameterManager, validGuid) };
+            ParameterReferenceArray = new[] { new ParameterReference<ISubInterfaceAInfo>(_parameterManager, validGuid) };
             AssertAttribute(attribute, nameof(ParameterReferenceArray), ParameterReferenceArray, true);
-            ParameterReferenceArray = new[] { new ParameterReference<IMySpecialInfo>(_parameterManager, validIdentifier, true) };
+            ParameterReferenceArray = new[] { new ParameterReference<ISubInterfaceAInfo>(_parameterManager, info.Identifier, true) };
             AssertAttribute(attribute, nameof(ParameterReferenceArray), ParameterReferenceArray, true);
 
             // valid addressables - difficult to test without messing with existing groups
@@ -479,16 +479,16 @@ namespace PocketGems.Parameters.Validation.Attributes
 
             // false
             const string falseGuid = "abcd";
-            ParameterReference = new ParameterReference<IMySpecialInfo>(_parameterManager, falseGuid);
+            ParameterReference = new ParameterReference<ISubInterfaceAInfo>(_parameterManager, falseGuid);
             LogAssert.Expect(LogType.Error, new Regex(".*"));
             AssertAttribute(attribute, nameof(ParameterReference), ParameterReference, false);
-            ParameterReference = new ParameterReference<IMySpecialInfo>(_parameterManager, falseGuid, true);
+            ParameterReference = new ParameterReference<ISubInterfaceAInfo>(_parameterManager, falseGuid, true);
             LogAssert.Expect(LogType.Error, new Regex(".*"));
             AssertAttribute(attribute, nameof(ParameterReference), ParameterReference, false);
-            ParameterReferenceArray = new[] { new ParameterReference<IMySpecialInfo>(_parameterManager, falseGuid) };
+            ParameterReferenceArray = new[] { new ParameterReference<ISubInterfaceAInfo>(_parameterManager, falseGuid) };
             LogAssert.Expect(LogType.Error, new Regex(".*"));
             AssertAttribute(attribute, nameof(ParameterReferenceArray), ParameterReferenceArray, false);
-            ParameterReferenceArray = new[] { new ParameterReference<IMySpecialInfo>(_parameterManager, falseGuid, true) };
+            ParameterReferenceArray = new[] { new ParameterReference<ISubInterfaceAInfo>(_parameterManager, falseGuid, true) };
             LogAssert.Expect(LogType.Error, new Regex(".*"));
             AssertAttribute(attribute, nameof(ParameterReferenceArray), ParameterReferenceArray, false);
 
@@ -527,15 +527,15 @@ namespace PocketGems.Parameters.Validation.Attributes
             IntArray = Array.Empty<int>();
             AssertAttribute(attribute, nameof(IntArray), IntArray, false);
             AssertAttribute(attribute, nameof(ParameterReferenceArray), ParameterReferenceArray, false);
-            ParameterReferenceArray = Array.Empty<ParameterReference<IMySpecialInfo>>();
+            ParameterReferenceArray = Array.Empty<ParameterReference<ISubInterfaceAInfo>>();
             AssertAttribute(attribute, nameof(ParameterReferenceArray), ParameterReferenceArray, false);
 
             // true
             IntArray = new[] { 10, 11 };
             AssertAttribute(attribute, nameof(IntArray), IntArray, true);
-            ParameterReferenceArray = new[] { new ParameterReference<IMySpecialInfo>(_parameterManager) };
+            ParameterReferenceArray = new[] { new ParameterReference<ISubInterfaceAInfo>(_parameterManager) };
             AssertAttribute(attribute, nameof(ParameterReferenceArray), ParameterReferenceArray, true);
-            ParameterReferenceArray = new ParameterReference<IMySpecialInfo>[] { null };
+            ParameterReferenceArray = new ParameterReference<ISubInterfaceAInfo>[] { null };
             AssertAttribute(attribute, nameof(ParameterReferenceArray), ParameterReferenceArray, true);
         }
     }

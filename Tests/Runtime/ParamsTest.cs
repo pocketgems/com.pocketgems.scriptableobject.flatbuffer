@@ -37,8 +37,8 @@ namespace PocketGems.Parameters
             var pm = Substitute.For<IMutableParameterManager>();
             Params.SetInstance(pm);
 
-            Params.Get<IMySpecialInfo>("blah");
-            pm.Received().Get<IMySpecialInfo>("blah");
+            Params.Get<ISubInterfaceAInfo>("blah");
+            pm.Received().Get<ISubInterfaceAInfo>("blah");
         }
 
         [Test]
@@ -47,8 +47,8 @@ namespace PocketGems.Parameters
             var pm = Substitute.For<IMutableParameterManager>();
             Params.SetInstance(pm);
 
-            Params.GetWithGUID<IMySpecialInfo>("blah");
-            pm.Received().GetWithGUID<IMySpecialInfo>("blah");
+            Params.GetWithGUID<ISubInterfaceAInfo>("blah");
+            pm.Received().GetWithGUID<ISubInterfaceAInfo>("blah");
         }
 
         [Test]
@@ -57,8 +57,8 @@ namespace PocketGems.Parameters
             var pm = Substitute.For<IMutableParameterManager>();
             Params.SetInstance(pm);
 
-            Params.Get<IMySpecialInfo>();
-            pm.Received().Get<IMySpecialInfo>();
+            Params.Get<ISubInterfaceAInfo>();
+            pm.Received().Get<ISubInterfaceAInfo>();
         }
 
         [Test]
@@ -67,8 +67,8 @@ namespace PocketGems.Parameters
             var pm = Substitute.For<IMutableParameterManager>();
             Params.SetInstance(pm);
 
-            Params.GetSorted<IMySpecialInfo>();
-            pm.Received().GetSorted<IMySpecialInfo>();
+            Params.GetSorted<ISubInterfaceAInfo>();
+            pm.Received().GetSorted<ISubInterfaceAInfo>();
         }
 
         [Test]
@@ -90,7 +90,7 @@ namespace PocketGems.Parameters
 
             // default is true but pm already had Get() called
             pm = new ParameterManager();
-            _ = pm.Get<IMySpecialInfo>("some id");
+            _ = pm.Get<ISubInterfaceAInfo>("some id");
             Assert.IsTrue(pm.HasGetBeenCalled);
             LogAssert.Expect(LogType.Error, new Regex(".*"));
             Params.SetInstance(pm);
@@ -100,7 +100,7 @@ namespace PocketGems.Parameters
             pm = new ParameterManager();
             Assert.IsFalse(pm.HasGetBeenCalled);
             Params.SetInstance(pm);
-            _ = pm.Get<IMySpecialInfo>("some id");
+            _ = pm.Get<ISubInterfaceAInfo>("some id");
             Assert.IsTrue(pm.HasGetBeenCalled);
             LogAssert.Expect(LogType.Error, new Regex(".*"));
             Params.IsGettingSafe = false;

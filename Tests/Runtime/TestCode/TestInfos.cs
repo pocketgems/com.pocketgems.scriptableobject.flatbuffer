@@ -4,17 +4,17 @@ using PocketGems.Parameters.Interface;
 using PocketGems.Parameters.Validation;
 using PocketGems.Parameters.Validation.Attributes;
 
-public interface IMySpecialInfo : IBaseInfo
+public interface ISubInterfaceAInfo : IBaseInfo
 {
 }
 
-public interface IMyVerySpecialInfo : IMySpecialInfo
+public interface ISubInterfaceBInfo : ISubInterfaceAInfo
 {
     ParameterStructReference<IMissingValidator1Struct> Struct { get; }
     IReadOnlyList<ParameterStructReference<IMissingValidator2Struct>> Structs { get; }
 }
 
-public interface ITestBaseValidationInfo : IMySpecialInfo
+public interface ITestBaseValidationInfo : ISubInterfaceAInfo
 {
     [AssertStringNotEmpty]
     string DisplayName { get; }

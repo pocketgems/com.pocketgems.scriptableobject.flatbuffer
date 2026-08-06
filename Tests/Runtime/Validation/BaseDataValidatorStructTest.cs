@@ -12,13 +12,13 @@ namespace PocketGems.Parameters.Validation
         [Test]
         public void ValidateStruct()
         {
-            var infoMock = Substitute.For<IMySpecialInfo>();
+            var infoMock = Substitute.For<ISubInterfaceAInfo>();
             infoMock.Identifier.Returns(infoIdentifier);
 
             var structMock = Substitute.For<IKeyValueStruct>();
 
             var validationObjectData = new ValidationObjectData(
-                typeof(IMySpecialInfo),
+                typeof(ISubInterfaceAInfo),
                 infoMock,
                 parentPropertyName,
                 structPath,
@@ -58,7 +58,7 @@ namespace PocketGems.Parameters.Validation
             bool shouldHaveStructProperty,
             ValidationError.Severity severity)
         {
-            Assert.AreEqual(typeof(IMySpecialInfo), error.InfoType);
+            Assert.AreEqual(typeof(ISubInterfaceAInfo), error.InfoType);
             Assert.AreEqual(infoIdentifier, error.InfoIdentifier);
             Assert.AreEqual(parentPropertyName, error.InfoProperty);
             Assert.AreEqual(structPath, error.StructKeyPath);
