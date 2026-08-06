@@ -40,7 +40,12 @@ namespace PocketGems.Parameters.AssetLoader
              */
             var settings = AddressableAssetSettingsDefaultObject.Settings;
             var dataBuilder = settings.ActivePlayModeDataBuilder;
+#if ADDRESSABLES_2_0_0_OR_NEWER
+            // BuildScriptVirtualMode ("Simulate Groups (advanced)") was removed in Addressables 2.0.
+            var isUsingBundledAssets = !(dataBuilder is BuildScriptFastMode);
+#else
             var isUsingBundledAssets = !(dataBuilder is BuildScriptFastMode || dataBuilder is BuildScriptVirtualMode);
+#endif
             if (isUsingBundledAssets)
                 return;
 
