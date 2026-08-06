@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [5.1.2] - 2026-08-05
+### Changed
+- The "Generate CSVs" menu action now reveals the CSV folder in Finder/Explorer after a successful generation.
 ### Fixed
 - "Open CSV" in the Scriptable Object inspector now offers to generate the CSVs when the file doesn't exist, instead of only logging an error.
 - Compilation fix for Addressables 2.x (Unity 6+), where `BuildScriptVirtualMode` was removed — guarded via a new `ADDRESSABLES_2_0_0_OR_NEWER` version define.
