@@ -4,6 +4,10 @@ All package updates & migration steps will be listed in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.5] - 2026-05-19
+### Fixed
+- `float.Parse` calls in `CSVValueConverter` and `Vector3Parser` now use `CultureInfo.InvariantCulture`, fixing "Input string was not in a correct format" errors when applying parameter overrides on machines with a non-English locale (e.g. German, French) where `.` is not the decimal separator.
+
 ## [5.0.4] - 2026-05-06
 ### Fixed
 - Issue with `AssertAssignedReferenceAttribute` incorrectly labeling an overridden ParameterReference as invalid.

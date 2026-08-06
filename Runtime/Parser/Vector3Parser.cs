@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using UnityEngine;
 
 namespace PocketGems.Parameters.Parser
@@ -18,7 +19,7 @@ namespace PocketGems.Parameters.Parser
             var values = str.Split(':');
             if (values.Length != 3)
                 throw new FormatException("string must have 3 elements delimited with :");
-            return new Vector3(float.Parse(values[0]), float.Parse(values[1]), float.Parse(values[2]));
+            return new Vector3(float.Parse(values[0], CultureInfo.InvariantCulture), float.Parse(values[1], CultureInfo.InvariantCulture), float.Parse(values[2], CultureInfo.InvariantCulture));
         }
     }
 }
