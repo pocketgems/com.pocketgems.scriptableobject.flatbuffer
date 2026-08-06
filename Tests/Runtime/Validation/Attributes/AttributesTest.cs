@@ -302,11 +302,14 @@ namespace PocketGems.Parameters.Validation.Attributes
 #endif
             AssertAttribute(attribute, nameof(ParameterReferenceArray), Array.Empty<ParameterReference<ISubInterfaceAInfo>>(), true);
 
+            // true - reference with identifier only (no GUID)
+            AssertAttribute(attribute, nameof(ParameterReference), new ParameterReference<ISubInterfaceAInfo>(_parameterManager, "identifier", true), true);
+
             // false references
             AssertAttribute(attribute, nameof(ParameterReference), null, false);
             AssertAttribute(attribute, nameof(ParameterReference), new ParameterReference<ISubInterfaceAInfo>(_parameterManager), false);
             AssertAttribute(attribute, nameof(ParameterReference), new ParameterReference<ISubInterfaceAInfo>(_parameterManager, ""), false);
-            AssertAttribute(attribute, nameof(ParameterReference), new ParameterReference<ISubInterfaceAInfo>(_parameterManager, "identifier", true), false);
+            AssertAttribute(attribute, nameof(ParameterReference), new ParameterReference<ISubInterfaceAInfo>(_parameterManager, "", true), false);
 #if ADDRESSABLE_PARAMS
             AssertAttribute(attribute, nameof(AssetReference), new AssetReference(), false);
             AssertAttribute(attribute, nameof(AssetReference), new AssetReference(""), false);
@@ -329,6 +332,12 @@ namespace PocketGems.Parameters.Validation.Attributes
             ParameterReferenceArray = new[] {
                 new ParameterReference<ISubInterfaceAInfo>(_parameterManager, testGuid),
                 new ParameterReference<ISubInterfaceAInfo>(_parameterManager, "identifier", true) };
+            AssertAttribute(attribute, nameof(ParameterReferenceArray), ParameterReferenceArray, true);
+
+            // false - list with empty identifier reference
+            ParameterReferenceArray = new[] {
+                new ParameterReference<ISubInterfaceAInfo>(_parameterManager, testGuid),
+                new ParameterReference<ISubInterfaceAInfo>(_parameterManager, "", true) };
             AssertAttribute(attribute, nameof(ParameterReferenceArray), ParameterReferenceArray, false);
 
 #if ADDRESSABLE_PARAMS

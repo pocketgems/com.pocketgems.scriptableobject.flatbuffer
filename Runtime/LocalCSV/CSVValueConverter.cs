@@ -237,14 +237,13 @@ namespace PocketGems.Parameters.LocalCSV
                 }
                 return guid;
             }
-#endif
 
-            public static ParameterReference<T> FromString<T>(IParameterManager parameterManager, string value)
+            public static ParameterReference<T> FromCSVString<T>(IParameterManager parameterManager, string value)
                 where T : class, IBaseInfo
             {
                 if (string.IsNullOrWhiteSpace(value))
                     return new ParameterReference<T>(parameterManager);
-#if UNITY_EDITOR
+
                 if (ScriptableObjectLookupCache.Enabled)
                 {
                     var data = ScriptableObjectLookupCache.LookUp(value);
@@ -274,9 +273,15 @@ namespace PocketGems.Parameters.LocalCSV
                 }
 
                 throw new Exception($"Cannot find asset with name {value} of type {typeof(T)}");
-#else
-                return new ParameterReference<T>(parameterManager, value, true);
+            }
 #endif
+
+            public static ParameterReference<T> FromString<T>(IParameterManager parameterManager, string value)
+                where T : class, IBaseInfo
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    return new ParameterReference<T>(parameterManager);
+                return new ParameterReference<T>(parameterManager, value, true);
             }
         }
 
@@ -350,10 +355,27 @@ namespace PocketGems.Parameters.LocalCSV
                     strings[i] = CSVValueConverter.ParameterReference.ToString(value[i]);
                 return string.Join(ListDelimiter.ToString(), strings);
             }
+
+            public static ParameterReference<T>[] FromCSVString<T>(IParameterManager parameterManager, string value)
+                where T : class, IBaseInfo
+            {
+                // must return a non null value so we can detect overriding of properties by checking non null
+                if (string.IsNullOrWhiteSpace(value))
+                    return Array.Empty<ParameterReference<T>>();
+                var strings = value.Split(ListDelimiter);
+                var assetRefs = new ParameterReference<T>[strings.Length];
+                for (int i = 0; i < strings.Length; i++)
+                    assetRefs[i] = ParameterReference.FromCSVString<T>(parameterManager, strings[i]);
+                return assetRefs;
+            }
 #endif
 
+            /*
+             * Old method no longer used but marked obsolete until the next major release.
+             */
+            [Obsolete]
             public static ParameterReference<T>[] FromString<T>(IParameterManager parameterManager, string value)
-                    where T : class, IBaseInfo
+                where T : class, IBaseInfo
             {
                 // must return a non null value so we can detect overriding of properties by checking non null
                 if (string.IsNullOrWhiteSpace(value))

@@ -50,8 +50,9 @@ namespace PocketGems.Parameters.Validation.Attributes
             }
 #endif
             // parameter reference
-            string assignedGuid = ((ParameterReference)element).AssignedGUID;
-            if (string.IsNullOrEmpty(assignedGuid))
+            var parameterReference = (ParameterReference)element;
+            if (string.IsNullOrWhiteSpace(parameterReference.AssignedGUID) &&
+                string.IsNullOrWhiteSpace(parameterReference.AssignedIdentifier))
                 return ErrorString;
             return null;
         }

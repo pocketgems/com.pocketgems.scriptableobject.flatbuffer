@@ -18,7 +18,7 @@ namespace PocketGems.Parameters.Common.Editor
         /// Ideally it would be the most convenient to use the package version but that requires file I/O to
         /// the package.json which can be costly if we're doing it all of the time.
         /// </summary>
-        public const string InterfaceHashSalt = "aa9a175c-e1b9-4cab-bcb0-648ea1853c63";
+        public const string InterfaceHashSalt = "ca5735bb-61fd-4613-841b-f88229b443bd";
 
         public static string SanitizedDataPath()
         {
