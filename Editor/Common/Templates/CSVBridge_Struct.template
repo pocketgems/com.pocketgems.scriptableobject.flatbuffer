@@ -59,9 +59,11 @@ namespace {{namespace}}
         {
             try
             {
+#pragma warning disable CS0219 // Disable the warning
                 // parameter manager is used for the Info/Struct references but doesn't need to be
                 // assigned since we're only reading for serialization, not runtime
                 IParameterManager parameterManager = null;
+#pragma warning restore CS0219 // Restore it
                 var keyPath = keyPathBuilder.KeyPath();
                 _currentStructPath = keyPath;
                 var csvRow = _structCSVFileCache.LoadRow<{{interface.InterfaceName}}>(keyPath);

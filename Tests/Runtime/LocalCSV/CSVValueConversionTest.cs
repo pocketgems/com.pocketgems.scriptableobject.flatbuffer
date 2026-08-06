@@ -388,6 +388,34 @@ namespace PocketGems.Parameters.LocalCSV
         }
 
         [Test]
+        public void NumericUnsignedT()
+        {
+            void Test<T>(T zero, T five, T upperBound, string upperString)
+            {
+                // to string
+                Assert.AreEqual("0", CSVValueConverter.Numeric<T>.ToString(zero));
+                Assert.AreEqual("5", CSVValueConverter.Numeric<T>.ToString(five));
+                Assert.AreEqual(upperString, CSVValueConverter.Numeric<T>.ToString(upperBound));
+
+                // from string
+                Assert.AreEqual(0, CSVValueConverter.Numeric<T>.FromString("0"));
+                Assert.AreEqual(0, CSVValueConverter.Numeric<T>.FromString(" "));
+                Assert.AreEqual(0, CSVValueConverter.Numeric<T>.FromString(""));
+                Assert.AreEqual(0, CSVValueConverter.Numeric<T>.FromString(null));
+                Assert.AreEqual(five, CSVValueConverter.Numeric<T>.FromString("5"));
+                Assert.AreEqual(upperBound, CSVValueConverter.Numeric<T>.FromString(upperString));
+
+                Assert.Catch(() => CSVValueConverter.Numeric<T>.FromString("-1"));
+                Assert.Catch(() => CSVValueConverter.Numeric<T>.FromString("abc"));
+                Assert.Catch(() => CSVValueConverter.Numeric<T>.FromString("20000000000000000000"));
+            }
+
+            Test<ushort>(0, 5, 65535, "65535");
+            Test<uint>(0, 5, 4294967295, "4294967295");
+            Test<ulong>(0, 5, 18446744073709551615, "18446744073709551615");
+        }
+
+        [Test]
         [TestCase(0f, "0")]
         [TestCase(1f, "1")]
         [TestCase(-5f, "-5")]

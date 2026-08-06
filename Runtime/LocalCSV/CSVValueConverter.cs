@@ -193,10 +193,16 @@ namespace PocketGems.Parameters.LocalCSV
                     return default;
 
                 object o = null;
-                if (typeof(T) == typeof(short))
+                if (typeof(T) == typeof(ushort))
+                    o = ushort.Parse(value);
+                else if (typeof(T) == typeof(short))
                     o = short.Parse(value);
+                else if (typeof(T) == typeof(uint))
+                    o = uint.Parse(value);
                 else if (typeof(T) == typeof(int))
                     o = int.Parse(value);
+                else if (typeof(T) == typeof(ulong))
+                    o = ulong.Parse(value);
                 else if (typeof(T) == typeof(long))
                     o = long.Parse(value);
                 else if (typeof(T) == typeof(float))
