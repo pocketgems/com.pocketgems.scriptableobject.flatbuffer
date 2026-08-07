@@ -87,8 +87,13 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
             if (settings == null)
                 return;
             var editorDataBuilder = settings.ActivePlayModeDataBuilder;
+#if ADDRESSABLES_2_0_0_OR_NEWER
+            // BuildScriptVirtualMode ("Simulate Groups (advanced)") was removed in Addressables 2.0.
+            bool isUsingRemoteBundles = !(editorDataBuilder is BuildScriptFastMode);
+#else
             bool isUsingRemoteBundles =
                 !(editorDataBuilder is BuildScriptFastMode || editorDataBuilder is BuildScriptVirtualMode);
+#endif
             if (isUsingRemoteBundles)
             {
                 if (context.GenerateDataType == GenerateDataType.CSVDiff)

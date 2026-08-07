@@ -34,6 +34,9 @@ namespace PocketGems.Parameters.Editor.Editor
         public static void GenerateCSVs()
         {
             EditorParameterDataManager.GenerateData(GenerateDataType.All, out _, generateCSVs: true);
+            var csvDir = EditorParameterConstants.CSV.Dir;
+            if (Directory.Exists(csvDir) && Directory.GetFiles(csvDir, "*.csv").Length > 0)
+                EditorUtility.RevealInFinder(csvDir);
         }
 
         [MenuItem(MenuItemConstants.RegenerateCodePath, false, MenuItemConstants.RegenerateCodePriority)]

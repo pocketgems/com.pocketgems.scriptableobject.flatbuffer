@@ -20,6 +20,11 @@
             "name": "com.unity.addressables",
             "expression": "",
             "define": "ADDRESSABLE_PARAMS"
+        },
+        {
+            "name": "com.unity.addressables",
+            "expression": "2.0.0",
+            "define": "ADDRESSABLES_2_0_0_OR_NEWER"
         }
     ],
     "noEngineReferences": false

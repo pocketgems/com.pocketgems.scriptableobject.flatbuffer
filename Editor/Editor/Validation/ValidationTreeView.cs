@@ -7,6 +7,8 @@ using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.TestTools;
+// alias to disambiguate from UnityEditor.IMGUI.Controls.TreeViewItem<TIdentifier> introduced in Unity 6000.3
+using ValidationTreeViewItem = PocketGems.Parameters.Editor.Validation.TreeDataModel.Editor.TreeViewItem<PocketGems.Parameters.Editor.Validation.Editor.ValidationTreeElement>;
 
 /// <summary>
 /// Modified from Unity's provided example:
@@ -105,12 +107,12 @@ namespace PocketGems.Parameters.Editor.Validation.Editor
 
             if (item == null)
                 return;
-            OnClickedTreeElement?.Invoke(((TreeViewItem<ValidationTreeElement>)item).data);
+            OnClickedTreeElement?.Invoke(((ValidationTreeViewItem)item).data);
         }
 
         protected override void RowGUI(RowGUIArgs args)
         {
-            var item = (TreeViewItem<ValidationTreeElement>)args.item;
+            var item = (ValidationTreeViewItem)args.item;
 
             for (int i = 0; i < args.GetNumVisibleColumns(); ++i)
             {
@@ -118,7 +120,7 @@ namespace PocketGems.Parameters.Editor.Validation.Editor
             }
         }
 
-        void CellGUI(Rect cellRect, TreeViewItem<ValidationTreeElement> item, Columns column, ref RowGUIArgs args)
+        void CellGUI(Rect cellRect, ValidationTreeViewItem item, Columns column, ref RowGUIArgs args)
         {
             // Center cell rect vertically (makes it easier to place controls, icons etc in the cells)
             CenterRectUsingSingleLineHeight(ref cellRect);

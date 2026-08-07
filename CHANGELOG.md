@@ -4,6 +4,15 @@ All package updates & migration steps will be listed in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.1.2] - 2026-08-05
+### Changed
+- The "Generate CSVs" menu action now reveals the CSV folder in Finder/Explorer after a successful generation.
+### Fixed
+- "Open CSV" in the Scriptable Object inspector now offers to generate the CSVs when the file doesn't exist, instead of only logging an error.
+- Compilation fix for Addressables 2.x (Unity 6+), where `BuildScriptVirtualMode` was removed — guarded via a new `ADDRESSABLES_2_0_0_OR_NEWER` version define.
+- Compilation fix for Unity 6000.3+, where the new `UnityEditor.IMGUI.Controls.TreeViewItem<TIdentifier>` made the validation tree view's internal `TreeViewItem<T>` reference ambiguous.
+- Syncing a CSV edit that renames an identifier now queues a full regeneration (as deletions already did), so the old identifier's rows don't linger in the previously built parameter data.
+
 ## [5.1.1] - 2026-07-27
 ### Fixed
 - Restored the reflection-based `EditorParams.FindSingleInterfaceImplementation` fallback for Unity versions without `TypeCache` (pre-2019.2).
