@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using PocketGems.Parameters.Interface;
+using PocketGems.Parameters.Util;
 using UnityEngine;
 using UnityEngine.TestTools;
 
@@ -25,9 +26,18 @@ namespace PocketGems.Parameters
         private const string SubclassBId = "id2";
         private const string SubclassBGuid = "guid2";
 
-        private const string StructGuid = "guid3";
+        private const string KeyValueStructKeyPath = "KeyValueStruct[SomeInfo]";
+        private static readonly string KeyValueStructGuid = HashKeyPath(KeyValueStructKeyPath);
 
         private ParameterManager _parameterManager;
+
+        private static string HashKeyPath(string keyPath)
+        {
+            using (var guidConverter = new GuidConverter())
+            {
+                return guidConverter.ToGuid(keyPath);
+            }
+        }
 
         [SetUp]
         public void SetUp()
@@ -40,7 +50,7 @@ namespace PocketGems.Parameters
 
         private void LoadInfos()
         {
-            _parameterManager.Load<IKeyValueStruct, MockKeyValueStruct>(_mockKeyValueStruct, StructGuid);
+            _parameterManager.Load<IKeyValueStruct, MockKeyValueStruct>(_mockKeyValueStruct, KeyValueStructGuid);
 
             // load under one interface
             _parameterManager.Load<ISubInterfaceAInfo, MockSubclassAInfo>(_mockSubclassAInfo, _mockSubclassAInfo.Identifier, SubclassAGuid);
@@ -73,7 +83,7 @@ namespace PocketGems.Parameters
             Assert.IsNull(_parameterManager.GetWithGUID<ISubInterfaceBInfo>(SubclassBGuid));
 
             LogAssert.Expect(LogType.Error, new Regex(".*"));
-            Assert.IsNull(_parameterManager.GetStructWithGuid<IKeyValueStruct>(StructGuid));
+            Assert.IsNull(_parameterManager.GetStructWithGuid<IKeyValueStruct>(KeyValueStructGuid));
         }
 
         [Test]
@@ -125,7 +135,7 @@ namespace PocketGems.Parameters
             AssertEmptyManager();
             LoadInfos();
 
-            Assert.AreEqual(_mockKeyValueStruct, _parameterManager.GetStructWithGuid<IKeyValueStruct>(StructGuid));
+            Assert.AreEqual(_mockKeyValueStruct, _parameterManager.GetStructWithGuid<IKeyValueStruct>(KeyValueStructGuid));
 
             LogAssert.Expect(LogType.Error, new Regex(".*"));
             Assert.IsNull(_parameterManager.GetStructWithGuid<IKeyValueStruct>("non existing guid"));
@@ -208,7 +218,7 @@ namespace PocketGems.Parameters
             Assert.AreEqual(_mockSubclassBInfo, _parameterManager.Get<ISubInterfaceAInfo>(SubclassBId));
             Assert.AreEqual(_mockSubclassBInfo, _parameterManager.Get(SubclassBId, typeof(ISubInterfaceAInfo)));
             Assert.AreEqual(_mockSubclassBInfo, _parameterManager.GetWithGUID<ISubInterfaceAInfo>(SubclassBGuid));
-            Assert.AreEqual(_mockKeyValueStruct, _parameterManager.GetStructWithGuid<IKeyValueStruct>(StructGuid));
+            Assert.AreEqual(_mockKeyValueStruct, _parameterManager.GetStructWithGuid<IKeyValueStruct>(KeyValueStructGuid));
 
             // override an existing loaded object
             // load new object with the same identifier & guid
@@ -217,12 +227,12 @@ namespace PocketGems.Parameters
             _parameterManager.Load<ISubInterfaceBInfo, MockSubclassBInfo>(newInfo, newInfo.Identifier, SubclassBGuid);
 
             var newStruct = new MockKeyValueStruct(_parameterManager, "new struct", 100, "guid", new string[0]);
-            _parameterManager.Load<IKeyValueStruct, MockKeyValueStruct>(newStruct, StructGuid);
+            _parameterManager.Load<IKeyValueStruct, MockKeyValueStruct>(newStruct, KeyValueStructGuid);
 
             Assert.AreEqual(newInfo, _parameterManager.Get<ISubInterfaceAInfo>(SubclassBId));
             Assert.AreEqual(newInfo, _parameterManager.Get(SubclassBId, typeof(ISubInterfaceAInfo)));
             Assert.AreEqual(newInfo, _parameterManager.GetWithGUID<ISubInterfaceAInfo>(SubclassBGuid));
-            Assert.AreEqual(newStruct, _parameterManager.GetStructWithGuid<IKeyValueStruct>(StructGuid));
+            Assert.AreEqual(newStruct, _parameterManager.GetStructWithGuid<IKeyValueStruct>(KeyValueStructGuid));
 
             var specialInfos = _parameterManager.Get<ISubInterfaceAInfo>().ToList();
             Assert.AreEqual(2, specialInfos.Count);
@@ -325,7 +335,6 @@ namespace PocketGems.Parameters
             Assert.AreEqual("ParameterManager expects 4 elements in the array of data.", errors[0]);
 
 
-            LogAssert.Expect(LogType.Error, $"Missing: Cannot find parameter by GUID {SubclassAId} for type IMySpecialInfo");
             success = _parameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
                                                        "[" +
                                                        "  [\"MySpecialInfo.csv\"," +
@@ -363,6 +372,46 @@ namespace PocketGems.Parameters
             Assert.AreEqual(1, _mockSubclassAInfo.EditPropertyCalls);
             Assert.AreEqual("SomeColumnName", _mockSubclassAInfo.EditPropertyPropertyName);
             Assert.AreEqual("SomeValue", _mockSubclassAInfo.EditPropertyValue);
+        }
+
+        [Test]
+        public void ApplyOverrides_StructKeyPathAddressing()
+        {
+            // structs bake hashed key path guids; override payloads address them by raw key path
+            const string keyPath = "KeyValueStruct[SomeInfo].SomeProperty";
+            var hashedStruct = new MockKeyValueStruct(_parameterManager, "desc", 20, "guid", new string[0]);
+            _parameterManager.Load<IKeyValueStruct, MockKeyValueStruct>(hashedStruct, HashKeyPath(keyPath));
+
+            var success = _parameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
+                                                               "[" +
+                                                               "  [\"KeyValueStruct.csv\"," +
+                                                               $"  \"{keyPath}\"," +
+                                                               "   \"SomeColumnName\"," +
+                                                               "   \"SomeValue\"]" +
+                                                               "]" +
+                                                               "}"), out IReadOnlyList<string> errors);
+            Assert.IsTrue(success);
+            Assert.IsNull(errors);
+            Assert.AreEqual(1, hashedStruct.EditPropertyCalls);
+            Assert.AreEqual("SomeColumnName", hashedStruct.EditPropertyPropertyName);
+            Assert.AreEqual("SomeValue", hashedStruct.EditPropertyValue);
+
+            // a failing second edit reverts the key path addressed edit through the same resolution
+            success = _parameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
+                                                           "[" +
+                                                           "  [\"KeyValueStruct.csv\"," +
+                                                           $"  \"{keyPath}\"," +
+                                                           "   \"SomeColumnName\"," +
+                                                           "   \"SomeValue\"]," +
+                                                           "  [\"MySpecialInfo.csv\"," +
+                                                           "   \"MissingId\"," +
+                                                           "   \"SomeColumnName\"," +
+                                                           "   \"SomeValue\"]" +
+                                                           "]" +
+                                                           "}"), out errors);
+            Assert.IsFalse(success);
+            Assert.AreEqual(1, errors.Count);
+            Assert.AreEqual(1, hashedStruct.RevertEditPropertyCalls);
         }
 
         [Test]
@@ -416,7 +465,7 @@ namespace PocketGems.Parameters
                                                                "   \"SomeColumnName1\"," +
                                                                "   \"SomeValue1\"]," +
                                                                "  [\"KeyValueStruct.csv\"," +
-                                                               $"  \"{StructGuid}\"," +
+                                                               $"  \"{KeyValueStructKeyPath}\"," +
                                                                "   \"SomeColumnName2\"," +
                                                                "   \"SomeValue2\"]" +
                                                                "]" +
@@ -514,7 +563,7 @@ namespace PocketGems.Parameters
 
             LogAssert.Expect(LogType.Error, regex);
             LogAssert.Expect(LogType.Error, new Regex(".*"));
-            Assert.IsNull(_parameterManager.GetStructWithGuid<IKeyValueStruct>(StructGuid));
+            Assert.IsNull(_parameterManager.GetStructWithGuid<IKeyValueStruct>(KeyValueStructGuid));
 
             LogAssert.Expect(LogType.Error, regex);
             Assert.IsEmpty(_parameterManager.GetSorted<ISubInterfaceAInfo>());

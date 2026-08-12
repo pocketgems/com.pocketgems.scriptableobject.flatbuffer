@@ -57,7 +57,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         {
             var baseName = NamingUtil.BaseNameFromStructInterfaceName(_genericType.Name);
             return $"keyPathBuilder.PushKey(\"{PropertyName}\");\n" +
-                   $"var sharedString{FlatBufferStructPropertyName} = _builder.CreateSharedString(keyPathBuilder.KeyPath());\n" +
+                   $"var sharedString{FlatBufferStructPropertyName} = _builder.CreateSharedString(HashKeyPath(keyPathBuilder.KeyPath()));\n" +
                    $"Build{baseName}(keyPathBuilder.KeyPath(), data.{FieldName}, keyPathBuilder);\n" +
                    $"keyPathBuilder.PopKey();";
         }

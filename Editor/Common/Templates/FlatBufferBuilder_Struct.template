@@ -23,7 +23,7 @@ namespace {{namespace}}
             }
 
             // strings & arrays must be created prior to Start of the table
-            var guidString = _builder.CreateSharedString(guid);
+            var guidString = _builder.CreateSharedString(HashKeyPath(guid));
     {{~for source in interface.FlatBufferBuilderPrepSources~}}
         {{~lines = source | regex.split `\n`~}}
         {{~for line in lines~}}
