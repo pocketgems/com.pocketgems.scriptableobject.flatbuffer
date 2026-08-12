@@ -34,11 +34,6 @@ namespace PocketGems.Parameters
             _guidConverter = new GuidConverter();
         }
 
-        ~ParameterManager()
-        {
-            _guidConverter.Dispose();
-        }
-
         #endregion
 
         #region IMutableParameterManager

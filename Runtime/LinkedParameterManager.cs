@@ -102,6 +102,16 @@ namespace PocketGems.Parameters
             return GetOrCreateLinkedMutableParameter(parameter);
         }
 
+        protected override IMutableParameter GetStructWithGUID(string typeName, string guid, bool errorForMissing)
+        {
+            var parameter = base.GetStructWithGUID(typeName, guid, errorForMissing);
+
+            if (parameter == null)
+                return null;
+
+            return GetOrCreateLinkedMutableParameter(parameter);
+        }
+
         protected override bool ApplyOverride(string csvName, string interfaceType, string identifierOrKeyPathOrGuid, string propertyName, string value, out string error)
         {
             // get the original mutable parameter that it would've applied to for mapping

@@ -12,6 +12,9 @@ namespace PocketGems.Parameters.Util
     ///
     /// The MD5 instance and hex converter are created lazily on the first ToGuid call, so bulk
     /// conversion should reuse one converter for all inputs. Dispose to release the MD5.
+    ///
+    /// ToGuid is thread safe: parameters can be read from background threads (see
+    /// ParameterStructReference), and MD5 instances are stateful, so hashing is serialized.
     /// </summary>
     public class GuidConverter : IDisposable
     {
@@ -26,18 +29,25 @@ namespace PocketGems.Parameters.Util
             if (string.IsNullOrEmpty(input))
                 return input;
 
-            _md5 ??= MD5.Create();
-            _hexConverter ??= new HexStringConverter();
-            byte[] hash = _md5.ComputeHash(Encoding.UTF8.GetBytes(input));
-            return _hexConverter.ToHexString(hash);
+            lock (_lock)
+            {
+                _md5 ??= MD5.Create();
+                _hexConverter ??= new HexStringConverter();
+                byte[] hash = _md5.ComputeHash(Encoding.UTF8.GetBytes(input));
+                return _hexConverter.ToHexString(hash);
+            }
         }
 
         public void Dispose()
         {
-            _md5?.Dispose();
-            _md5 = null;
+            lock (_lock)
+            {
+                _md5?.Dispose();
+                _md5 = null;
+            }
         }
 
+        private readonly object _lock = new object();
         private MD5 _md5;
         private HexStringConverter _hexConverter;
     }
