@@ -502,7 +502,6 @@ namespace PocketGems.Parameters
         [Test]
         public void ApplyOverrides_MissingError()
         {
-            LogAssert.Expect(LogType.Error, $"Missing: Cannot find parameter by GUID {Item1SubclassAId} for type IMySpecialInfo");
             var success = _linkedParameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
                                                                      "[" +
                                                                      "  [\"MySpecialInfo.csv\"," +

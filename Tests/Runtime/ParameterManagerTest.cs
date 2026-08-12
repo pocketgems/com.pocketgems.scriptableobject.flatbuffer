@@ -16,7 +16,6 @@ namespace PocketGems.Parameters
         private MockSubclassBInfo _mockSubclassBInfo;
         private MockKeyValueStruct _mockKeyValueStruct;
 
-        private const string BaseInterfaceErrorMsg = "Cannot use IBaseInfo or IBaseStruct as type.";
         private const string BaseStructErrorMsg = "Cannot use IBaseStruct as type.";
         private const string BaseInfoErrorMsg = "Cannot use IBaseInfo as type.";
 
@@ -148,7 +147,7 @@ namespace PocketGems.Parameters
             LogAssert.Expect(LogType.Error, BaseInfoErrorMsg);
             Assert.IsNull(_parameterManager.Get<IBaseInfo>("some_identifier"));
 
-            LogAssert.Expect(LogType.Error, BaseInterfaceErrorMsg);
+            LogAssert.Expect(LogType.Error, BaseInfoErrorMsg);
             Assert.IsNull(_parameterManager.GetWithGUID<IBaseInfo>("some_guid"));
 
             LogAssert.Expect(LogType.Error, BaseInfoErrorMsg);
@@ -166,7 +165,7 @@ namespace PocketGems.Parameters
         {
             LoadInfos();
 
-            LogAssert.Expect(LogType.Error, BaseInterfaceErrorMsg);
+            LogAssert.Expect(LogType.Error, BaseStructErrorMsg);
             Assert.IsNull(_parameterManager.GetStructWithGuid<IBaseStruct>("some_guid"));
 
             LogAssert.Expect(LogType.Error, BaseStructErrorMsg);
