@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [5.2.0] - 2026-08-24
 ### Changed
 - Struct key paths are now hashed into guids at bake time to reduce byte file size & runtime memory usage.
+- Improved unit test coverage for `LinkedParameterManager` override rollback and `CheckGenerateDataTypeOperation` addressables handling (the remote-bundle check is now behind an internal, testable seam - no behavior change).
 
 ## [5.1.3] - 2026-08-21
 ### Changed

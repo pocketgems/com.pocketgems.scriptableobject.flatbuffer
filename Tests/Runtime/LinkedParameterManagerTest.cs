@@ -547,6 +547,98 @@ namespace PocketGems.Parameters
         }
 
         [Test]
+        public void GetStructWithGuid_Missing()
+        {
+            LogAssert.Expect(LogType.Error, $"Bug: Cannot find parameter by GUID NonExistentGuid for type {nameof(IKeyValueStruct)}");
+            Assert.That(_linkedParameterManager.GetStructWithGuid<IKeyValueStruct>("NonExistentGuid"), Is.Null);
+        }
+
+        [Test]
+        public void ApplyOverrides_DuplicatePropertyError()
+        {
+            // two values for the same property on the same parameter
+            var success = _linkedParameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
+                                                                     "[" +
+                                                                     $"  [\"SubInterfaceAInfo.csv\"," +
+                                                                     $"  \"{Item1SubclassAId}\"," +
+                                                                     "   \"SomeColumnName\"," +
+                                                                     "   \"SomeValue1\"]," +
+                                                                     $"  [\"SubInterfaceAInfo.csv\"," +
+                                                                     $"  \"{Item1SubclassAId}\"," +
+                                                                     "   \"SomeColumnName\"," +
+                                                                     "   \"SomeValue2\"]" +
+                                                                     "]" +
+                                                                     "}"), out var errors);
+            Assert.That(success, Is.False);
+            Assert.That(errors.Count, Is.EqualTo(1));
+            Assert.That(errors[0], Is.EqualTo($"({nameof(ISubInterfaceAInfo)})[{Item1SubclassAId}] has more than one value for [SomeColumnName] assigned "));
+
+            // the successful first override was rolled back, so nothing is lazily applied on get
+            var item1Info = _linkedParameterManager.Get<ISubInterfaceAInfo>(Item1SubclassAId);
+            var mockedItem1Info = (MockSubclassAInfo)item1Info;
+            Assert.That(mockedItem1Info.EditPropertyCalls, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void ApplyOverrides_RollbackRevertsCachedParameter()
+        {
+            // get info to pre-cache
+            var item1Info = _linkedParameterManager.Get<ISubInterfaceAInfo>(Item1SubclassAId);
+            var mockedItem1Info = (MockSubclassAInfo)item1Info;
+
+            // first edit succeeds, second edit fails - triggering a revert of the first
+            var success = _linkedParameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
+                                                                     "[" +
+                                                                     $"  [\"SubInterfaceAInfo.csv\"," +
+                                                                     $"  \"{Item1SubclassAId}\"," +
+                                                                     "   \"SomeColumnName\"," +
+                                                                     "   \"SomeValue\"]," +
+                                                                     "  [\"MySpecialInfo.csv\"," +
+                                                                     $"  \"{Item1SubclassAId}\"," +
+                                                                     "   \"SomeColumnName\"," +
+                                                                     "   \"SomeValue\"]" +
+                                                                     "]" +
+                                                                     "}"), out var errors);
+            Assert.That(success, Is.False);
+            Assert.That(errors.Count, Is.EqualTo(1));
+            Assert.That(errors[0], Is.EqualTo($"Cannot find parameter for csv [MySpecialInfo.csv] and identifier/guid [{Item1SubclassAId}]."));
+
+            // the edit was applied to the cached parameter then reverted
+            Assert.That(mockedItem1Info.EditPropertyCalls, Is.EqualTo(1));
+            Assert.That(mockedItem1Info.RevertEditPropertyCalls, Is.EqualTo(1));
+            Assert.That(mockedItem1Info.RevertEditPropertyPropertyName, Is.EqualTo("SomeColumnName"));
+        }
+
+        [Test]
+        public void ApplyOverrides_RollbackRevertError()
+        {
+            // get info to pre-cache
+            var item1Info = _linkedParameterManager.Get<ISubInterfaceAInfo>(Item1SubclassAId);
+            var mockedItem1Info = (MockSubclassAInfo)item1Info;
+
+            // set an error to be returned by the info when reverting
+            mockedItem1Info.ReturnRevertEditPropertyError = "some revert error";
+
+            // first edit succeeds, second edit fails - the revert of the first also errors
+            var success = _linkedParameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
+                                                                     "[" +
+                                                                     $"  [\"SubInterfaceAInfo.csv\"," +
+                                                                     $"  \"{Item1SubclassAId}\"," +
+                                                                     "   \"SomeColumnName\"," +
+                                                                     "   \"SomeValue\"]," +
+                                                                     "  [\"MySpecialInfo.csv\"," +
+                                                                     $"  \"{Item1SubclassAId}\"," +
+                                                                     "   \"SomeColumnName\"," +
+                                                                     "   \"SomeValue\"]" +
+                                                                     "]" +
+                                                                     "}"), out var errors);
+            Assert.That(success, Is.False);
+            Assert.That(errors.Count, Is.EqualTo(2));
+            Assert.That(errors[0], Is.EqualTo($"Cannot find parameter for csv [MySpecialInfo.csv] and identifier/guid [{Item1SubclassAId}]."));
+            Assert.That(errors[1], Is.EqualTo($"Error reverting edit ({nameof(ISubInterfaceAInfo)})[{Item1SubclassAId}] property [SomeColumnName]: {mockedItem1Info.ReturnRevertEditPropertyError}"));
+        }
+
+        [Test]
         public void ApplyOverrides_CachedParameterError()
         {
             // get info to pre-cache

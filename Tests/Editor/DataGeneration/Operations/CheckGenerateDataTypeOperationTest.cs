@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using NSubstitute;
 using NUnit.Framework;
@@ -47,6 +48,13 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
         {
             if (Directory.Exists(kDirectoryName))
                 Directory.Delete(kDirectoryName, true);
+#if ADDRESSABLE_PARAMS
+            if (_queryIsUsingRemoteBundles != null)
+            {
+                CheckGenerateDataTypeOperation.QueryIsUsingRemoteBundles = _queryIsUsingRemoteBundles;
+                _queryIsUsingRemoteBundles = null;
+            }
+#endif
         }
 
         [Test]
@@ -122,5 +130,59 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
             _interfaceHashMock.GeneratedDataLoaderHash.Returns("blah");
             AssertExecute(_operation, OperationState.Error);
         }
+
+#if ADDRESSABLE_PARAMS
+        private Func<bool?> _queryIsUsingRemoteBundles;
+
+        private void MockIsUsingRemoteBundles(bool? isUsingRemoteBundles)
+        {
+            _queryIsUsingRemoteBundles ??= CheckGenerateDataTypeOperation.QueryIsUsingRemoteBundles;
+            CheckGenerateDataTypeOperation.QueryIsUsingRemoteBundles = () => isUsingRemoteBundles;
+        }
+
+        [Test]
+        public void RemoteBundles_CSVDiff_QueuesFullRegeneration()
+        {
+            MockIsUsingRemoteBundles(true);
+
+            _contextMock.GenerateDataType = GenerateDataType.CSVDiff;
+            AssertExecute(_operation, OperationState.Finished);
+            Assert.AreEqual(GenerateDataType.CSVDiff, _contextMock.GenerateDataType);
+            Assert.IsTrue(_contextMock.GenerateAllAgain);
+        }
+
+        [Test]
+        public void RemoteBundles_ScriptableObjectDiff_SwitchesToAll()
+        {
+            MockIsUsingRemoteBundles(true);
+
+            _contextMock.GenerateDataType = GenerateDataType.ScriptableObjectDiff;
+            AssertExecute(_operation, OperationState.Finished);
+            Assert.AreEqual(GenerateDataType.All, _contextMock.GenerateDataType);
+            Assert.IsFalse(_contextMock.GenerateAllAgain);
+        }
+
+        [Test]
+        public void LocalBundles_CSVDiff_Unchanged()
+        {
+            MockIsUsingRemoteBundles(false);
+
+            _contextMock.GenerateDataType = GenerateDataType.CSVDiff;
+            AssertExecute(_operation, OperationState.Finished);
+            Assert.AreEqual(GenerateDataType.CSVDiff, _contextMock.GenerateDataType);
+            Assert.IsFalse(_contextMock.GenerateAllAgain);
+        }
+
+        [Test]
+        public void NoAddressableSettings_CSVDiff_Unchanged()
+        {
+            MockIsUsingRemoteBundles(null);
+
+            _contextMock.GenerateDataType = GenerateDataType.CSVDiff;
+            AssertExecute(_operation, OperationState.Finished);
+            Assert.AreEqual(GenerateDataType.CSVDiff, _contextMock.GenerateDataType);
+            Assert.IsFalse(_contextMock.GenerateAllAgain);
+        }
+#endif
     }
 }
