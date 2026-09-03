@@ -9,6 +9,7 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using PocketGems.Parameters.Common.Util.Editor;
 using PocketGems.Parameters.DataGeneration.LocalCSV.Rows.Editor;
+using PocketGems.Parameters.Util;
 
 namespace PocketGems.Parameters.DataGeneration.LocalCSV.Editor
 {
@@ -113,13 +114,8 @@ namespace PocketGems.Parameters.DataGeneration.LocalCSV.Editor
             return rowData;
         }
 
-        /// <summary>
-        /// Create a cache to look up the hex value for the output.
-        ///
-        /// This is faster than calling ToString("x2") for every char for every newly generated md5 output
-        /// </summary>
         private MD5 _md5;
-        private char[] _hexLookUp;
+        private HexStringConverter _hexConverter;
         internal string ComputeHash(string value)
         {
             // get md5
@@ -136,25 +132,8 @@ namespace PocketGems.Parameters.DataGeneration.LocalCSV.Editor
             if (created)
                 md5.Dispose();
 
-            // optimizing converting byte array to hash string
-            if (_hexLookUp == null)
-            {
-                _hexLookUp = new char[256 * 2];
-                for (int i = 0; i < 256; i++)
-                {
-                    string s = i.ToString("x2");
-                    _hexLookUp[2 * i] = s[0];
-                    _hexLookUp[2 * i + 1] = s[1];
-                }
-            }
-            var result = new char[data.Length * 2];
-            for (int i = 0; i < data.Length; i++)
-            {
-                result[2 * i] = _hexLookUp[2 * data[i]];
-                result[2 * i + 1] = _hexLookUp[2 * data[i] + 1];
-            }
-
-            return new string(result);
+            _hexConverter ??= new HexStringConverter();
+            return _hexConverter.ToHexString(data);
         }
 
         /// <summary>

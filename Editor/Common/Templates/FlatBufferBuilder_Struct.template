@@ -14,7 +14,7 @@ namespace {{namespace}}
 #if !{{disableSymbol}}
     public partial class {{className}}
     {
-        private void Build{{interface.BaseName}}(string guid, {{interface.DataObjectName}} data, StructKeyPathBuilder keyPathBuilder)
+        private void Build{{interface.BaseName}}(string keyPath, {{interface.DataObjectName}} data, StructKeyPathBuilder keyPathBuilder)
         {
             if (!_structNameToOffsetStructs.TryGetValue("{{interface.InterfaceName}}", out List<object> offsets))
             {
@@ -23,7 +23,7 @@ namespace {{namespace}}
             }
 
             // strings & arrays must be created prior to Start of the table
-            var guidString = _builder.CreateSharedString(guid);
+            var guidString = _builder.CreateSharedString(HashKeyPath(keyPath));
     {{~for source in interface.FlatBufferBuilderPrepSources~}}
         {{~lines = source | regex.split `\n`~}}
         {{~for line in lines~}}

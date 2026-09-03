@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using PocketGems.Parameters.Interface;
+using PocketGems.Parameters.Util;
 using UnityEngine;
 
 namespace PocketGems.Parameters
@@ -30,6 +31,7 @@ namespace PocketGems.Parameters
             _overriddenParameters = new();
             _identifierMappings = identifierMappings;
             _guidMappings = guidMappings;
+            _guidConverter = new GuidConverter();
         }
 
         #endregion
@@ -167,7 +169,7 @@ namespace PocketGems.Parameters
         public T GetStructWithGuid<T>(string guid) where T : class, IBaseStruct
         {
             CheckGet();
-            return (T)GetWithGUID(typeof(T), guid);
+            return (T)GetStructWithGUID(typeof(T), guid);
         }
 
         /// <inheritdoc cref="IParameterManager.Get{T}()"/>
@@ -218,6 +220,7 @@ namespace PocketGems.Parameters
         private readonly HashSet<IMutableParameter> _overriddenParameters;
         protected internal readonly Dictionary<string, Dictionary<string, IMutableParameter>> _identifierMappings;
         protected internal readonly Dictionary<string, Dictionary<string, IMutableParameter>> _guidMappings;
+        protected readonly GuidConverter _guidConverter;
 
         #region private methods
         /*
@@ -306,10 +309,9 @@ namespace PocketGems.Parameters
 
         private IMutableParameter GetWithGUID(Type type, string guid)
         {
-            if (type == typeof(IBaseInfo) || type == typeof(IBaseStruct))
+            if (type == typeof(IBaseInfo))
             {
-                Debug.LogError(
-                    $"Cannot use {nameof(IBaseInfo)} or {nameof(IBaseStruct)} as type.");
+                Debug.LogError($"Cannot use {nameof(IBaseInfo)} as type.");
                 return null;
             }
 
@@ -318,53 +320,98 @@ namespace PocketGems.Parameters
 
         protected virtual IMutableParameter GetWithGUID(string typeName, string guid)
         {
-            if (!_guidMappings.TryGetValue(typeName, out Dictionary<string, IMutableParameter> parameters))
+            return GetWithGUID(typeName, guid, true);
+        }
+
+        private IMutableParameter GetStructWithGUID(Type type, string guid)
+        {
+            if (type == typeof(IBaseStruct))
             {
-                Debug.LogError($"Missing: Cannot find parameter by GUID {guid} for type {typeName}");
+                Debug.LogError($"Cannot use {nameof(IBaseStruct)} as type.");
                 return null;
             }
+
+            return GetStructWithGUID(type.Name, guid, true);
+        }
+
+        protected virtual IMutableParameter GetStructWithGUID(string typeName, string guid, bool errorForMissing)
+        {
+            if (!_guidMappings.TryGetValue(typeName, out Dictionary<string, IMutableParameter> parameters))
+            {
+                if (errorForMissing)
+                    Debug.LogError($"Missing: Cannot find parameter by GUID {guid} for type {typeName}");
+                return null;
+            }
+
+            if (parameters.TryGetValue(guid, out IMutableParameter parameter))
+                return parameter;
+
+            // the guid may be the keypath in some situations (e.g. overrides)
+            if (parameters.TryGetValue(_guidConverter.ToGuid(guid), out parameter))
+                return parameter;
+
+            if (errorForMissing)
+                Debug.LogError($"Bug: Cannot find parameter by GUID {guid} for type {typeName}");
+
+            return null;
+        }
+
+        protected virtual IMutableParameter GetWithGUID(string typeName, string guid, bool errorForMissing)
+        {
+            if (!_guidMappings.TryGetValue(typeName, out Dictionary<string, IMutableParameter> parameters))
+            {
+                if (errorForMissing)
+                    Debug.LogError($"Missing: Cannot find parameter by GUID {guid} for type {typeName}");
+                return null;
+            }
+
             if (!parameters.TryGetValue(guid, out IMutableParameter parameter))
             {
-                Debug.LogError($"Bug: Cannot find parameter by GUID {guid} for type {typeName}");
+                if (errorForMissing)
+                    Debug.LogError($"Bug: Cannot find parameter by GUID {guid} for type {typeName}");
                 return null;
             }
 
             return parameter;
         }
 
-        protected virtual bool ApplyOverride(string csvName, string interfaceType, string identifierOrGuid, string propertyName, string value, out string error)
+        protected virtual bool ApplyOverride(string csvName, string interfaceType, string identifierOrKeyPathOrGuid, string propertyName, string value, out string error)
         {
-            var mutableParameter = Get(interfaceType, identifierOrGuid) ??
-                               GetWithGUID(interfaceType, identifierOrGuid);
+            // resolve by identifier first, then raw guid, else treat the input as a struct key path
+            var mutableParameter = Get(interfaceType, identifierOrKeyPathOrGuid) ??
+                                    GetWithGUID(interfaceType, identifierOrKeyPathOrGuid, false) ??
+                                    GetStructWithGUID(interfaceType, identifierOrKeyPathOrGuid, false);
             if (mutableParameter == null)
             {
-                error = $"Cannot find parameter for csv [{csvName}] and identifier/guid [{identifierOrGuid}].";
+                error = $"Cannot find parameter for csv [{csvName}] and identifier/guid [{identifierOrKeyPathOrGuid}].";
                 return false;
             }
 
             _overriddenParameters.Add(mutableParameter);
             if (!mutableParameter.EditProperty(this, propertyName, value, out error))
             {
-                error = $"Error editing ({interfaceType})[{identifierOrGuid}] property [{propertyName}] with value [{value}]: {error}";
+                error = $"Error editing ({interfaceType})[{identifierOrKeyPathOrGuid}] property [{propertyName}] with value [{value}]: {error}";
                 return false;
             }
 
             return true;
         }
 
-        protected virtual bool RemoveOverride(string csvName, string interfaceType, string identifierOrGuid, string propertyName, out string error)
+        protected virtual bool RemoveOverride(string csvName, string interfaceType, string identifierOrKeyPathOrGuid, string propertyName, out string error)
         {
-            var mutableParameter = Get(interfaceType, identifierOrGuid) ??
-                                   GetWithGUID(interfaceType, identifierOrGuid);
+            // resolve by identifier first, then raw guid, else treat the input as a struct key path
+            var mutableParameter = Get(interfaceType, identifierOrKeyPathOrGuid) ??
+                                   GetWithGUID(interfaceType, identifierOrKeyPathOrGuid, false) ??
+                                   GetStructWithGUID(interfaceType, identifierOrKeyPathOrGuid, false);
             if (mutableParameter == null)
             {
-                error = $"Cannot find parameter for csv [{csvName}] and identifier/guid [{identifierOrGuid}].";
+                error = $"Cannot find parameter for csv [{csvName}] and identifier/guid [{identifierOrKeyPathOrGuid}].";
                 return false;
             }
 
             if (!mutableParameter.RevertEditedProperty(propertyName, out error))
             {
-                error = $"Error reverting edit ({interfaceType})[{identifierOrGuid}] property [{propertyName}]: {error}";
+                error = $"Error reverting edit ({interfaceType})[{identifierOrKeyPathOrGuid}] property [{propertyName}]: {error}";
                 return false;
             }
             return true;

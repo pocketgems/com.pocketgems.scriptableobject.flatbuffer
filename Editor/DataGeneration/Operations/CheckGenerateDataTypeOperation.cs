@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Reflection;
 using PocketGems.Parameters.Common.Operations.Editor;
@@ -6,12 +7,36 @@ using PocketGems.Parameters.DataGeneration.Operation.Editor;
 #if ADDRESSABLE_PARAMS
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Build.DataBuilders;
+using UnityEngine.TestTools;
 #endif
 
 namespace PocketGems.Parameters.DataGeneration.Operations.Editor
 {
     internal class CheckGenerateDataTypeOperation : BasicOperation<IDataOperationContext>
     {
+#if ADDRESSABLE_PARAMS
+        /// <summary>
+        /// Seam for unit testing since addressable settings are global project state.
+        /// Returns null if there are no addressable settings.
+        /// </summary>
+        internal static Func<bool?> QueryIsUsingRemoteBundles = DefaultQueryIsUsingRemoteBundles;
+
+        [ExcludeFromCoverage]
+        private static bool? DefaultQueryIsUsingRemoteBundles()
+        {
+            var settings = AddressableAssetSettingsDefaultObject.Settings;
+            if (settings == null)
+                return null;
+            var editorDataBuilder = settings.ActivePlayModeDataBuilder;
+#if ADDRESSABLES_2_0_0_OR_NEWER
+            // BuildScriptVirtualMode ("Simulate Groups (advanced)") was removed in Addressables 2.0.
+            return !(editorDataBuilder is BuildScriptFastMode);
+#else
+            return !(editorDataBuilder is BuildScriptFastMode || editorDataBuilder is BuildScriptVirtualMode);
+#endif
+        }
+#endif
+
         /// <summary>
         /// Check the hash for the parameter interface against all generated hashes to ensure they match.
         /// </summary>
@@ -83,18 +108,7 @@ namespace PocketGems.Parameters.DataGeneration.Operations.Editor
             // uploaded to addressables - the iteration files a diff run produces are editor-only. A CSV diff
             // can't just switch to All here (the CSV edits must sync into the Scriptable Objects first), so
             // let it proceed and queue a full regeneration to rebuild the combined file afterward.
-            var settings = AddressableAssetSettingsDefaultObject.Settings;
-            if (settings == null)
-                return;
-            var editorDataBuilder = settings.ActivePlayModeDataBuilder;
-#if ADDRESSABLES_2_0_0_OR_NEWER
-            // BuildScriptVirtualMode ("Simulate Groups (advanced)") was removed in Addressables 2.0.
-            bool isUsingRemoteBundles = !(editorDataBuilder is BuildScriptFastMode);
-#else
-            bool isUsingRemoteBundles =
-                !(editorDataBuilder is BuildScriptFastMode || editorDataBuilder is BuildScriptVirtualMode);
-#endif
-            if (isUsingRemoteBundles)
+            if (QueryIsUsingRemoteBundles() == true)
             {
                 if (context.GenerateDataType == GenerateDataType.CSVDiff)
                 {

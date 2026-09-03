@@ -6,6 +6,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using PocketGems.Parameters.Interface;
+using PocketGems.Parameters.Util;
 using UnityEngine;
 using UnityEngine.TestTools;
 
@@ -37,9 +38,18 @@ namespace PocketGems.Parameters
         private const string Item3SubclassBId = "id3";
         private const string Item3SubclassBGuid = "guid3";
 
-        private const string StructGuid = "guid4";
+        private const string KeyValueStructKeyPath = "KeyValueStruct[SomeInfo]";
+        private static readonly string KeyValueStructGuid = HashKeyPath(KeyValueStructKeyPath);
         private const string StructDesc = "desc";
         private const int StructValue = 10;
+
+        private static string HashKeyPath(string keyPath)
+        {
+            using (var guidConverter = new GuidConverter())
+            {
+                return guidConverter.ToGuid(keyPath);
+            }
+        }
 
         public LinkedParameterManagerTest(LinkedParameterManagerSetUpType setUpType)
         {
@@ -74,7 +84,7 @@ namespace PocketGems.Parameters
 
             // struct
             var mockKeyValueStruct = new MockKeyValueStruct(_parameterManager, StructDesc, StructValue, "guid", new string[0]);
-            _parameterManager.Load<IKeyValueStruct, MockKeyValueStruct>(mockKeyValueStruct, StructGuid);
+            _parameterManager.Load<IKeyValueStruct, MockKeyValueStruct>(mockKeyValueStruct, KeyValueStructGuid);
         }
 
         [Test]
@@ -236,8 +246,8 @@ namespace PocketGems.Parameters
         [Test]
         public void GetStructWithGuid()
         {
-            var originalStruct = _parameterManager.GetStructWithGuid<IKeyValueStruct>(StructGuid);
-            var linkedStruct = _linkedParameterManager.GetStructWithGuid<IKeyValueStruct>(StructGuid);
+            var originalStruct = _parameterManager.GetStructWithGuid<IKeyValueStruct>(KeyValueStructGuid);
+            var linkedStruct = _linkedParameterManager.GetStructWithGuid<IKeyValueStruct>(KeyValueStructGuid);
 
             // struct data matches
             Assert.That(originalStruct.Description, Is.EqualTo(StructDesc));
@@ -249,7 +259,7 @@ namespace PocketGems.Parameters
             Assert.That(linkedStruct != originalStruct, Is.True);
 
             // querying the info more than once returns the same info
-            Assert.That(linkedStruct == _linkedParameterManager.GetStructWithGuid<IKeyValueStruct>(StructGuid), Is.True);
+            Assert.That(linkedStruct == _linkedParameterManager.GetStructWithGuid<IKeyValueStruct>(KeyValueStructGuid), Is.True);
         }
 
         [UnityTest]
@@ -371,7 +381,7 @@ namespace PocketGems.Parameters
                                                                                "   \"SomeColumnName1\"," +
                                                                                "   \"SomeValue1\"]," +
                                                                                "  [\"KeyValueStruct.csv\"," +
-                                                                               $"  \"{StructGuid}\"," +
+                                                                               $"  \"{KeyValueStructKeyPath}\"," +
                                                                                "   \"SomeColumnName2\"," +
                                                                                "   \"SomeValue2\"]" +
                                                                                "]" +
@@ -388,7 +398,7 @@ namespace PocketGems.Parameters
             Assert.That(mockedItem1Info.EditPropertyValue, Is.EqualTo("SomeValue1"));
 
             // assert calls to the struct on get
-            var structInfo = _linkedParameterManager.GetStructWithGuid<IKeyValueStruct>(StructGuid);
+            var structInfo = _linkedParameterManager.GetStructWithGuid<IKeyValueStruct>(KeyValueStructGuid);
             var mockedStructInfo = (MockKeyValueStruct)structInfo;
             Assert.That(mockedStructInfo.EditPropertyCalls, Is.EqualTo(1));
             Assert.That(mockedStructInfo.RemoveAllEditCalls, Is.EqualTo(0));
@@ -492,7 +502,6 @@ namespace PocketGems.Parameters
         [Test]
         public void ApplyOverrides_MissingError()
         {
-            LogAssert.Expect(LogType.Error, $"Missing: Cannot find parameter by GUID {Item1SubclassAId} for type IMySpecialInfo");
             var success = _linkedParameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
                                                                      "[" +
                                                                      "  [\"MySpecialInfo.csv\"," +
@@ -504,6 +513,129 @@ namespace PocketGems.Parameters
             Assert.That(success, Is.False);
             Assert.That(errors.Count, Is.EqualTo(1));
             Assert.That(errors[0], Is.EqualTo($"Cannot find parameter for csv [MySpecialInfo.csv] and identifier/guid [{Item1SubclassAId}]."));
+        }
+
+        [Test]
+        public void ApplyOverrides_StructKeyPathAddressing()
+        {
+            // structs bake hashed key path guids; override payloads address them by raw key path
+            const string keyPath = "KeyValueStruct[SomeInfo].SomeProperty";
+            var hashedGuid = HashKeyPath(keyPath);
+            var hashedStruct = new MockKeyValueStruct(_parameterManager, StructDesc, StructValue, "guid", new string[0]);
+            _parameterManager.Load<IKeyValueStruct, MockKeyValueStruct>(hashedStruct, hashedGuid);
+
+            var success = _linkedParameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
+                                                                     "[" +
+                                                                     "  [\"KeyValueStruct.csv\"," +
+                                                                     $"  \"{keyPath}\"," +
+                                                                     "   \"SomeColumnName\"," +
+                                                                     "   \"SomeValue\"]" +
+                                                                     "]" +
+                                                                     "}"), out var errors);
+            Assert.That(success, Is.True);
+            Assert.That(errors, Is.Null);
+
+            // the override is lazily applied to the linked instance on get
+            var structInfo = _linkedParameterManager.GetStructWithGuid<IKeyValueStruct>(hashedGuid);
+            var mockedStructInfo = (MockKeyValueStruct)structInfo;
+            Assert.That(mockedStructInfo.EditPropertyCalls, Is.EqualTo(1));
+            Assert.That(mockedStructInfo.EditPropertyPropertyName, Is.EqualTo("SomeColumnName"));
+            Assert.That(mockedStructInfo.EditPropertyValue, Is.EqualTo("SomeValue"));
+
+            // the source struct is untouched
+            Assert.That(hashedStruct.EditPropertyCalls, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void GetStructWithGuid_Missing()
+        {
+            LogAssert.Expect(LogType.Error, $"Bug: Cannot find parameter by GUID NonExistentGuid for type {nameof(IKeyValueStruct)}");
+            Assert.That(_linkedParameterManager.GetStructWithGuid<IKeyValueStruct>("NonExistentGuid"), Is.Null);
+        }
+
+        [Test]
+        public void ApplyOverrides_DuplicatePropertyError()
+        {
+            // two values for the same property on the same parameter
+            var success = _linkedParameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
+                                                                     "[" +
+                                                                     $"  [\"SubInterfaceAInfo.csv\"," +
+                                                                     $"  \"{Item1SubclassAId}\"," +
+                                                                     "   \"SomeColumnName\"," +
+                                                                     "   \"SomeValue1\"]," +
+                                                                     $"  [\"SubInterfaceAInfo.csv\"," +
+                                                                     $"  \"{Item1SubclassAId}\"," +
+                                                                     "   \"SomeColumnName\"," +
+                                                                     "   \"SomeValue2\"]" +
+                                                                     "]" +
+                                                                     "}"), out var errors);
+            Assert.That(success, Is.False);
+            Assert.That(errors.Count, Is.EqualTo(1));
+            Assert.That(errors[0], Is.EqualTo($"({nameof(ISubInterfaceAInfo)})[{Item1SubclassAId}] has more than one value for [SomeColumnName] assigned "));
+
+            // the successful first override was rolled back, so nothing is lazily applied on get
+            var item1Info = _linkedParameterManager.Get<ISubInterfaceAInfo>(Item1SubclassAId);
+            var mockedItem1Info = (MockSubclassAInfo)item1Info;
+            Assert.That(mockedItem1Info.EditPropertyCalls, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void ApplyOverrides_RollbackRevertsCachedParameter()
+        {
+            // get info to pre-cache
+            var item1Info = _linkedParameterManager.Get<ISubInterfaceAInfo>(Item1SubclassAId);
+            var mockedItem1Info = (MockSubclassAInfo)item1Info;
+
+            // first edit succeeds, second edit fails - triggering a revert of the first
+            var success = _linkedParameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
+                                                                     "[" +
+                                                                     $"  [\"SubInterfaceAInfo.csv\"," +
+                                                                     $"  \"{Item1SubclassAId}\"," +
+                                                                     "   \"SomeColumnName\"," +
+                                                                     "   \"SomeValue\"]," +
+                                                                     "  [\"MySpecialInfo.csv\"," +
+                                                                     $"  \"{Item1SubclassAId}\"," +
+                                                                     "   \"SomeColumnName\"," +
+                                                                     "   \"SomeValue\"]" +
+                                                                     "]" +
+                                                                     "}"), out var errors);
+            Assert.That(success, Is.False);
+            Assert.That(errors.Count, Is.EqualTo(1));
+            Assert.That(errors[0], Is.EqualTo($"Cannot find parameter for csv [MySpecialInfo.csv] and identifier/guid [{Item1SubclassAId}]."));
+
+            // the edit was applied to the cached parameter then reverted
+            Assert.That(mockedItem1Info.EditPropertyCalls, Is.EqualTo(1));
+            Assert.That(mockedItem1Info.RevertEditPropertyCalls, Is.EqualTo(1));
+            Assert.That(mockedItem1Info.RevertEditPropertyPropertyName, Is.EqualTo("SomeColumnName"));
+        }
+
+        [Test]
+        public void ApplyOverrides_RollbackRevertError()
+        {
+            // get info to pre-cache
+            var item1Info = _linkedParameterManager.Get<ISubInterfaceAInfo>(Item1SubclassAId);
+            var mockedItem1Info = (MockSubclassAInfo)item1Info;
+
+            // set an error to be returned by the info when reverting
+            mockedItem1Info.ReturnRevertEditPropertyError = "some revert error";
+
+            // first edit succeeds, second edit fails - the revert of the first also errors
+            var success = _linkedParameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
+                                                                     "[" +
+                                                                     $"  [\"SubInterfaceAInfo.csv\"," +
+                                                                     $"  \"{Item1SubclassAId}\"," +
+                                                                     "   \"SomeColumnName\"," +
+                                                                     "   \"SomeValue\"]," +
+                                                                     "  [\"MySpecialInfo.csv\"," +
+                                                                     $"  \"{Item1SubclassAId}\"," +
+                                                                     "   \"SomeColumnName\"," +
+                                                                     "   \"SomeValue\"]" +
+                                                                     "]" +
+                                                                     "}"), out var errors);
+            Assert.That(success, Is.False);
+            Assert.That(errors.Count, Is.EqualTo(2));
+            Assert.That(errors[0], Is.EqualTo($"Cannot find parameter for csv [MySpecialInfo.csv] and identifier/guid [{Item1SubclassAId}]."));
+            Assert.That(errors[1], Is.EqualTo($"Error reverting edit ({nameof(ISubInterfaceAInfo)})[{Item1SubclassAId}] property [SomeColumnName]: {mockedItem1Info.ReturnRevertEditPropertyError}"));
         }
 
         [Test]

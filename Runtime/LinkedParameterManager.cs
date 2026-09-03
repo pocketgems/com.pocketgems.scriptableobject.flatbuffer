@@ -102,14 +102,25 @@ namespace PocketGems.Parameters
             return GetOrCreateLinkedMutableParameter(parameter);
         }
 
-        protected override bool ApplyOverride(string csvName, string interfaceType, string identifierOrGuid, string propertyName, string value, out string error)
+        protected override IMutableParameter GetStructWithGUID(string typeName, string guid, bool errorForMissing)
+        {
+            var parameter = base.GetStructWithGUID(typeName, guid, errorForMissing);
+
+            if (parameter == null)
+                return null;
+
+            return GetOrCreateLinkedMutableParameter(parameter);
+        }
+
+        protected override bool ApplyOverride(string csvName, string interfaceType, string identifierOrKeyPathOrGuid, string propertyName, string value, out string error)
         {
             // get the original mutable parameter that it would've applied to for mapping
-            var mutableParameter = base.Get(interfaceType, identifierOrGuid) ??
-                               base.GetWithGUID(interfaceType, identifierOrGuid);
+            var mutableParameter = base.Get(interfaceType, identifierOrKeyPathOrGuid) ??
+                               base.GetWithGUID(interfaceType, identifierOrKeyPathOrGuid, false) ??
+                               base.GetStructWithGUID(interfaceType, identifierOrKeyPathOrGuid, false);
             if (mutableParameter == null)
             {
-                error = $"Cannot find parameter for csv [{csvName}] and identifier/guid [{identifierOrGuid}].";
+                error = $"Cannot find parameter for csv [{csvName}] and identifier/guid [{identifierOrKeyPathOrGuid}].";
                 return false;
             }
 
@@ -123,7 +134,7 @@ namespace PocketGems.Parameters
             {
                 if (existingProperty == propertyName)
                 {
-                    error = $"({interfaceType})[{identifierOrGuid}] has more than one value for [{propertyName}] assigned ";
+                    error = $"({interfaceType})[{identifierOrKeyPathOrGuid}] has more than one value for [{propertyName}] assigned ";
                     return false;
                 }
             }
@@ -139,7 +150,7 @@ namespace PocketGems.Parameters
                         if (!linkedParameter.EditProperty(this, propertyName, value, out error))
                         {
                             error =
-                                $"Error editing ({interfaceType})[{identifierOrGuid}] property [{propertyName}] with value [{value}]: {error}";
+                                $"Error editing ({interfaceType})[{identifierOrKeyPathOrGuid}] property [{propertyName}] with value [{value}]: {error}";
                             return false;
                         }
                     }
@@ -150,14 +161,15 @@ namespace PocketGems.Parameters
             return true;
         }
 
-        protected override bool RemoveOverride(string csvName, string interfaceType, string identifierOrGuid, string propertyName, out string error)
+        protected override bool RemoveOverride(string csvName, string interfaceType, string identifierOrKeyPathOrGuid, string propertyName, out string error)
         {
             // get the original mutable parameter that it would've applied to for mapping
-            var mutableParameter = base.Get(interfaceType, identifierOrGuid) ??
-                                   base.GetWithGUID(interfaceType, identifierOrGuid);
+            var mutableParameter = base.Get(interfaceType, identifierOrKeyPathOrGuid) ??
+                               base.GetWithGUID(interfaceType, identifierOrKeyPathOrGuid, false) ??
+                               base.GetStructWithGUID(interfaceType, identifierOrKeyPathOrGuid, false);
             if (mutableParameter == null)
             {
-                error = $"Cannot find parameter for csv [{csvName}] and identifier/guid [{identifierOrGuid}].";
+                error = $"Cannot find parameter for csv [{csvName}] and identifier/guid [{identifierOrKeyPathOrGuid}].";
                 return false;
             }
 
@@ -176,7 +188,7 @@ namespace PocketGems.Parameters
                     {
                         if (!linkedParameter.RevertEditedProperty(propertyName, out error))
                         {
-                            error = $"Error reverting edit ({interfaceType})[{identifierOrGuid}] property [{propertyName}]: {error}";
+                            error = $"Error reverting edit ({interfaceType})[{identifierOrKeyPathOrGuid}] property [{propertyName}]: {error}";
                             return false;
                         }
                     }

@@ -88,7 +88,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
                    $"    for (int j = 0; j < data.{PropertyName}.Count; j++)\n" +
                    $"    {{\n" +
                    $"        keyPathBuilder.PushKey(\"{PropertyName}\", j);\n" +
-                   $"        stringOffsets[j] = _builder.CreateSharedString(keyPathBuilder.KeyPath());\n" +
+                   $"        stringOffsets[j] = _builder.CreateSharedString(HashKeyPath(keyPathBuilder.KeyPath()));\n" +
                    $"        Build{baseName}(keyPathBuilder.KeyPath(), data.{FieldName}[j], keyPathBuilder);\n" +
                    $"        keyPathBuilder.PopKey();\n" +
                    $"    }}\n" +
