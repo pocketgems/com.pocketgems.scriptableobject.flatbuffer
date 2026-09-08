@@ -70,11 +70,11 @@ namespace PocketGems.Parameters.Processors.Editor
                         switch (error.Type)
                         {
                             case OperationError.ErrorType.General:
-                                // ClientPlatformCI scans for this prefix
+                                // CI scans for this prefix
                                 Console.Error.WriteLine($"Parameter Generation Error: {error.Message}");
                                 break;
                             case OperationError.ErrorType.Validation:
-                                // ClientPlatformCI scans for this prefix
+                                // CI scans for this prefix
                                 Console.Error.WriteLine($"Parameter Validation Error: {error.ValidationError}");
                                 break;
                             default:

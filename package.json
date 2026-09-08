@@ -15,8 +15,9 @@
     "name": "Pocket Gems",
     "url": "https://www.pocketgems.com/"
   },
-  "version": "5.2.0",
+  "version": "5.2.1",
   "codegen": "0.0.3",
+  "license": "Apache-2.0",
   "dependencies": {
     "com.unity.nuget.newtonsoft-json": "2.0.2",
     "com.unity.testtools.codecoverage": "1.2.4",

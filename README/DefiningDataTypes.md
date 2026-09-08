@@ -1,4 +1,9 @@
 # Defining Data Types <!-- omit in toc -->
+> [!NOTE]
+> The workflows on this page describe defining data types directly in Unity, where the editor auto compiles the changes and generates code in app.  This assumes the interface changes compile cleanly and introduce no assembly dependency loops.
+>
+> The same work can instead be done in the optional [ScriptableObjectFlatBufferCodeGen](https://github.com/pocketgems/ScriptableObjectFlatBufferCodeGen) companion project, which generates the code outside of Unity.  When that project is checked out in the Unity project root, the package hands code generation over to it: Unity stops generating on compilation, and `Pocket Gems` → `Parameters` → `Regenerate Code` opens the companion solution in your IDE instead.  Without it, Unity generates in app as described below.
+
 To define new or modify existing Scriptable Objects, modify Interfaces and/or Enums located in the folder `Assets/Parameters/Interfaces/`.  Code for parameter Scriptable Objects and relevant files are automatically created upon compilation of new changes to files in this folder.
 
 These files live under the `Interfaces` folder and can be organized in subfolders.
