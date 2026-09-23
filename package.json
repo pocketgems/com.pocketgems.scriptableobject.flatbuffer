@@ -15,7 +15,7 @@
     "name": "Pocket Gems",
     "url": "https://www.pocketgems.com/"
   },
-  "version": "5.2.1",
+  "version": "5.2.2",
   "codegen": "0.0.3",
   "license": "Apache-2.0",
   "dependencies": {

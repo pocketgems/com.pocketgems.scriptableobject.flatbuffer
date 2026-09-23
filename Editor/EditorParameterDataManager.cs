@@ -573,7 +573,8 @@ namespace PocketGems.Parameters.Editor
                     }
                 }
 
-                if (hasErrorSeverity)
+                // batch mode has no screen to open the window on, and the errors were already logged
+                if (hasErrorSeverity && !Application.isBatchMode)
                 {
                     ParameterDebug.LogError("Parameter errors: see Parameter Validation window");
 
