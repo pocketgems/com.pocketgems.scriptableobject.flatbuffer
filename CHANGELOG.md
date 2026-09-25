@@ -4,6 +4,10 @@ All package updates & migration steps will be listed in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.3.0] - 2026-09-24
+### Changed
+- With addressable parameters, player builds no longer regenerate parameter data and instead fail if the generated parameter file is missing.
+
 ## [5.2.2] - 2026-09-22
 ### Fixed
 - Parameter validation errors no longer crash batch-mode builds, so the actual errors are logged.

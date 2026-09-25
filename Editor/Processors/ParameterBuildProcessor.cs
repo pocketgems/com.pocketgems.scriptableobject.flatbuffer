@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using PocketGems.Parameters.Common.Operation.Editor;
 using PocketGems.Parameters.Common.Util.Editor;
 using PocketGems.Parameters.DataGeneration.Operation.Editor;
@@ -24,13 +25,25 @@ namespace PocketGems.Parameters.Processors.Editor
         public int callbackOrder => 0;
 
         /// <summary>
-        /// Parameters are generated during player build.
+        /// Parameters are generated during player build, except with addressable parameters: the parameter file ships in
+        /// the addressable content, so it must already be generated (e.g. via CommandLineBuild.GenerateParameters)
+        /// before the addressables build and is only checked for here.
         /// </summary>
         /// <param name="report"></param>
         public void OnPreprocessBuild(BuildReport report)
         {
+#if ADDRESSABLE_PARAMS
+            // Parameters must be generated before addressables are built, since the parameter file ships in the
+            // addressable content. Generating parameters here during the player build is too late: the addressable
+            // content is already built, so newly generated data would not reach the build.
+            var path = ParameterConstants.GeneratedAsset.MainAssetPath;
+            if (!File.Exists(path))
+                throw new BuildFailedException($"Missing parameter file {path}.  Generate parameters before building the player.");
+            Console.WriteLine($"{typeof(ParameterBuildProcessor)} skipping parameter generation, using existing {path}.");
+#else
             if (!BuildAndValidateParameters())
                 throw new BuildFailedException("Errors with parameter data validation or generation.  See logs for errors.");
+#endif
         }
 
         internal static bool BuildAndValidateParameters()
