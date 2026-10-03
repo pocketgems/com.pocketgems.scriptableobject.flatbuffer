@@ -45,7 +45,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             var propertyName = PropertyInfo.Name;
             if (EditorParameterConstants.Interface.PropertyNameRegex.Matches(propertyName).Count != 1)
                 Error($"Property [{propertyName}] in interface [{interfaceName}] must follow naming pattern {EditorParameterConstants.Interface.PropertyNameRegexString}.");
-            if (EditorParameterConstants.Interface.InvalidReservedPropertyNames.Contains(propertyName.ToLower()))
+            if (EditorParameterConstants.Interface.InvalidReservedPropertyNames.Contains(propertyName.ToLowerInvariant()))
                 Error($"Property name [{propertyName}] is invalid & reserved.  It cannot be used in interface [{interfaceName}].");
             if ((ParameterReferencePropertyType.IsReferenceType(PropertyInfo, out var genericType) && genericType == typeof(IBaseInfo)) ||
                 (ParameterReferenceListPropertyType.IsListReferenceType(PropertyInfo, out genericType) && genericType == typeof(IBaseInfo)))
@@ -67,7 +67,11 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         public virtual IReadOnlyList<string> ScriptableObjectFieldAttributesCode()
         {
             List<string> attributes = null;
-            foreach (var customAttribute in PropertyInfo.GetCustomAttributes())
+            // Deliberately not sorted: Unity draws decorator attributes (Header, Space, ...) in the order they're
+            // declared, so sorting would rearrange the inspector. The order is deterministic in practice:
+            // GetCustomAttributes() returns attributes in declaration order for a given source file, under both
+            // Unity's compiler and a standalone build, though the .NET spec doesn't formally guarantee it.
+            foreach (Attribute customAttribute in PropertyInfo.GetCustomAttributes())
             {
                 if (customAttribute is IAttachScriptableObjectAttribute scriptableObjectAttribute)
                 {

@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using MyNameSpace;
 using NUnit.Framework;
+using PocketGems.Parameters.Editor;
 using PocketGems.Parameters.Interface;
 
 namespace PocketGems.Parameters.Common.Models.Editor
@@ -17,6 +20,30 @@ namespace PocketGems.Parameters.Common.Models.Editor
 
             Assert.AreEqual($"{baseName}ScriptableObject", parameterInfo.ScriptableObjectClassName(false));
             Assert.AreEqual($"{baseName}ScriptableObject.cs", parameterInfo.ScriptableObjectClassName(true));
+        }
+
+        [Test]
+        public void BaseInterfacesAndPropertiesHaveStableOrder()
+        {
+            ParameterInfo parameterInfo = new(typeof(IOrderingInfo));
+
+            CollectionAssert.AreEqual(new[] { typeof(IBaseInfo), typeof(IZooOrderBase), typeof(IalphaOrderBase) },
+                parameterInfo.OrderedBaseInterfaceTypes);
+
+            List<string> propertyNames = parameterInfo.PropertyTypes.Select(p => p.PropertyInfo.Name).ToList();
+            CollectionAssert.AreEqual(new[] { "Identifier", "ZooValue", "AlphaBaseValue", "ZetaValue", "AlphaValue" },
+                propertyNames);
+        }
+
+        [Test]
+        public void ReservedPropertyNameIgnoresCulture()
+        {
+            using (CultureScope.Turkish())
+            {
+                ParameterInfo parameterInfo = new(typeof(IKeywordPropertyInfo));
+                Assert.IsFalse(parameterInfo.Validate(out IReadOnlyList<string> errors));
+                Assert.AreEqual(1, errors.Count);
+            }
         }
 
         [Test]

@@ -22,6 +22,6 @@ namespace PocketGems.Parameters.Interface.Attributes
             InitialFoldout = initialFoldout;
         }
 
-        string IAttachScriptableObjectAttribute.ScriptableObjectFieldAttributesCode => $"[{nameof(ParameterFoldOutAttribute)}(\"{NameText}\", {InitialFoldout.ToString().ToLower()})]";
+        string IAttachScriptableObjectAttribute.ScriptableObjectFieldAttributesCode => $"[{nameof(ParameterFoldOutAttribute)}(\"{NameText}\", {InitialFoldout.ToString().ToLowerInvariant()})]";
     }
 }

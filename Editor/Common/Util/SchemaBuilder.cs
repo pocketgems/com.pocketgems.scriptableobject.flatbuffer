@@ -8,16 +8,20 @@ namespace PocketGems.Parameters.Common.Util.Editor
     {
         private readonly string _rootClassName;
         private readonly Dictionary<string, List<Tuple<string, string>>> _tableNameToProperties;
+        // Tables and the root container's fields are emitted in definition order; Dictionary enumeration order is
+        // unspecified, so track it explicitly.
+        private readonly List<string> _tableNames;
 
         public SchemaBuilder(string rootClassName)
         {
             _rootClassName = rootClassName;
             _tableNameToProperties = new Dictionary<string, List<Tuple<string, string>>>();
+            _tableNames = new List<string>();
         }
 
         public List<string> TableNames
         {
-            get => new List<string>(_tableNameToProperties.Keys);
+            get => new List<string>(_tableNames);
         }
 
         public void DefineArrayField(string tableName, string fieldName, FlatBufferFieldType fieldType)
@@ -45,6 +49,7 @@ namespace PocketGems.Parameters.Common.Util.Editor
             else
             {
                 _tableNameToProperties[tableName] = new List<Tuple<string, string>> { property };
+                _tableNames.Add(tableName);
             }
         }
 
@@ -54,17 +59,15 @@ namespace PocketGems.Parameters.Common.Util.Editor
         /// </summary>
         /// <param name="type">Enum</param>
         /// <returns>String to be used in schema file.</returns>
-        private string FieldTypeString(FlatBufferFieldType type) => type.ToString().ToLower();
+        private string FieldTypeString(FlatBufferFieldType type) => type.ToString().ToLowerInvariant();
 
         public string GenerateSchemaContent()
         {
             StringBuilder schemaString = new StringBuilder();
-            var classNames = new List<string>(_tableNameToProperties.Keys);
-
             // build schema for each csv
-            for (int i = 0; i < classNames.Count; i++)
+            for (int i = 0; i < _tableNames.Count; i++)
             {
-                var className = classNames[i];
+                string className = _tableNames[i];
                 schemaString.AppendFormat("table {0} {{\n", className);
                 var properties = _tableNameToProperties[className];
                 for (int j = 0; j < properties.Count; j++)

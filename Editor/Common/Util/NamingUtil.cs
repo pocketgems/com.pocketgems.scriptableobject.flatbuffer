@@ -88,7 +88,7 @@ namespace PocketGems.Parameters.Common.Util.Editor
         {
             if (string.IsNullOrEmpty(str))
                 return str;
-            string result = str.Substring(0, 1).ToLower();
+            string result = str.Substring(0, 1).ToLowerInvariant();
             result += str.Substring(1, str.Length - 1);
             return result;
         }
@@ -102,7 +102,7 @@ namespace PocketGems.Parameters.Common.Util.Editor
         {
             if (string.IsNullOrEmpty(str))
                 return str;
-            string result = str.Substring(0, 1).ToUpper();
+            string result = str.Substring(0, 1).ToUpperInvariant();
             result += str.Substring(1, str.Length - 1);
             return result;
         }

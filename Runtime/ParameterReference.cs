@@ -78,7 +78,7 @@ namespace PocketGems.Parameters
                 return -1;
             if (otherInfo == null)
                 return 1;
-            return string.Compare(info.Identifier, otherInfo.Identifier);
+            return string.Compare(info.Identifier, otherInfo.Identifier, StringComparison.Ordinal);
         }
 
         /// <summary>

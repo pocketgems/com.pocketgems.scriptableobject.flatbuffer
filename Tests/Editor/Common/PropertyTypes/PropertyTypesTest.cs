@@ -285,5 +285,18 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             Assert.AreEqual("MyAttribute(\"blah1\")", attributes[0]);
             Assert.AreEqual("MyAttribute(\"blah2\")", attributes[1]);
         }
+
+        [Test]
+        public void ListPrepareCodeIgnoresCulture()
+        {
+            IPropertyType propertyType = CreatePropertyType(nameof(ITestInfo.MyVector2Ints));
+            string expected = propertyType.FlatBufferBuilderPrepareCode(TableName);
+            using (CultureScope.Turkish())
+            {
+                string actual = propertyType.FlatBufferBuilderPrepareCode(TableName);
+                Assert.AreEqual(expected, actual);
+                StringAssert.DoesNotContain("\u0131", actual);
+            }
+        }
     }
 }

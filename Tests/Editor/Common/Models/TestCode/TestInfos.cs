@@ -127,3 +127,21 @@ public interface IBadLocalizationThreeInfo : IBaseInfo
     [ParameterLocalizableScript]
     int MyInt { get; }
 }
+
+// ordering: ordinal sorts "IZooOrderBase" before "IalphaOrderBase"; a culture-aware sort would flip them
+public interface IZooOrderBase : IBaseInfo
+{
+    int ZooValue { get; }
+}
+
+public interface IalphaOrderBase : IBaseInfo
+{
+    int AlphaBaseValue { get; }
+}
+
+// ordering: own properties keep declaration order (Zeta before Alpha), not name order
+public interface IOrderingInfo : IalphaOrderBase, IZooOrderBase
+{
+    int ZetaValue { get; }
+    int AlphaValue { get; }
+}
