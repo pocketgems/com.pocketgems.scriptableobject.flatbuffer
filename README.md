@@ -1,4 +1,7 @@
 # Scriptable Object - FlatBuffer <!-- omit in toc -->
+> [!NOTE]
+> [ScriptableObjectFlatBufferCodeGen](https://github.com/pocketgems/ScriptableObjectFlatBufferCodeGen) is an optional companion project for this package.  It moves code generation out of the Unity editor and into a standalone .NET solution, so data types can be authored and generated without waiting on editor compilation.
+
 - [About](#about)
 - [Features](#features)
   - [Define Data Types](#define-data-types)

@@ -4,6 +4,14 @@ All package updates & migration steps will be listed in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.2.1] - 2026-09-08
+### Changed
+- The optional external code generation project is now detected at `ScriptableObjectFlatBufferCodeGen/` (was `ParametersCodeGen/`), matching the [ScriptableObjectFlatBufferCodeGen](https://github.com/pocketgems/ScriptableObjectFlatBufferCodeGen) repository name.
+- `ThirdPartyLicenses.md` now covers the bundled `Castle.Core` and `NSubstitute` test binaries, and points at CsvHelper's own license instead of FlatBuffers'.
+- `LICENSE.md` now names the copyright holder instead of the Apache template placeholder.
+- `package.json` now declares `"license": "Apache-2.0"` so the Package Manager surfaces the license.
+- `README.md` and `README/DefiningDataTypes.md` now point at the optional [ScriptableObjectFlatBufferCodeGen](https://github.com/pocketgems/ScriptableObjectFlatBufferCodeGen) companion project.
+
 ## [5.2.0] - 2026-08-24
 ### Changed
 - Struct key paths are now hashed into guids at bake time to reduce byte file size & runtime memory usage.
