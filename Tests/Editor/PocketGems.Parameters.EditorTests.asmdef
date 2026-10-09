@@ -7,6 +7,7 @@
         "UnityEngine.UI",
         "PocketGems.Parameters.Runtime",
         "PocketGems.Parameters.Editor",
+        "PocketGems.Parameters.DataGeneration.Editor",
         "Unity.Addressables",
         "TestInterfaceAssembly",
         "TestGeneratedCodeEditorAssembly"

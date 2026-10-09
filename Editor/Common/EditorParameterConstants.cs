@@ -118,6 +118,14 @@ namespace PocketGems.Parameters.Common.Editor
             /// to Unity.
             /// </summary>
             public static string HashFilePath => Path.Combine(new[] { ParameterConstants.GeneratedAsset.RootDirectory, ".param_hash" });
+
+            /// <summary>
+            /// File that holds the guids of all Scriptable Objects seen by parameter generation, one per line.
+            ///
+            /// Used to tell if a deleted asset was a parameter, since its type can no longer be read.  It is hidden
+            /// because it doesn't need to be sourced controlled or visible to Unity.
+            /// </summary>
+            public static string GuidsFilePath => Path.Combine(new[] { ParameterConstants.GeneratedAsset.RootDirectory, ".param_guids" });
         }
 
         /// <summary>
