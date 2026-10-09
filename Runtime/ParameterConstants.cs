@@ -49,7 +49,7 @@ namespace PocketGems.Parameters
 
 #if UNITY_EDITOR
         /// <summary>
-        /// Location where all scriptable objects must live under
+        /// Default folder for new scriptable objects.  Scriptable objects can live anywhere under Assets/.
         /// </summary>
         public static class ScriptableObject
         {

@@ -167,29 +167,39 @@ namespace PocketGems.Parameters.Editor
 
         private static void SetupAssetFileWatching()
         {
-            bool CheckFile(string filePath)
+            FilePostprocessor.AddObserver(IsEnabled, IsParameterFile, OnFileEvent);
+        }
+
+        internal static bool IsParameterFile(string filePath)
+        {
+            var fileExt = Path.GetExtension(filePath);
+
+            // csv
+            if (fileExt == EditorParameterConstants.CSV.FileExtension)
+                // must come from specific folder
+                return NamingUtil.RelativePath(filePath).StartsWith(EditorParameterConstants.CSV.Dir);
+
+            // not asset
+            if (fileExt != ParameterConstants.ScriptableObject.FileExtension)
+                return false;
+
+            var type = AssetDatabase.GetMainAssetTypeAtPath(filePath);
+
+            // if the type is null, it's been deleted or moved and its type can't be read.
+            if (type == null)
             {
-                var fileExt = Path.GetExtension(filePath);
+                // a deleted asset keeps its guid until the editor closes.  check it against the parameters from
+                // the last generations.
+                var guid = AssetDatabase.AssetPathToGUID(filePath, AssetPathToGUIDOptions.IncludeRecentlyDeletedAssets);
 
-                // csv
-                if (fileExt == EditorParameterConstants.CSV.FileExtension)
-                    // must come from specific folder
-                    return NamingUtil.RelativePath(filePath).StartsWith(EditorParameterConstants.CSV.Dir);
-
-                // not asset
-                if (fileExt != ParameterConstants.ScriptableObject.FileExtension)
+                // a moved asset's old path has no guid.  its new path is checked by its type instead.
+                if (string.IsNullOrEmpty(guid))
                     return false;
 
-                var type = AssetDatabase.GetMainAssetTypeAtPath(filePath);
-
-                // if the type is null, it's been deleted cannot tell it's type - try to process it.
-                if (type == null)
-                    return true;
-
-                return typeof(ParameterScriptableObject).IsAssignableFrom(type);
+                return ParameterGuidCache.MightBeParameter(guid);
             }
 
-            FilePostprocessor.AddObserver(IsEnabled, CheckFile, OnFileEvent);
+            return typeof(ParameterScriptableObject).IsAssignableFrom(type);
         }
 
         private static void HandleCompilationErrors(string path, CompilerMessage[] messages)
@@ -378,6 +388,8 @@ namespace PocketGems.Parameters.Editor
                 new CheckGenerateDataTypeOperation(),
                 // load all needed ScriptableObjects into memory
                 new ScriptableObjectLoaderOperation(),
+                // save the guids of the loaded ScriptableObjects to recognize deleted parameters later
+                new SaveParamGuidsOperation(),
                 // update scriptable objects from CSVs
                 new UpdateScriptableObjectsOperation(),
                 // call methods on classes to construct the a flatbuffer byte structure

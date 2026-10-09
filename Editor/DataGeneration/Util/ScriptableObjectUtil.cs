@@ -9,7 +9,7 @@ namespace PocketGems.Parameters.DataGeneration.Util.Editor
     public static class ScriptableObjectUtil
     {
         /// <summary>
-        /// Returns all scriptable objects in the parameters Scriptable Objects folder.
+        /// Returns all parameter scriptable objects in the project.
         /// </summary>
         /// <returns>array of guids</returns>
         public static string[] FindAllParameterScriptableObjects(string className = null)

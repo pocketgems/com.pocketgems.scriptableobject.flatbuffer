@@ -4,6 +4,11 @@ All package updates & migration steps will be listed in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.5.1] - 2026-10-08
+### Fixed
+- Deleting, moving or renaming an asset that isn't a parameter, such as when baking a navmesh, no longer starts a full parameter rebuild.
+- Leaving the editor open for a long time no longer causes a full parameter rebuild as if the editor had relaunched.
+
 ## [5.5.0] - 2026-10-02
 ### Changed
 - Generated code no longer depends on reflection order or the machine's locale. Parameter types are sorted by full name (ordinal) right after parsing, so the FlatBuffer root slot order is the same in Unity and in a standalone [ScriptableObjectFlatBufferCodeGen](https://github.com/pocketgems/ScriptableObjectFlatBufferCodeGen) build. Regenerate code and data after updating: root slots move once and the interface hash changes.

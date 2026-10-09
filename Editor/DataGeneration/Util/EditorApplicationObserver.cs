@@ -33,16 +33,12 @@ namespace PocketGems.Parameters.DataGeneration.Util.Editor
         /// Checks if the watcher detected a first launch already for this session.
         /// </summary>
         /// <returns>true if the a session id exists and handler events have been invoked</returns>
-        public static bool ApplicationHasFinishedInitializingSession()
-        {
-            if (EditorAnalyticsSessionInfo.id == 0)
-                return false;
-            var sessionId = EditorAnalyticsSessionInfo.id.ToString();
-            var lastSessionId = SessionState.GetString(LastLaunchedIdKey, "<not set>");
-            return lastSessionId == sessionId;
-        }
+        public static bool ApplicationHasFinishedInitializingSession() =>
+            EditorAnalyticsSessionInfo.id != 0 && SessionState.GetBool(LaunchedKey, false);
 
-        private const string LastLaunchedIdKey = "ParametersLastLaunchedId";
+        // SessionState is kept across domain reloads and cleared when the editor quits.  The analytics session id
+        // isn't stored because it can change while the editor stays open, which would look like a new launch.
+        private const string LaunchedKey = "ParametersLaunched";
 
         /// <summary>
         /// Checks for session id to check for an initialized session.
@@ -57,17 +53,14 @@ namespace PocketGems.Parameters.DataGeneration.Util.Editor
         }
 
         /// <summary>
-        /// Process session id.
+        /// Invoke the launch event once per editor session.
         /// </summary>
         private static void OnApplicationChangedInEditor()
         {
-            var sessionId = EditorAnalyticsSessionInfo.id.ToString();
-            var lastSessionId = SessionState.GetString(LastLaunchedIdKey, "<not set>");
-            if (lastSessionId != sessionId)
-            {
-                SessionState.SetString(LastLaunchedIdKey, sessionId);
-                OnApplicationLaunched();
-            }
+            if (SessionState.GetBool(LaunchedKey, false))
+                return;
+            SessionState.SetBool(LaunchedKey, true);
+            OnApplicationLaunched();
         }
 
         private static void OnApplicationLaunched() => ApplicationLaunched?.Invoke();
