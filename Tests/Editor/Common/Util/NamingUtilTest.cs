@@ -1,5 +1,6 @@
 using System.IO;
 using NUnit.Framework;
+using PocketGems.Parameters.Editor;
 
 namespace PocketGems.Parameters.Common.Util.Editor
 {
@@ -123,6 +124,16 @@ namespace PocketGems.Parameters.Common.Util.Editor
             Assert.AreEqual("h", "h".ToSnakeCase());
             Assert.AreEqual("h", "H".ToSnakeCase());
             Assert.AreEqual("", "".ToSnakeCase());
+        }
+
+        [Test]
+        public void FirstCharCasingIgnoresCulture()
+        {
+            using (CultureScope.Turkish())
+            {
+                Assert.AreEqual("info", "Info".LowercaseFirstChar());
+                Assert.AreEqual("Info", "info".UppercaseFirstChar());
+            }
         }
     }
 }

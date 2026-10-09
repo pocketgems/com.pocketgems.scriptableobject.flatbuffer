@@ -93,6 +93,13 @@ namespace PocketGems.Parameters.Common.Operations.Editor
                 Error($"{type} in assembly {assemblyName} isn't valid -  only enums, {nameof(IBaseInfo)}, and {nameof(IBaseStruct)} are allowed.");
             }
 
+            // GetTypes() order follows the compiler's source file order, which differs between Unity's compiler and
+            // a standalone build of the same interfaces. These lists set the FlatBuffer root slot order, so sort them
+            // by name or the data writer and reader can disagree depending on which generator produced them.
+            context.ParameterEnums.Sort((a, b) => string.CompareOrdinal(a.Type.FullName, b.Type.FullName));
+            context.ParameterInfos.Sort((a, b) => string.CompareOrdinal(a.Type.FullName, b.Type.FullName));
+            context.ParameterStructs.Sort((a, b) => string.CompareOrdinal(a.Type.FullName, b.Type.FullName));
+
             context.InterfaceAssemblyHash = InterfaceAssemblyHash(context.ParameterEnums, context.ParameterInfos,
                 context.ParameterStructs);
             ParameterDebug.LogVerbose($"InterfaceAssemblyHash: {context.InterfaceAssemblyHash}");
@@ -102,12 +109,13 @@ namespace PocketGems.Parameters.Common.Operations.Editor
             List<IParameterStruct> parameterStructs)
         {
             StringBuilder s = new StringBuilder();
-            var sortedEnums = enums.OrderBy(e => e.Type.Name);
+            IOrderedEnumerable<IParameterEnum> sortedEnums = enums.OrderBy(e => e.Type.Name, StringComparer.Ordinal);
             foreach (var parameterEnum in sortedEnums)
             {
                 s.AppendOSAgnosticNewLine();
                 s.Append($"{parameterEnum.Type.Name} : {Enum.GetUnderlyingType(parameterEnum.Type)}");
-                foreach (var attribute in parameterEnum.Type.GetCustomAttributes(true))
+                foreach (object attribute in parameterEnum.Type.GetCustomAttributes(true)
+                             .OrderBy(a => a.ToString(), StringComparer.Ordinal))
                 {
                     s.AppendOSAgnosticNewLine();
                     s.Append($"  {attribute}");
@@ -170,14 +178,12 @@ namespace PocketGems.Parameters.Common.Operations.Editor
                 }
             }
 
-            // parameter infos
-            var sortedInfoInterfaces = parameterInfos.OrderBy(i => i.InterfaceName);
-            foreach (var paramInterface in sortedInfoInterfaces)
+            // Hash in root slot order (the lists are already sorted in Execute) so that any change to slot order
+            // changes the hash and the loader refuses mismatched data instead of misreading it.
+            foreach (IParameterInfo paramInterface in parameterInfos)
                 AppendParameterInterface(paramInterface);
 
-            // struct infos
-            var sortedStructInterfaces = parameterStructs.OrderBy(i => i.InterfaceName);
-            foreach (var paramInterface in sortedStructInterfaces)
+            foreach (IParameterStruct paramInterface in parameterStructs)
                 AppendParameterInterface(paramInterface);
 
             s.AppendOSAgnosticNewLine();

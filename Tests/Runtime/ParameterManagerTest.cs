@@ -210,6 +210,24 @@ namespace PocketGems.Parameters
         }
 
         [Test]
+        public void GetSortedIsOrdinal()
+        {
+            MockSubclassAInfo lowerB = new("b");
+            MockSubclassAInfo underscore = new("_x");
+            MockSubclassAInfo upperB = new("B");
+            MockSubclassAInfo lowerA = new("a");
+
+            _parameterManager.Load<ISubInterfaceAInfo, MockSubclassAInfo>(lowerB, lowerB.Identifier, "guid1");
+            _parameterManager.Load<ISubInterfaceAInfo, MockSubclassAInfo>(underscore, underscore.Identifier, "guid2");
+            _parameterManager.Load<ISubInterfaceAInfo, MockSubclassAInfo>(upperB, upperB.Identifier, "guid3");
+            _parameterManager.Load<ISubInterfaceAInfo, MockSubclassAInfo>(lowerA, lowerA.Identifier, "guid4");
+
+            // ordinal: uppercase (0x42) < underscore (0x5F) < lowercase (0x61+), unlike a culture-aware sort
+            CollectionAssert.AreEqual(new[] { upperB, underscore, lowerA, lowerB },
+                _parameterManager.GetSorted<ISubInterfaceAInfo>().ToArray());
+        }
+
+        [Test]
         public void LoadUpdatedObject()
         {
             LoadInfos();

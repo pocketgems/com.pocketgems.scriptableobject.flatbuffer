@@ -203,7 +203,7 @@ namespace PocketGems.Parameters
 
             if (_identifierMappings.TryGetValue(type.Name, out Dictionary<string, IMutableParameter> parameters))
             {
-                var sortedKeys = parameters.Keys.OrderBy(x => x);
+                IOrderedEnumerable<string> sortedKeys = parameters.Keys.OrderBy(x => x, StringComparer.Ordinal);
                 foreach (var key in sortedKeys)
                     yield return (T)parameters[key];
             }

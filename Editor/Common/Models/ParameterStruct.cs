@@ -60,7 +60,7 @@ namespace PocketGems.Parameters.Common.Models.Editor
                 var allInterfaces = new List<Type>();
                 void DFS(Type t)
                 {
-                    var baseInterfaces = t.GetInterfaces().OrderBy(t => t.Name).ToList();
+                    List<Type> baseInterfaces = t.GetInterfaces().OrderBy(t => t.Name, StringComparer.Ordinal).ThenBy(t => t.FullName, StringComparer.Ordinal).ToList();
                     foreach (var baseInterface in baseInterfaces)
                     {
                         if (!allInterfaces.Contains(baseInterface))

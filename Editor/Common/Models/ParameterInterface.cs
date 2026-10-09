@@ -108,7 +108,7 @@ namespace PocketGems.Parameters.Common.Models.Editor
 
             void DFS(Type t)
             {
-                var baseInterfaces = t.GetInterfaces().OrderBy(t => t.Name).ToList();
+                List<Type> baseInterfaces = t.GetInterfaces().OrderBy(t => t.Name, StringComparer.Ordinal).ThenBy(t => t.FullName, StringComparer.Ordinal).ToList();
                 foreach (var baseInterface in baseInterfaces)
                 {
                     if (!interfaces.Contains(baseInterface))
@@ -124,7 +124,11 @@ namespace PocketGems.Parameters.Common.Models.Editor
             List<IPropertyType> propertyTypes = new List<IPropertyType>();
             for (int i = 0; i < interfaces.Count; i++)
             {
-                var propertyInfos = interfaces[i].GetProperties();
+                // Property order sets each field's FlatBuffer offset. GetProperties() order is unspecified, so pin it
+                // to declaration order (metadata token) rather than name, which would move every existing field.
+                // A partial interface split across files would still follow file order; reflection can't detect
+                // partial declarations, so keep parameter interfaces in a single file.
+                PropertyInfo[] propertyInfos = interfaces[i].GetProperties().OrderBy(p => p.MetadataToken).ToArray();
                 for (int j = 0; j < propertyInfos.Length; j++)
                 {
                     var propertyInfo = propertyInfos[j];

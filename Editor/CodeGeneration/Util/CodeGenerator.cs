@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -130,7 +131,7 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
             if (!Directory.Exists(outputDirectory))
                 Directory.CreateDirectory(outputDirectory);
 
-            var orderedInfos = parameterInfos.OrderBy(t => t.BaseName);
+            IOrderedEnumerable<IParameterInfo> orderedInfos = parameterInfos.OrderBy(t => t.BaseName, StringComparer.Ordinal);
 
             var infoInterfaces = new List<object>();
             int orderIndex = 0;
@@ -606,7 +607,7 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
 
             var dataLoaderClassName = EditorParameterConstants.DataLoaderClass.ClassName;
             // order by name so that generated code is in a deterministic order
-            var orderedInfos = parameterInfos.OrderBy(t => t.BaseName);
+            IOrderedEnumerable<IParameterInfo> orderedInfos = parameterInfos.OrderBy(t => t.BaseName, StringComparer.Ordinal);
             var infoInterfaces = new List<Dictionary<string, object>>();
             foreach (var parameterInterface in orderedInfos)
             {
@@ -629,7 +630,7 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
             }
 
             // order by name so that generated code is in a deterministic order
-            var orderedStructs = parameterStructs.OrderBy(t => t.BaseName);
+            IOrderedEnumerable<IParameterStruct> orderedStructs = parameterStructs.OrderBy(t => t.BaseName, StringComparer.Ordinal);
             var structInterfaces = new List<Dictionary<string, object>>();
             foreach (var parameterInterface in orderedStructs)
             {

@@ -4,6 +4,14 @@ All package updates & migration steps will be listed in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.5.0] - 2026-10-02
+### Changed
+- Generated code no longer depends on reflection order or the machine's locale. Parameter types are sorted by full name (ordinal) right after parsing, so the FlatBuffer root slot order is the same in Unity and in a standalone [ScriptableObjectFlatBufferCodeGen](https://github.com/pocketgems/ScriptableObjectFlatBufferCodeGen) build. Regenerate code and data after updating: root slots move once and the interface hash changes.
+- The interface hash now covers root slot order, so data built with a different slot order is refused instead of misread.
+- `ParameterManager.GetSorted` and `ParameterReference.CompareTo` now compare identifiers ordinally, so the client and server sort the same way. Identifiers that differ only in case, punctuation or digits may sort differently than before.
+### Fixed
+- Schema generation, naming helpers and generated attribute code use invariant casing, so a Turkish locale no longer corrupts the schema.
+
 ## [5.4.0] - 2026-09-28
 ### Added
 - `ParameterBuildProcessor.BuildAndValidateParameters` is now public so other tools can generate and validate parameters.

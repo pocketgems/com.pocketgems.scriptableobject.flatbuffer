@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using NSubstitute;
 using NUnit.Framework;
 using PocketGems.Parameters.Common.Models.Editor;
@@ -49,6 +51,52 @@ namespace PocketGems.Parameters.Operations
             Assert.AreEqual(2, parameterEnums.Count);
             Assert.IsNotNull(_contextMock.InterfaceAssemblyHash);
             Assert.AreEqual(128 / 4, _contextMock.InterfaceAssemblyHash.Length); // MD5 hex
+        }
+
+        [Test]
+        public void TypeListsAreSortedByFullName()
+        {
+            List<IParameterInfo> parameterInfos = new();
+            List<IParameterStruct> parameterStructs = new();
+            List<IParameterEnum> parameterEnums = new();
+            _contextMock.ParameterInfos.ReturnsForAnyArgs(parameterInfos);
+            _contextMock.ParameterStructs.ReturnsForAnyArgs(parameterStructs);
+            _contextMock.ParameterEnums.ReturnsForAnyArgs(parameterEnums);
+            _contextMock.InterfaceDirectoryRootPath.ReturnsForAnyArgs(InterfaceDirPath);
+            _contextMock.InterfaceAssemblyName.ReturnsForAnyArgs(InterfaceAssemblyName);
+
+            AssertExecute(_operation, OperationState.Finished);
+
+            // declared as ITestStruct, ITest2Struct, ITest3Struct. These fixtures only prove the lists are sorted;
+            // ordinal (not culture) comparison is pinned by ParameterInfoTest and CodeGeneratorTest.
+            CollectionAssert.AreEqual(new[] { "PocketGems.ITest2Struct", "PocketGems.ITest3Struct", "PocketGems.ITestStruct" },
+                parameterStructs.Select(p => p.Type.FullName));
+            CollectionAssert.AreEqual(new[] { "PocketGems.TestEnum", "PocketGems.TestFlagEnum" },
+                parameterEnums.Select(e => e.Type.FullName));
+        }
+
+        [Test]
+        public void InterfaceHashCoversSlotOrder()
+        {
+            List<IParameterInfo> parameterInfos = new();
+            List<IParameterStruct> parameterStructs = new();
+            List<IParameterEnum> parameterEnums = new();
+            _contextMock.ParameterInfos.ReturnsForAnyArgs(parameterInfos);
+            _contextMock.ParameterStructs.ReturnsForAnyArgs(parameterStructs);
+            _contextMock.ParameterEnums.ReturnsForAnyArgs(parameterEnums);
+            _contextMock.InterfaceDirectoryRootPath.ReturnsForAnyArgs(InterfaceDirPath);
+            _contextMock.InterfaceAssemblyName.ReturnsForAnyArgs(InterfaceAssemblyName);
+            AssertExecute(_operation, OperationState.Finished);
+
+            MethodInfo hashMethod = typeof(ParseInterfaceAssemblyOperation<IDataOperationContext>)
+                .GetMethod("InterfaceAssemblyHash", BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.IsNotNull(hashMethod);
+            string Hash(List<IParameterStruct> structs) =>
+                (string)hashMethod.Invoke(null, new object[] { parameterEnums, parameterInfos, structs });
+
+            Assert.AreEqual(_contextMock.InterfaceAssemblyHash, Hash(parameterStructs));
+            List<IParameterStruct> reordered = Enumerable.Reverse(parameterStructs).ToList();
+            Assert.AreNotEqual(_contextMock.InterfaceAssemblyHash, Hash(reordered));
         }
 
         [Test]

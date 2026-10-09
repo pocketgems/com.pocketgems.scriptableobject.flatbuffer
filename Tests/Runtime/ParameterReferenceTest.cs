@@ -110,6 +110,25 @@ namespace PocketGems.Parameters
         }
 
         [Test]
+        public void ComparableIsOrdinal()
+        {
+            ParameterReference<IBaseInfo> CreateReference(string guid, string identifier)
+            {
+                IBaseInfo mockInfo = Substitute.For<IBaseInfo>();
+                mockInfo.Identifier.Returns(identifier);
+                _parameterManagerMock.GetWithGUID<IBaseInfo>(guid).Returns(mockInfo);
+                return new ParameterReference<IBaseInfo>(_parameterManagerMock, guid);
+            }
+
+            ParameterReference<IBaseInfo> lowerA = CreateReference("guid_a", "a");
+            ParameterReference<IBaseInfo> upperB = CreateReference("guid_b", "B");
+
+            // ordinal: "B" (0x42) sorts before "a" (0x61); a culture-aware compare would put "a" first
+            Assert.That(upperB.CompareTo(lowerA), Is.LessThan(0));
+            Assert.That(lowerA.CompareTo(upperB), Is.GreaterThan(0));
+        }
+
+        [Test]
         public void Comparable()
         {
             ParameterReference<IBaseInfo> CreateReference(string guid, string identifier, bool refIsIdentifier)

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
@@ -191,6 +192,31 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
 
             AssertFileCount(1);
             AssertFileExists($"{EditorParameterConstants.DataLoaderClass.ClassName}.cs");
+        }
+
+        [Test]
+        public void GeneratedCodeOrdersTypesOrdinally()
+        {
+            // ordinal puts uppercase before lowercase; a culture-aware sort would put "ape" first
+            List<IParameterInfo> infos = new() { MockedInterfaces.ParameterInfo("apeInfo"), MockedInterfaces.ParameterInfo("ZebraInfo") };
+            List<IParameterStruct> structs = new() { MockedInterfaces.ParameterStruct("appleStruct"), MockedInterfaces.ParameterStruct("ZooStruct") };
+
+            void AssertOrdered(string code, string first, string second)
+            {
+                int firstIndex = code.IndexOf(first, StringComparison.Ordinal);
+                Assert.That(firstIndex, Is.GreaterThanOrEqualTo(0), first);
+                Assert.That(firstIndex, Is.LessThan(code.IndexOf(second, StringComparison.Ordinal)), second);
+            }
+
+            CodeGenerator.GenerateDataLoader("some_hash", infos, structs, TestDirectoryName);
+            string dataLoader = File.ReadAllText(Path.Combine(TestDirectoryName, $"{EditorParameterConstants.DataLoaderClass.ClassName}.cs"));
+            AssertOrdered(dataLoader, "ZebraInfoFBStruct", "apeInfoFBStruct");
+            AssertOrdered(dataLoader, "ZooStructFBStruct", "appleStructFBStruct");
+
+            // returns the file name only, relative to the output directory
+            string menuItemsFileName = CodeGenerator.GenerateScriptableObjectMenuItems(infos, TestDirectoryName);
+            string menuItemsCode = File.ReadAllText(Path.Combine(TestDirectoryName, menuItemsFileName));
+            AssertOrdered(menuItemsCode, "ZebraInfo", "apeInfo");
         }
 
         [Test]

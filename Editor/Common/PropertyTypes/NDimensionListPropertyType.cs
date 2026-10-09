@@ -60,7 +60,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         {
             var objectFieldNames = ObjectFieldNames();
             int dimension = objectFieldNames.Length;
-            string arrayType = _fieldType.ToString().ToLower();
+            string arrayType = _fieldType.ToString().ToLowerInvariant();
             StringBuilder s = new StringBuilder();
             s.Append($"VectorOffset vector{FlatBufferStructPropertyName} = default;\n" +
                      $"if (data.{FieldName}?.Length > 0)\n" +
