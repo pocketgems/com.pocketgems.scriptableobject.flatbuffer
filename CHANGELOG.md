@@ -4,6 +4,10 @@ All package updates & migration steps will be listed in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.6.0] - 2026-10-23
+### Added
+- `CommandLineBuild.GenerateParameters` accepts `-generateCSVs` to also write the local CSVs in batch mode.
+
 ## [5.5.2] - 2026-10-09
 ### Fixed
 - Updating from before 5.5.0 now changes the interface hash, so data built with the old root slot order is refused instead of misread.
