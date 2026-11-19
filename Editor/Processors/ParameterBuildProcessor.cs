@@ -59,8 +59,9 @@ namespace PocketGems.Parameters.Processors.Editor
         /// Invokes <see cref="OnPreBuild"/>, then generates and validates all parameter data.
         /// Errors are logged to the console in batch mode and to the Unity log otherwise.
         /// </summary>
+        /// <param name="generateCSVs">when true, also (re)write all local CSVs from the Scriptable Objects</param>
         /// <returns>true if generation and validation succeeded, false otherwise</returns>
-        public static bool BuildAndValidateParameters()
+        public static bool BuildAndValidateParameters(bool generateCSVs = false)
         {
             try
             {
@@ -78,7 +79,8 @@ namespace PocketGems.Parameters.Processors.Editor
             }
 
             Log($"{typeof(ParameterBuildProcessor)} generating parameters.", canLogToUnity: true);
-            var success = EditorParameterDataManager.GenerateData(GenerateDataType.All, out var failedOperation);
+            var success = EditorParameterDataManager.GenerateData(GenerateDataType.All, out var failedOperation,
+                generateCSVs: generateCSVs);
             Log($"{typeof(ParameterBuildProcessor)} finished generating parameters.", canLogToUnity: true);
 
             if (!success)
