@@ -40,18 +40,22 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             return $"{FieldName}.{nameof(IParameterScriptableObjectStruct.CollectLocalizationStrings)}({localizationKeysArgumentName}, {localizedScriptArgumentName});";
         }
 
-        // flat buffer guids are always deterministic and shouldn't change via ab testing
+        // flat buffer guids are always deterministic
         public override string FlatBufferFieldDefinitionCode() => null;
 
         public override string FlatBufferPropertyImplementationCode(int propertyIndex)
         {
             var referenceClassName = SanitizedPropertyTypeName();
             return
-                $"public {referenceClassName}<{_genericType.Name}> {PropertyName} => new ParameterStructReferenceRuntime<{_genericType.Name}>(_parameterManager, _fb.{FlatBufferStructPropertyName});";
+                $"public {referenceClassName}<{_genericType.Name}> {PropertyName} => new ParameterStructReferenceRuntime<{_genericType.Name}>(_parameterManager, TryGetOverride<string>({propertyIndex}, out var val) ? val : FlatBufferData().{FlatBufferStructPropertyName});";
         }
 
+        // stores the struct's key path or guid, which is looked up when read, the same as a struct list.  A null or
+        // empty one would throw when read.
+        // TODO: check that the struct exists; a missing one is only reported when it's read
         public override string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName) =>
-            "error = $\"Cannot modify a ParameterStructReference with key-value {propertyName}:{value}. ParameterStructReference always point to a predefined guid based on key path.)\";";
+            $"if (string.IsNullOrEmpty({variableName})) {{ error = \"a struct reference needs a key path or guid\"; return false; }}\n" +
+            $"return TrySetOverride<string>({propertyIndex}, {variableName}, {maxPropertyIndex}, out error);";
 
         public override string FlatBufferBuilderPrepareCode(string tableName)
         {

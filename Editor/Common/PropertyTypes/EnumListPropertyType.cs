@@ -37,9 +37,10 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
                    $"    {{\n" +
                    $"        if (TryGetOverride<{_typeKeyword}[]>({propertyIndex}, out var val))\n" +
                    $"            return val;\n" +
+                   $"        var fb = FlatBufferData();\n" +
                    $"        return new ReadOnlyListContainer<{_typeKeyword}>(\n" +
-                   $"            () => _fb.{FlatBufferStructPropertyName}Length,\n" +
-                   $"            i => ({_typeKeyword})_fb.{FlatBufferStructPropertyName}(i));\n" +
+                   $"            () => fb.{FlatBufferStructPropertyName}Length,\n" +
+                   $"            i => ({_typeKeyword})fb.{FlatBufferStructPropertyName}(i));\n" +
                    $"    }}\n" +
                    $"}}";
         }

@@ -29,12 +29,13 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
                    $"    {{\n" +
                    $"        if (TryGetOverride<{ClassName}[]>({propertyIndex}, out var val))\n" +
                    $"            return val;\n" +
+                   $"        var fb = FlatBufferData();\n" +
                    $"        return new ReadOnlyListContainer<{ClassName}>(\n" +
-                   $"            () => _fb.{FlatBufferStructPropertyName}Length,\n" +
+                   $"            () => fb.{FlatBufferStructPropertyName}Length,\n" +
                    $"            i =>\n" +
                    $"            {{\n" +
-                   $"                var reference = new {ClassName}(_fb.{FlatBufferStructPropertyName}(i));\n" +
-                   $"                var subObjectName = _fb.{SubObjectNameFlatBufferStructPropertyName}(i);\n" +
+                   $"                var reference = new {ClassName}(fb.{FlatBufferStructPropertyName}(i));\n" +
+                   $"                var subObjectName = fb.{SubObjectNameFlatBufferStructPropertyName}(i);\n" +
                    $"                if (!string.IsNullOrEmpty(subObjectName))\n" +
                    $"                    reference.SubObjectName = subObjectName;\n" +
                    $"                return reference;\n" +
@@ -44,7 +45,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         }
 
         // no need to set validateGuid to true in the this call to FromString - the check only checks the AssetDatabase in editor.
-        // Also, this check an potentially give false positive if the asset is a new asset from an addresss catalog we're ab testing in.
+        // Also, this check an potentially give false positive if the asset is a new asset from an addresss catalog used by overrides.
         public override string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName) =>
             $"return TrySetOverride<{ClassName}[]>({propertyIndex}, {nameof(CSVValueConverter)}.{ClassName}Array.FromString({variableName}), {maxPropertyIndex}, out error);";
 
