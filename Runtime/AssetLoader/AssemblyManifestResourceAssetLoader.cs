@@ -11,15 +11,15 @@ namespace PocketGems.Parameters.AssetLoader
     /// </summary>
     public class AssemblyManifestResourceAssetLoader : IParameterAssetLoader
     {
-    
+
         /// <inheritdoc cref="IParameterAssetLoader.Status"/>
         public ParameterAssetLoaderStatus Status { get; protected set; }
-        
+
         /// <summary>
         /// Assembly to load resource from.
         /// </summary>
-        public static Assembly? Assembly;
-        
+        public static Assembly Assembly;
+
         /// <summary>
         /// Name of Resource to Load.
         /// </summary>
@@ -37,7 +37,7 @@ namespace PocketGems.Parameters.AssetLoader
         public virtual void LoadData(IMutableParameterManager parameterManager, IParameterDataLoader parameterDataLoader)
         {
             Status = ParameterAssetLoaderStatus.Loading;
-            
+
             if (Assembly == null)
             {
                 Debug.LogError("No Assembly specified to load from");
@@ -54,8 +54,8 @@ namespace PocketGems.Parameters.AssetLoader
             try
             {
                 byte[] bytes;
-                using(Stream stream = Assembly.GetManifestResourceStream(ResourceName))
-                using(MemoryStream mStream = new MemoryStream())
+                using (Stream stream = Assembly.GetManifestResourceStream(ResourceName))
+                using (MemoryStream mStream = new MemoryStream())
                 {
                     if (stream == null)
                     {
@@ -69,7 +69,8 @@ namespace PocketGems.Parameters.AssetLoader
                 }
                 parameterDataLoader.LoadData(parameterManager, bytes);
                 Status = ParameterAssetLoaderStatus.Loaded;
-            } catch(Exception e)
+            }
+            catch (Exception e)
             {
                 Debug.LogError("Failed: " + e.Message);
                 Status = ParameterAssetLoaderStatus.Failed;
