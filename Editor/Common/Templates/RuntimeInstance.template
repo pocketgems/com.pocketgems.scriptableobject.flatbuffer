@@ -2,6 +2,7 @@
 // DO NOT MODIFY DIRECTLY
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using PocketGems.Parameters;
 using PocketGems.Parameters.Interface;
 using PocketGems.Parameters.LocalCSV;
@@ -13,12 +14,19 @@ using UnityEngine.AddressableAssets;
 
 namespace {{namespace}}
 {
+    /// <summary>
+    /// A row read from FlatBuffer data, or a row added by overrides.  An added row has no FlatBuffer data: the manager
+    /// sets its values with EditProperty, as overrides, and it can't be edited after that.
+    /// </summary>
 #if {{disableSymbol}}
-    internal class {{className}}
+    internal class {{className}} : {{mutableBaseClassName}}
 #else
-    internal class {{className}} : {{baseClassName}}, {{interfaceName}}
+    internal class {{className}} : {{mutableBaseClassName}}, {{interfaceName}}
 #endif
     {
+        private static readonly string[] s_interfaceNames = { {{addedInterfaceNames}} };
+        private static readonly string[] s_columns = {{ if addedColumns == "" }}{ }{{ else }}{ {{addedColumns}} }{{ end }};
+
         #region private fields
 
         private {{flatBufferStructName}} _fb;
@@ -42,11 +50,37 @@ end
         {
             _fb = fb;
         }
-
 {{~if isInfo~}}
-        public override string ToString() => $"{{interfaceName}}:{_identifier}";
 
+        // a row added by overrides
+        private {{className}}({{parameterManagerType}} parameterManager, string identifier) : base(parameterManager)
+        {
+            _identifier = identifier;
+        }
+
+        internal static CreatedParameter Create({{parameterManagerType}} parameterManager, string identifier)
+        {
+            return new CreatedParameter(new {{className}}(parameterManager, identifier), true, identifier, s_interfaceNames, s_columns);
+        }
+
+        public override string ToString() => $"{{interfaceName}}:{_identifier}";
+{{~else~}}
+
+        // a row added by overrides
+        private {{className}}({{parameterManagerType}} parameterManager) : base(parameterManager)
+        {
+        }
+
+        internal static CreatedParameter Create({{parameterManagerType}} parameterManager, string keyPath)
+        {
+            return new CreatedParameter(new {{className}}(parameterManager), false, keyPath, s_interfaceNames, s_columns);
+        }
 {{~end~}}
+
+        // a row added by overrides has no FlatBuffer data, so every value it has is an override
+        private {{flatBufferStructName}} FlatBufferData([CallerMemberName] string propertyName = null) =>
+            _fb.ByteBuffer != null ? _fb : throw new InvalidOperationException($"{this} has no value for {propertyName}. A row added by overrides must set every column.");
+
         #region  property implementation
 
 {{~for propertyTypeDict in propertyTypeDicts~}}
@@ -125,8 +159,7 @@ end
 
         public override IMutableParameter CreateLinkedMutableParameter(IParameterManager parameterManager)
         {
-            // cast needed if interface implementations are disabled
-            return (IMutableParameter)new {{className}}(parameterManager, _fb);
+            return new {{className}}(parameterManager, _fb);
         }
 
         #endregion

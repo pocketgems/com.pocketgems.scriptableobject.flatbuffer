@@ -27,7 +27,7 @@ namespace PocketGems.Parameters.Common.Models.Editor
         public string InterfaceName => _type.Name;
         public string BaseName => NamingPattern().Matches(_type.Name)[0].Groups[1].Captures[0].Value;
         public string GeneratedNameSpace => ParameterConstants.GeneratedNamespace;
-        public string FlatBufferClassName(bool includeExtension) => NamingUtil.FlatBufferClassNameFromBaseName(BaseName, includeExtension);
+        public string InstanceClassName(bool includeExtension) => NamingUtil.InstanceClassNameFromBaseName(BaseName, includeExtension);
         public string FlatBufferStructName(bool includeExtension) => NamingUtil.FlatBufferStructNameFromBaseName(BaseName, includeExtension);
         public string ValidatorClassName(bool includeExtension) => NamingUtil.ValidatorClassNameFromBaseName(BaseName, includeExtension);
 

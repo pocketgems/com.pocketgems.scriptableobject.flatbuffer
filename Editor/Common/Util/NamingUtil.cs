@@ -39,8 +39,8 @@ namespace PocketGems.Parameters.Common.Util.Editor
         public static string CSVFileNameFromBaseName(string baseName, bool includeExtension) =>
             includeExtension ? baseName + ".csv" : baseName;
 
-        public static string FlatBufferClassNameFromBaseName(string baseName, bool includeExtension) =>
-            baseName + "FlatBuffer" + (includeExtension ? ".cs" : "");
+        public static string InstanceClassNameFromBaseName(string baseName, bool includeExtension) =>
+            baseName + "Instance" + (includeExtension ? ".cs" : "");
         public static string FlatBufferStructNameFromBaseName(string baseName, bool includeExtension) =>
             baseName + "FlatBufferStruct" + (includeExtension ? ".cs" : "");
 
