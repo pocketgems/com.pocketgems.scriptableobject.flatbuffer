@@ -13,7 +13,7 @@ namespace PocketGems.Parameters.Validation.Attributes
 #if ADDRESSABLE_PARAMS
         private bool _isAssetReference;
 #endif
-        private MethodInfo _paramRefGetInfoMethod;
+        private string _referencedTypeName;
         private HashSet<string> _addressablesGuidHashSet;
 
         protected override bool CompatibleWithReadOnlyLists => true;
@@ -43,8 +43,7 @@ namespace PocketGems.Parameters.Validation.Attributes
             if (_isAssetReference)
                 return;
 #endif
-            var methodName = nameof(ParameterReference<IBaseInfo>.GetInfo);
-            _paramRefGetInfoMethod = _validationType.GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
+            _referencedTypeName = _validationType.GetGenericArguments()[0].Name;
         }
 
         protected override string ValidateElement(object element)
@@ -79,22 +78,14 @@ namespace PocketGems.Parameters.Validation.Attributes
 
         private string ValidateParameterReference(ParameterReference parameterReference)
         {
-            if (string.IsNullOrEmpty(parameterReference.AssignedGUID) &&
-                string.IsNullOrEmpty(parameterReference.AssignedIdentifier))
+            // IsNullOrEmpty, not HasAssignedValue, so a whitespace guid or identifier is reported
+            string guid = parameterReference.AssignedGUID;
+            if ((string.IsNullOrEmpty(guid) && string.IsNullOrEmpty(parameterReference.AssignedIdentifier)) ||
+                parameterReference.AssignedValueExists(_parameterManager))
                 return null;
-
-            var args = new object[] { _parameterManager };
-            object info = _paramRefGetInfoMethod.Invoke(parameterReference, args);
-            if (info == null)
-            {
-                var interfaceType = parameterReference.GetType().GetGenericArguments()[0];
-                if (!string.IsNullOrEmpty(parameterReference.AssignedGUID))
-                    return $"cannot find parameter scriptable object {interfaceType.Name} with guid {parameterReference.AssignedGUID}";
-                return
-                    $"cannot find parameter scriptable object {interfaceType.Name} with identifier {parameterReference.AssignedIdentifier}";
-            }
-
-            return null;
+            return !string.IsNullOrEmpty(guid)
+                ? $"references {_referencedTypeName} with GUID {guid}, which is missing (removed, or deleted by an override)"
+                : $"references {_referencedTypeName} \"{parameterReference.AssignedIdentifier}\", which is missing (removed, or deleted by an override)";
         }
     }
 }
