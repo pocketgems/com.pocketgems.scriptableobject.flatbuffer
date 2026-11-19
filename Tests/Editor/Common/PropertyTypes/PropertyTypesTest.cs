@@ -166,6 +166,10 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             Assert.IsNotEmpty(propertyType.FlatBufferEditPropertyCode(1, 10, "value"));
             Assert.IsNotEmpty(propertyType.FlatBufferRevertEditPropertyCode(1));
 
+            // FlatBuffer data is only read through FlatBufferData, which throws for rows added by overrides
+            StringAssert.Contains("FlatBufferData()", propertyType.FlatBufferPropertyImplementationCode(1));
+            StringAssert.DoesNotContain("_fb.", propertyType.FlatBufferPropertyImplementationCode(1));
+
             if (expectNullPrepareSource)
                 Assert.IsNull(propertyType.FlatBufferBuilderPrepareCode(TableName));
             else
@@ -284,6 +288,17 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             Assert.AreEqual(2, attributes.Count);
             Assert.AreEqual("MyAttribute(\"blah1\")", attributes[0]);
             Assert.AreEqual("MyAttribute(\"blah2\")", attributes[1]);
+        }
+
+        [Test]
+        public void StructReferenceAcceptsEdits()
+        {
+            var propertyType = CreatePropertyType(nameof(ITestInfo.MyStruct));
+            Assert.AreEqual("if (string.IsNullOrEmpty(value)) { error = \"a struct reference needs a key path or guid\"; return false; }\n" +
+                            "return TrySetOverride<string>(3, value, 10, out error);",
+                propertyType.FlatBufferEditPropertyCode(3, 10, "value"));
+            StringAssert.Contains("new ParameterStructReferenceRuntime<ITestStruct>(_parameterManager, TryGetOverride<string>(3, out var val) ? val : FlatBufferData().",
+                propertyType.FlatBufferPropertyImplementationCode(3));
         }
 
         [Test]

@@ -14,8 +14,19 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         public override string ScriptableObjectPropertyImplementationCode() =>
             $"public Color {PropertyName} => {FieldName};";
 
-        public override string FlatBufferPropertyImplementationCode(int propertyIndex) =>
-            $"public Color {PropertyName} => TryGetOverride<Color>({propertyIndex}, out var val) ? val : new Color(_fb.{fbPropertyR}, _fb.{fbPropertyG}, _fb.{fbPropertyB}, _fb.{fbPropertyA});";
+        public override string FlatBufferPropertyImplementationCode(int propertyIndex)
+        {
+            return $"public Color {PropertyName}\n" +
+                   $"{{\n" +
+                   $"    get\n" +
+                   $"    {{\n" +
+                   $"        if (TryGetOverride<Color>({propertyIndex}, out var val))\n" +
+                   $"            return val;\n" +
+                   $"        var fb = FlatBufferData();\n" +
+                   $"        return new Color(fb.{fbPropertyR}, fb.{fbPropertyG}, fb.{fbPropertyB}, fb.{fbPropertyA});\n" +
+                   $"    }}\n" +
+                   $"}}";
+        }
 
         public override string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName) =>
             $"return TrySetOverride<Color>({propertyIndex}, {FromStringCode(variableName)}, {maxPropertyIndex}, out error);";

@@ -16,9 +16,9 @@ namespace PocketGems.Parameters.Common.Models.Editor
             Assert.AreEqual("Parameters", parameterInterface.GeneratedNameSpace);
             Assert.AreEqual(interfaceType.Name, parameterInterface.InterfaceName);
             Assert.AreEqual(baseName, parameterInterface.BaseName);
-            Assert.AreEqual($"{baseName}FlatBuffer", parameterInterface.FlatBufferClassName(false));
+            Assert.AreEqual($"{baseName}Instance", parameterInterface.InstanceClassName(false));
             Assert.AreEqual($"{baseName}FlatBufferStruct", parameterInterface.FlatBufferStructName(false));
-            Assert.AreEqual($"{baseName}FlatBuffer.cs", parameterInterface.FlatBufferClassName(true));
+            Assert.AreEqual($"{baseName}Instance.cs", parameterInterface.InstanceClassName(true));
             Assert.AreEqual($"{baseName}FlatBufferStruct.cs", parameterInterface.FlatBufferStructName(true));
             Assert.AreEqual($"{baseName}Validator.cs", parameterInterface.ValidatorClassName(true));
 

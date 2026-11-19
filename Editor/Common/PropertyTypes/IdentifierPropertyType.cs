@@ -23,7 +23,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             $"private string {CachedFieldName}; // cached identifier";
 
         public override string FlatBufferPropertyImplementationCode(int propertyIndex) =>
-            $"public {_typeKeyword} {PropertyName} => {CachedFieldName} ??= _fb.{FlatBufferStructPropertyName};";
+            $"public {_typeKeyword} {PropertyName} => {CachedFieldName} ??= FlatBufferData().{FlatBufferStructPropertyName};";
 
         public override string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName) =>
             $"throw new Exception(\"Cannot edit {PropertyName}.\");";

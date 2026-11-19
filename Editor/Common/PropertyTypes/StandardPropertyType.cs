@@ -22,7 +22,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             $"public {_typeKeyword} {PropertyName} => {FieldName};";
 
         public override string FlatBufferPropertyImplementationCode(int propertyIndex) =>
-            $"public {_typeKeyword} {PropertyName} => TryGetOverride<{_typeKeyword}>({propertyIndex}, out var val) ? val : _fb.{FlatBufferStructPropertyName};";
+            $"public {_typeKeyword} {PropertyName} => TryGetOverride<{_typeKeyword}>({propertyIndex}, out var val) ? val : FlatBufferData().{FlatBufferStructPropertyName};";
 
         public override string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName) =>
             $"return TrySetOverride<{_typeKeyword}>({propertyIndex}, {FromStringCode(variableName)}, {maxPropertyIndex}, out error);";

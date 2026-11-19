@@ -49,9 +49,10 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
                      $"            return new ReadOnlyListContainer<string>(\n" +
                      $"                () => val.Length,\n" +
                      $"                i => {localizationCall}(val[i]));\n" +
+                     $"        var fb = FlatBufferData();\n" +
                      $"        return new ReadOnlyListContainer<string>(\n" +
-                     $"            () => _fb.{FlatBufferStructPropertyName}Length,\n" +
-                     $"            i => {localizationCall}(_fb.{FlatBufferStructPropertyName}(i)));\n" +
+                     $"            () => fb.{FlatBufferStructPropertyName}Length,\n" +
+                     $"            i => {localizationCall}(fb.{FlatBufferStructPropertyName}(i)));\n" +
                      $"    }}\n" +
                      $"}}";
             }
@@ -62,9 +63,10 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
                    $"    {{\n" +
                    $"        if (TryGetOverride<string[]>({propertyIndex}, out var val))\n" +
                    $"            return val;\n" +
+                   $"        var fb = FlatBufferData();\n" +
                    $"        return new ReadOnlyListContainer<string>(\n" +
-                   $"            () => _fb.{FlatBufferStructPropertyName}Length,\n" +
-                   $"            i => _fb.{FlatBufferStructPropertyName}(i));\n" +
+                   $"            () => fb.{FlatBufferStructPropertyName}Length,\n" +
+                   $"            i => fb.{FlatBufferStructPropertyName}(i));\n" +
                    $"    }}\n" +
                    $"}}";
         }

@@ -29,8 +29,9 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
                    $"    {{\n" +
                    $"        if (TryGetOverride<{ClassName}>({propertyIndex}, out var val))\n" +
                    $"            return val;\n" +
-                   $"        var assetRef = new {ClassName}(_fb.{FlatBufferStructPropertyName});\n" +
-                   $"        var subObjectName = _fb.{SubObjectNameFlatBufferStructPropertyName};\n" +
+                   $"        var fb = FlatBufferData();\n" +
+                   $"        var assetRef = new {ClassName}(fb.{FlatBufferStructPropertyName});\n" +
+                   $"        var subObjectName = fb.{SubObjectNameFlatBufferStructPropertyName};\n" +
                    $"        if (!string.IsNullOrEmpty(subObjectName))\n" +
                    $"            assetRef.SubObjectName = subObjectName;\n" +
                    $"        return assetRef;\n" +
@@ -39,7 +40,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         }
 
         // no need to set validateGuid to true in the this call to FromString - the check only checks the AssetDatabase in editor.
-        // Also, this check an potentially give false positive if the asset is a new asset from an addresss catalog we're ab testing in.
+        // Also, this check an potentially give false positive if the asset is a new asset from an addresss catalog used by overrides.
         public override string FlatBufferEditPropertyCode(int propertyIndex, int maxPropertyIndex, string variableName) =>
             $"return TrySetOverride<{ClassName}>({propertyIndex}, {nameof(CSVValueConverter)}.{ClassName}.FromString({variableName}), {maxPropertyIndex}, out error);";
 

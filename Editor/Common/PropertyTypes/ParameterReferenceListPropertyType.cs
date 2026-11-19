@@ -50,9 +50,10 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
                    $"            return new ReadOnlyListContainer<ParameterReference<{_genericType.Name}>>(\n" +
                    $"                () => val.Length,\n" +
                    $"                i => new ParameterReference<{_genericType.Name}>(_parameterManager, val[i], true));\n" +
+                   $"        var fb = FlatBufferData();\n" +
                    $"        return new ReadOnlyListContainer<ParameterReference<{_genericType.Name}>>(\n" +
-                   $"            () => _fb.{FlatBufferStructPropertyName}Length,\n" +
-                   $"                i => new ParameterReference<{_genericType.Name}>(_parameterManager, _fb.{FlatBufferStructPropertyName}(i)));\n" +
+                   $"            () => fb.{FlatBufferStructPropertyName}Length,\n" +
+                   $"                i => new ParameterReference<{_genericType.Name}>(_parameterManager, fb.{FlatBufferStructPropertyName}(i)));\n" +
                    $"    }}\n" +
                    $"}}";
         }

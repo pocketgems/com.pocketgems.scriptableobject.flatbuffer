@@ -34,8 +34,9 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
                      $"    {{\n" +
                      $"        if (TryGetOverride<{_typeKeyword}[]>({propertyIndex}, out var val))\n" +
                      $"            return val;\n" +
+                     $"        var fb = FlatBufferData();\n" +
                      $"        return new ReadOnlyListContainer<{_typeKeyword}>(\n" +
-                     $"            () => _fb.{FlatBufferStructPropertyName}Length / {dimensions},\n");
+                     $"            () => fb.{FlatBufferStructPropertyName}Length / {dimensions},\n");
             s.Append($"            i =>\n" +
                      $"            {{\n" +
                      $"                int offset = i * {dimensions};\n" +
@@ -44,7 +45,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
             {
                 string suffix = i == dimensions - 1 ? "" : ",";
                 string offset = i == 0 ? "" : $" + {i}";
-                s.Append($"                    _fb.{FlatBufferStructPropertyName}(offset{offset}){suffix}\n");
+                s.Append($"                    fb.{FlatBufferStructPropertyName}(offset{offset}){suffix}\n");
             }
             s.Append($"                    );\n");
             s.Append($"            }});\n" +

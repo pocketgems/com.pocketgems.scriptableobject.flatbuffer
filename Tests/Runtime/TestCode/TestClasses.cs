@@ -12,17 +12,28 @@ public abstract class MockMutableParameter : IMutableParameter
     public string EditPropertyPropertyName;
     public string EditPropertyValue;
     public string ReturnEditPropertyError;
+    public Dictionary<string, string> EditedValues = new();
 
     public string RevertEditPropertyPropertyName;
     public string ReturnRevertEditPropertyError;
 
-    public bool EditProperty(IParameterManager parameterManager, string propertyName, string value, out string error)
+    public virtual bool EditProperty(IParameterManager parameterManager, string propertyName, string value, out string error)
     {
         EditPropertyCalls++;
         EditPropertyPropertyName = propertyName;
         EditPropertyValue = value;
         error = ReturnEditPropertyError;
-        return string.IsNullOrWhiteSpace(ReturnEditPropertyError);
+        if (!string.IsNullOrWhiteSpace(ReturnEditPropertyError))
+            return false;
+
+        // like a generated class, which fails on a property that already has an edit
+        if (EditedValues.ContainsKey(propertyName))
+        {
+            error = "Overrides is already set.";
+            return false;
+        }
+        EditedValues[propertyName] = value;
+        return true;
     }
 
     public bool RevertEditedProperty(string propertyName, out string error)
@@ -30,10 +41,23 @@ public abstract class MockMutableParameter : IMutableParameter
         RevertEditPropertyCalls++;
         RevertEditPropertyPropertyName = propertyName;
         error = ReturnRevertEditPropertyError;
-        return string.IsNullOrWhiteSpace(ReturnRevertEditPropertyError);
+        if (!string.IsNullOrWhiteSpace(ReturnRevertEditPropertyError))
+            return false;
+
+        // like a generated class, which fails on a property that has no edit
+        if (!EditedValues.Remove(propertyName))
+        {
+            error = "No overrides to remove.";
+            return false;
+        }
+        return true;
     }
 
-    public void RemoveAllEdits() => RemoveAllEditCalls++;
+    public void RemoveAllEdits()
+    {
+        RemoveAllEditCalls++;
+        EditedValues.Clear();
+    }
 
     public abstract IMutableParameter CreateLinkedMutableParameter(IParameterManager parameterManager);
 }
@@ -121,7 +145,121 @@ public class MockInnerKeyValueStruct : MockMutableBaseStruct, IInnerKeyValueStru
         Value = value;
     }
 
-    public override IMutableParameter CreateLinkedMutableParameter(IParameterManager parameterManager) => throw new System.NotImplementedException();
+    public override IMutableParameter CreateLinkedMutableParameter(IParameterManager parameterManager) => new MockInnerKeyValueStruct(Description, Value);
+}
+
+/// <summary>
+/// Stands in for the generated factory: creates the mock rows below and hands them an edit error to return.
+/// </summary>
+public class FakeParameterFactory : IParameterFactory
+{
+    public int CreateCalls;
+    public string EditError;
+
+    public ICreatedParameter Create(IParameterManager parameterManager, string interfaceName, string identifierOrKeyPath)
+    {
+        switch (interfaceName)
+        {
+            case nameof(ISubInterfaceAInfo):
+                CreateCalls++;
+                return new FakeCreatedParameter(new MockAddedSubclassAInfo(identifierOrKeyPath, EditError), true, identifierOrKeyPath,
+                    new[] { nameof(ISubInterfaceAInfo) }, new[] { "Name" });
+            case nameof(ISubInterfaceBInfo):
+                CreateCalls++;
+                return new FakeCreatedParameter(new MockAddedSubclassBInfo(identifierOrKeyPath, EditError), true, identifierOrKeyPath,
+                    new[] { nameof(ISubInterfaceAInfo), nameof(ISubInterfaceBInfo) }, new[] { "Name" });
+            case nameof(IKeyValueStruct):
+                CreateCalls++;
+                return new FakeCreatedParameter(new MockAddedKeyValueStruct(parameterManager), false, identifierOrKeyPath,
+                    new[] { nameof(IKeyValueStruct) }, new[] { "Description", "Value", "InnerStruct" });
+            case nameof(IInnerKeyValueStruct):
+                CreateCalls++;
+                return new FakeCreatedParameter(new MockAddedInnerKeyValueStruct(), false, identifierOrKeyPath,
+                    new[] { nameof(IInnerKeyValueStruct) }, new[] { "Description", "Value" });
+            default:
+                return null;
+        }
+    }
+}
+
+/// <summary>
+/// Stands in for the CreatedParameter class generated next to the ParameterDataLoader.
+/// </summary>
+public class FakeCreatedParameter : ICreatedParameter
+{
+    public FakeCreatedParameter(IMutableParameter parameter, bool isInfo, string identifierOrKeyPath,
+        IReadOnlyList<string> interfaceNames, IReadOnlyList<string> columns)
+    {
+        Parameter = parameter;
+        IsInfo = isInfo;
+        IdentifierOrKeyPath = identifierOrKeyPath;
+        InterfaceNames = interfaceNames;
+        Columns = columns;
+    }
+
+    public IMutableParameter Parameter { get; }
+    public bool IsInfo { get; }
+    public string IdentifierOrKeyPath { get; }
+    public IReadOnlyList<string> InterfaceNames { get; }
+    public IReadOnlyList<string> Columns { get; }
+}
+
+public class MockAddedSubclassAInfo : MockSubclassAInfo
+{
+    public MockAddedSubclassAInfo(string identifier, string editError) : base(identifier) => ReturnEditPropertyError = editError;
+
+    // like a generated class, which fails on a name that isn't one of its columns
+    public override bool EditProperty(IParameterManager parameterManager, string propertyName, string value, out string error)
+    {
+        if (propertyName != "Name")
+        {
+            error = "property doesn't exist";
+            return false;
+        }
+        return base.EditProperty(parameterManager, propertyName, value, out error);
+    }
+}
+
+public class MockAddedSubclassBInfo : MockSubclassBInfo
+{
+    public MockAddedSubclassBInfo(string identifier, string editError) : base(identifier) => ReturnEditPropertyError = editError;
+}
+
+public class MockAddedKeyValueStruct : MockKeyValueStruct
+{
+    private readonly IParameterManager _parameterManager;
+
+    public MockAddedKeyValueStruct(IParameterManager parameterManager) :
+        base(parameterManager, null, 0, null, new string[0]) => _parameterManager = parameterManager;
+
+    public override bool EditProperty(IParameterManager parameterManager, string propertyName, string value, out string error)
+    {
+        if (!base.EditProperty(parameterManager, propertyName, value, out error))
+            return false;
+        if (propertyName == "Description")
+            Description = value;
+        else if (propertyName == "Value")
+            Value = int.Parse(value);
+        else if (propertyName == "InnerStruct")
+            _innerStruct = new ParameterStructReferenceRuntime<IInnerKeyValueStruct>(_parameterManager, value);
+        return true;
+    }
+}
+
+public class MockAddedInnerKeyValueStruct : MockInnerKeyValueStruct
+{
+    public MockAddedInnerKeyValueStruct() : base(null, 0) { }
+
+    public override bool EditProperty(IParameterManager parameterManager, string propertyName, string value, out string error)
+    {
+        if (!base.EditProperty(parameterManager, propertyName, value, out error))
+            return false;
+        if (propertyName == "Description")
+            Description = value;
+        else if (propertyName == "Value")
+            Value = int.Parse(value);
+        return true;
+    }
 }
 
 public class MockTestValidationInfo : IMutableParameter, ITestValidationInfo

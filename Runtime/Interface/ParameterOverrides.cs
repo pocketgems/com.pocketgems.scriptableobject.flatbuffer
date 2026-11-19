@@ -5,7 +5,7 @@ using UnityEngine;
 namespace PocketGems.Parameters.Interface
 {
     /// <summary>
-    /// Internal container ab tests that IMutableParameter might have.
+    /// Internal container for overrides that IMutableParameter might have.
     ///
     /// Developer Memory Notes:
     /// This container could be implemented with a string[] instead of the current two data structures.

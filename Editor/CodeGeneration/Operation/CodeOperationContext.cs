@@ -10,7 +10,7 @@ namespace PocketGems.Parameters.CodeGeneration.Operation.Editor
         public string GeneratedCodeDir => EditorParameterConstants.CodeGeneration.RootDir;
         public string GeneratedCodeScriptableObjectsDir => EditorParameterConstants.CodeGeneration.ScriptableObjectsDir;
         public string GeneratedCodeStructsDir => EditorParameterConstants.CodeGeneration.StructsDir;
-        public string GeneratedCodeFlatBufferClassesDir => EditorParameterConstants.CodeGeneration.FlatBufferClassesDir;
+        public string GeneratedCodeRuntimeInstancesDir => EditorParameterConstants.CodeGeneration.RuntimeInstancesDir;
         public string GeneratedCodeFlatBufferStructsDir => EditorParameterConstants.CodeGeneration.FlatBufferStructsDir;
         public string GeneratedCodeFlatBufferBuilderDir => EditorParameterConstants.CodeGeneration.FlatBufferBuilderDir;
         public string GeneratedCodeCSVBridgeDir => EditorParameterConstants.CodeGeneration.CSVBridgeDir;

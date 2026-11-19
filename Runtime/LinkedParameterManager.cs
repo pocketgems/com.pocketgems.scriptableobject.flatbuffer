@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Newtonsoft.Json.Linq;
 using PocketGems.Parameters.Interface;
 using Debug = UnityEngine.Debug;
 
@@ -17,11 +16,16 @@ namespace PocketGems.Parameters
         /// parameter manager will affect this shared pool of parameters
         ///
         /// The only modification that isn't linked between the two are the overrides applied with ApplyOverrides() and
-        /// ClearAllOverrides().
+        /// ClearAllOverrides().  The parameter factory is copied from the source when this is built, so set it on the
+        /// source first (loading the data does).
         ///
         /// This manager is used to save memory when multiple parameter managers are needed with the same
         /// base parameters but different ApplyOverrides() applied to each one.  Using a LinkedParameterManager
         /// comes at a performance cost since each Get query can create a new IMutableParameter.
+        ///
+        /// An edit's value is only checked when its row is first read, so a bad value on a row nobody has read
+        /// doesn't fail ApplyOverrides(): the error is logged on that first read and the row keeps its loaded value.
+        /// That is deliberate, so applying overrides doesn't create a linked instance for every edited row.
         /// </summary>
         /// <param name="parameterManager">the source parameter manager</param>
         /// <param name="cacheDiscardFrequencySeconds">the min frequency to check for garbage collected
@@ -31,6 +35,7 @@ namespace PocketGems.Parameters
             base(parameterManager._identifierMappings,
             parameterManager._guidMappings)
         {
+            ParameterFactory = parameterManager.ParameterFactory;
             _cacheDiscardStopwatch = Stopwatch.StartNew();
             _cacheDiscardFrequencySeconds = cacheDiscardFrequencySeconds;
             _linkedMutableParameterCache = new();
@@ -58,7 +63,7 @@ namespace PocketGems.Parameters
         }
 
         /// <inheritdoc cref="IMutableParameterManager.ApplyOverrides"/>
-        public override bool ApplyOverrides(JObject json, out IReadOnlyList<string> errors)
+        public override bool ApplyOverrides(string json, out IReadOnlyList<string> errors)
         {
             CheckToClearGarbageCollectedParameters();
 
@@ -80,6 +85,9 @@ namespace PocketGems.Parameters
                         linkedParameter.RemoveAllEdits();
                 }
             }
+
+            // removes added and deleted rows
+            base.ClearAllOverrides();
         }
 
         protected override IMutableParameter Get(string type, string identifier)
@@ -112,37 +120,42 @@ namespace PocketGems.Parameters
             return GetOrCreateLinkedMutableParameter(parameter);
         }
 
-        protected override bool ApplyOverride(string csvName, string interfaceType, string identifierOrKeyPathOrGuid, string propertyName, string value, out string error)
+        protected override bool ApplyEditOverride(string csvName, string interfaceType, string identifierOrKeyPathOrGuid, string propertyName, string value, out string error)
         {
-            // get the original mutable parameter that it would've applied to for mapping
-            var mutableParameter = base.Get(interfaceType, identifierOrKeyPathOrGuid) ??
-                               base.GetWithGUID(interfaceType, identifierOrKeyPathOrGuid, false) ??
-                               base.GetStructWithGUID(interfaceType, identifierOrKeyPathOrGuid, false);
+            // the source row, which the overrides are mapped by
+            var mutableParameter = GetCurrentForOverride(interfaceType, identifierOrKeyPathOrGuid);
             if (mutableParameter == null)
             {
-                error = $"Cannot find parameter for csv [{csvName}] and identifier/guid [{identifierOrKeyPathOrGuid}].";
+                error = EditTargetMissingError(csvName, interfaceType, identifierOrKeyPathOrGuid, propertyName);
                 return false;
             }
 
-            // save the ab test override to lazily apply later
-            if (!_overridesToApplyByParameter.TryGetValue(mutableParameter, out var overridesToApply))
+            if (IsAddedByOverride(mutableParameter))
             {
-                overridesToApply = new();
-                _overridesToApplyByParameter[mutableParameter] = overridesToApply;
+                error = EditAddedRowError(interfaceType, identifierOrKeyPathOrGuid, propertyName);
+                return false;
             }
-            foreach (var (existingProperty, _) in overridesToApply)
+
+            if (_overridesToApplyByParameter.TryGetValue(mutableParameter, out var overridesToApply))
             {
-                if (existingProperty == propertyName)
+                foreach (var (existingProperty, _) in overridesToApply)
                 {
-                    error = $"({interfaceType})[{identifierOrKeyPathOrGuid}] has more than one value for [{propertyName}] assigned ";
-                    return false;
+                    if (existingProperty == propertyName)
+                    {
+                        error = $"({interfaceType})[{identifierOrKeyPathOrGuid}] has more than one value for [{propertyName}] assigned ";
+                        return false;
+                    }
                 }
             }
-            overridesToApply.Add((propertyName, value));
 
             lock (_linkedMutableParameterCache)
             {
-                // find a cached instance that may already exist to apply
+                /*
+                 * Apply to the cached linked instance if one exists.  If none does, the value is only checked when the
+                 * row is first read, in GetOrCreateLinkedMutableParameter, which logs the error and leaves the loaded
+                 * value.  That is a deliberate trade-off: creating a linked instance per edited row here would cost the
+                 * memory and time this manager exists to save, so a bad value on an unread row doesn't fail the call.
+                 */
                 if (_linkedMutableParameterCache.TryGetValue(mutableParameter, out WeakReference weakReference))
                 {
                     if (weakReference.Target is IMutableParameter linkedParameter)
@@ -155,21 +168,28 @@ namespace PocketGems.Parameters
                         }
                     }
                 }
+
+                // save the override to lazily apply later, once it has applied to any cached instance.  Inside the
+                // lock, so a linked instance created meanwhile can't miss it.
+                if (overridesToApply == null)
+                {
+                    overridesToApply = new();
+                    _overridesToApplyByParameter[mutableParameter] = overridesToApply;
+                }
+                overridesToApply.Add((propertyName, value));
             }
 
             error = null;
             return true;
         }
 
-        protected override bool RemoveOverride(string csvName, string interfaceType, string identifierOrKeyPathOrGuid, string propertyName, out string error)
+        protected override bool RemoveEditOverride(string csvName, string interfaceType, string identifierOrKeyPathOrGuid, string propertyName, out string error)
         {
-            // get the original mutable parameter that it would've applied to for mapping
-            var mutableParameter = base.Get(interfaceType, identifierOrKeyPathOrGuid) ??
-                               base.GetWithGUID(interfaceType, identifierOrKeyPathOrGuid, false) ??
-                               base.GetStructWithGUID(interfaceType, identifierOrKeyPathOrGuid, false);
+            // the source row, which the overrides are mapped by
+            var mutableParameter = GetCurrentForOverride(interfaceType, identifierOrKeyPathOrGuid);
             if (mutableParameter == null)
             {
-                error = $"Cannot find parameter for csv [{csvName}] and identifier/guid [{identifierOrKeyPathOrGuid}].";
+                error = EditTargetMissingError(csvName, interfaceType, identifierOrKeyPathOrGuid, propertyName);
                 return false;
             }
 
@@ -199,9 +219,13 @@ namespace PocketGems.Parameters
             return true;
         }
 
+        protected override bool HasEditOverride(IMutableParameter parameter) =>
+            _overridesToApplyByParameter.ContainsKey(parameter);
+
         #endregion
 
         #region private
+
 
         /*
          * A mapping of the original mutable parameter to the params to be applied to it.
@@ -221,6 +245,10 @@ namespace PocketGems.Parameters
 
         private IMutableParameter GetOrCreateLinkedMutableParameter(IMutableParameter sourceParameter)
         {
+            // a row this manager added is its own: nothing else shares it and it can't be edited, so it needs no copy
+            if (IsAddedByOverride(sourceParameter))
+                return sourceParameter;
+
             CheckToClearGarbageCollectedParameters();
 
             IMutableParameter linkedParameter;

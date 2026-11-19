@@ -19,8 +19,8 @@ namespace PocketGems.Parameters.Editor
             mock.GeneratedNameSpace.ReturnsForAnyArgs("MyNamespace");
             mock.ScriptableObjectClassName(true).Returns($"{baseName}ScriptableObject.cs");
             mock.ScriptableObjectClassName(false).Returns($"{baseName}ScriptableObject");
-            mock.FlatBufferClassName(true).Returns($"{baseName}FBClass.cs");
-            mock.FlatBufferClassName(false).Returns($"{baseName}FBClass");
+            mock.InstanceClassName(true).Returns($"{baseName}Instance.cs");
+            mock.InstanceClassName(false).Returns($"{baseName}Instance");
             mock.FlatBufferStructName(true).Returns($"{baseName}FBStruct.cs");
             mock.FlatBufferStructName(false).Returns($"{baseName}FBStruct");
             mock.ValidatorClassName(true).Returns($"{baseName}Validator.cs");
@@ -45,8 +45,8 @@ namespace PocketGems.Parameters.Editor
             mock.GeneratedNameSpace.ReturnsForAnyArgs("MyNamespace");
             mock.StructName(true).Returns($"{baseName}.cs");
             mock.StructName(false).Returns($"{baseName}");
-            mock.FlatBufferClassName(true).Returns($"{baseName}FBClass.cs");
-            mock.FlatBufferClassName(false).Returns($"{baseName}FBClass");
+            mock.InstanceClassName(true).Returns($"{baseName}Instance.cs");
+            mock.InstanceClassName(false).Returns($"{baseName}Instance");
             mock.FlatBufferStructName(true).Returns($"{baseName}FBStruct.cs");
             mock.FlatBufferStructName(false).Returns($"{baseName}FBStruct");
             mock.ValidatorClassName(true).Returns($"{baseName}Validator.cs");

@@ -30,11 +30,12 @@ namespace PocketGems.Parameters.Common.Models.Editor
         string GeneratedNameSpace { get; }
 
         /// <summary>
-        /// Generated class that implements this interface and returns data from the flat buffer.
+        /// Generated class that implements this interface for a row: one read from the flat buffer, or one added by
+        /// overrides.  Named {BaseName}Instance.
         /// </summary>
         /// <param name="includeExtension">if true, includes the file extension</param>
-        /// <returns>the FlatBuffer object class name</returns>
-        string FlatBufferClassName(bool includeExtension);
+        /// <returns>the instance class name</returns>
+        string InstanceClassName(bool includeExtension);
 
         /// <summary>
         /// Generated struct that represents data stored in the flat buffer.

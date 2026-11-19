@@ -20,9 +20,25 @@ namespace PocketGems.Parameters
         public string AssignedGUID => guid;
 
         /// <summary>
-        ///  Identifier is only set at runtime (abtesting) and not serialized in the editor.
+        ///  Identifier is only set at runtime (overrides) and not serialized in the editor.
         /// </summary>
         public string AssignedIdentifier => _identifier;
+
+        /// <summary>
+        /// True if this reference has been assigned a guid/identifier that might exist.
+        ///
+        /// A ParameterReference could have HasAssignedValue be true but InfoExists return false.
+        /// This could happen if the assigned guid/identifier doesn't exist in the ParameterManager
+        /// due to an incorrect assignment (validation wasn't ran or the identifier was assigned at
+        /// runtime and incorrect).
+        /// </summary>
+        public bool HasAssignedValue => !string.IsNullOrWhiteSpace(guid) || !string.IsNullOrWhiteSpace(_identifier);
+
+        /// <summary>
+        /// True if the assigned guid/identifier's row exists in the parameter manager.  Unlike Info, it doesn't log
+        /// an error when the row is missing, so validation can report it once in its own errors.
+        /// </summary>
+        internal abstract bool AssignedValueExists(IParameterManager parameterManager);
 
         /// <summary>
         /// Constructor for ParameterReferences.
@@ -127,15 +143,15 @@ namespace PocketGems.Parameters
         /// </summary>
         public bool InfoExists => Info != null;
 
-        /// <summary>
-        /// True if this reference has been assigned a guid/identifier that might exist.
-        ///
-        /// A ParameterReference could have HasAssignedValue be true but InfoExists return false.
-        /// This could happen if the assigned guid/identifier doesn't exist in the ParameterManager
-        /// due to an incorrect assignment (validation wasn't ran or the identifier was assigned at
-        /// runtime and incorrect).
-        /// </summary>
-        public bool HasAssignedValue => !string.IsNullOrWhiteSpace(guid) || !string.IsNullOrWhiteSpace(_identifier);
+        internal override bool AssignedValueExists(IParameterManager parameterManager)
+        {
+            if (string.IsNullOrWhiteSpace(guid))
+                return !string.IsNullOrWhiteSpace(_identifier) && parameterManager.Get<T>(_identifier) != null;
+            // A ParameterManager can look the guid up without logging; other managers fall back to GetWithGUID
+            if (parameterManager is ParameterManager manager)
+                return manager.GetCurrentWithGUID(typeof(T).Name, guid, false) != null;
+            return parameterManager.GetWithGUID<T>(guid) != null;
+        }
 
         internal T GetInfo(IParameterManager parameterManager)
         {

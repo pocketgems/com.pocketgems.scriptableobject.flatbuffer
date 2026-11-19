@@ -213,7 +213,9 @@ namespace PocketGems.Parameters.Editor
 
             bool interfaceImplementationError = false;
             var soPath = NamingUtil.RelativePath(EditorParameterConstants.CodeGeneration.ScriptableObjectsDir);
-            var fbPath = NamingUtil.RelativePath(EditorParameterConstants.CodeGeneration.FlatBufferClassesDir);
+            var fbPath = NamingUtil.RelativePath(EditorParameterConstants.CodeGeneration.RuntimeInstancesDir);
+            // classes generated before 6.0.0, which don't compile against it
+            var legacyPath = NamingUtil.RelativePath(CodeGenerator.LegacyFlatBufferClassesDir(EditorParameterConstants.CodeGeneration.RuntimeInstancesDir));
 
             for (int i = 0; i < messages.Length; i++)
             {
@@ -221,7 +223,7 @@ namespace PocketGems.Parameters.Editor
                 if (message.type != CompilerMessageType.Error)
                     continue;
 
-                if (!message.file.StartsWith(soPath) && !message.file.StartsWith(fbPath))
+                if (!message.file.StartsWith(soPath) && !message.file.StartsWith(fbPath) && !message.file.StartsWith(legacyPath))
                     continue;
 
                 // error due to interface deletions
@@ -285,10 +287,11 @@ namespace PocketGems.Parameters.Editor
             }
 
             TemporaryAttemptToResolveCompilationErrors(EditorParameterConstants.CodeGeneration.ScriptableObjectsDir, true);
-            TemporaryAttemptToResolveCompilationErrors(EditorParameterConstants.CodeGeneration.FlatBufferClassesDir, true);
+            TemporaryAttemptToResolveCompilationErrors(EditorParameterConstants.CodeGeneration.RuntimeInstancesDir, true);
             TemporaryAttemptToResolveCompilationErrors(EditorParameterConstants.CodeGeneration.StructsDir, true);
             TemporaryAttemptToResolveCompilationErrors(EditorParameterConstants.CodeGeneration.CSVBridgeDir, false);
             TemporaryAttemptToResolveCompilationErrors(EditorParameterConstants.CodeGeneration.FlatBufferBuilderDir, false);
+            CodeGenerator.DeleteLegacyFlatBufferClassesDir(EditorParameterConstants.CodeGeneration.RuntimeInstancesDir);
 
             // generate an empty data files so it doesn't reference interfaces
             var context = new CodeOperationContext();

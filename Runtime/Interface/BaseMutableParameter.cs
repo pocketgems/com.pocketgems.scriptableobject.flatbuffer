@@ -1,11 +1,14 @@
 namespace PocketGems.Parameters.Interface
 {
-    public abstract class BaseInfoFlatBuffer : IMutableParameter
+    /// <summary>
+    /// Base class of the generated parameter classes: rows read from FlatBuffer data, and rows added by overrides.
+    /// </summary>
+    public abstract class BaseMutableParameter : IMutableParameter
     {
         protected readonly IParameterManager _parameterManager;
         protected ParameterOverrides _parameterOverrides;
 
-        protected BaseInfoFlatBuffer(IParameterManager parameterManager)
+        protected BaseMutableParameter(IParameterManager parameterManager)
         {
             _parameterManager = parameterManager;
         }

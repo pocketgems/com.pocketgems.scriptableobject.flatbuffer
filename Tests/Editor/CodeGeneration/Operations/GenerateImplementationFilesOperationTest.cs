@@ -10,7 +10,8 @@ namespace PocketGems.Parameters.CodeGeneration.Operations.Editor
     public class GenerateImplementationFilesOperationTest : BaseCodeOperationTest
     {
         private const string TestScriptableObjectsDir = "TestScriptableObjectsDir";
-        private const string TestFlatBufferClassesDir = "TestFlatBufferClassesDir";
+        private const string TestGeneratedCodeDir = "TestGeneratedCodeDir";
+        private static readonly string TestRuntimeInstancesDir = Path.Combine(TestGeneratedCodeDir, "RuntimeInstances");
         private const string TestStructsDir = "TestStructsDir";
 
         [SetUp]
@@ -21,7 +22,7 @@ namespace PocketGems.Parameters.CodeGeneration.Operations.Editor
             TearDown();
 
             _contextMock.GeneratedCodeScriptableObjectsDir.ReturnsForAnyArgs(TestScriptableObjectsDir);
-            _contextMock.GeneratedCodeFlatBufferClassesDir.ReturnsForAnyArgs(TestFlatBufferClassesDir);
+            _contextMock.GeneratedCodeRuntimeInstancesDir.ReturnsForAnyArgs(TestRuntimeInstancesDir);
             _contextMock.GeneratedCodeStructsDir.ReturnsForAnyArgs(TestStructsDir);
         }
 
@@ -37,8 +38,8 @@ namespace PocketGems.Parameters.CodeGeneration.Operations.Editor
         {
             if (Directory.Exists(TestScriptableObjectsDir))
                 Directory.Delete(TestScriptableObjectsDir, true);
-            if (Directory.Exists(TestFlatBufferClassesDir))
-                Directory.Delete(TestFlatBufferClassesDir, true);
+            if (Directory.Exists(TestGeneratedCodeDir))
+                Directory.Delete(TestGeneratedCodeDir, true);
             if (Directory.Exists(TestStructsDir))
                 Directory.Delete(TestStructsDir, true);
         }
@@ -58,7 +59,7 @@ namespace PocketGems.Parameters.CodeGeneration.Operations.Editor
                 // +1 for the menu item file generated
                 Assert.AreEqual(scriptableObjects + 1, FileCount(TestScriptableObjectsDir));
                 Assert.AreEqual(structs, FileCount(TestStructsDir));
-                Assert.AreEqual(flatbuffers, FileCount(TestFlatBufferClassesDir));
+                Assert.AreEqual(flatbuffers, FileCount(TestRuntimeInstancesDir));
             }
 
             AssertFileCounts(infoCount, structsCount, infoCount + structsCount);
@@ -66,8 +67,8 @@ namespace PocketGems.Parameters.CodeGeneration.Operations.Editor
             // add excess files to emulate legacy files
             File.WriteAllText(Path.Combine(TestScriptableObjectsDir, "Test1.cs"), "blah");
             File.WriteAllText(Path.Combine(TestStructsDir, "Test2.cs"), "blah");
-            File.WriteAllText(Path.Combine(TestFlatBufferClassesDir, "Test3.cs"), "blah");
-            File.WriteAllText(Path.Combine(TestFlatBufferClassesDir, "Test4.cs"), "blah");
+            File.WriteAllText(Path.Combine(TestRuntimeInstancesDir, "Test3.cs"), "blah");
+            File.WriteAllText(Path.Combine(TestRuntimeInstancesDir, "Test4.cs"), "blah");
 
             AssertFileCounts(infoCount + 1, structsCount + 1, infoCount + structsCount + 2);
 
@@ -91,7 +92,7 @@ namespace PocketGems.Parameters.CodeGeneration.Operations.Editor
             // only 1 file for the menu item file
             Assert.AreEqual(1, FileCount(TestScriptableObjectsDir));
             Assert.AreEqual(0, FileCount(TestStructsDir));
-            Assert.AreEqual(0, FileCount(TestFlatBufferClassesDir));
+            Assert.AreEqual(0, FileCount(TestRuntimeInstancesDir));
         }
 
         [Test]
@@ -99,15 +100,29 @@ namespace PocketGems.Parameters.CodeGeneration.Operations.Editor
         {
             Directory.CreateDirectory(TestScriptableObjectsDir);
             Directory.CreateDirectory(TestStructsDir);
-            Directory.CreateDirectory(TestFlatBufferClassesDir);
+            Directory.CreateDirectory(TestRuntimeInstancesDir);
 
             // add excess files to emulate legacy files
             File.WriteAllText(Path.Combine(TestScriptableObjectsDir, "Test1.cs"), "blah");
             File.WriteAllText(Path.Combine(TestStructsDir, "Test2.cs"), "blah");
-            File.WriteAllText(Path.Combine(TestFlatBufferClassesDir, "Test3.cs"), "blah");
-            File.WriteAllText(Path.Combine(TestFlatBufferClassesDir, "Test4.cs"), "blah");
+            File.WriteAllText(Path.Combine(TestRuntimeInstancesDir, "Test3.cs"), "blah");
+            File.WriteAllText(Path.Combine(TestRuntimeInstancesDir, "Test4.cs"), "blah");
 
             ExecuteNoInputs();
+        }
+
+        [Test]
+        public void ExecuteRemovesOldClassesFolder()
+        {
+            var oldClassesDir = Path.Combine(TestGeneratedCodeDir, "FlatBufferClasses");
+            Directory.CreateDirectory(oldClassesDir);
+            File.WriteAllText(Path.Combine(oldClassesDir, "OldFlatBuffer.cs"), "blah");
+            File.WriteAllText(oldClassesDir + ".meta", "blah");
+
+            AssertExecute(new GenerateImplementationFilesOperation(), OperationState.Finished);
+
+            Assert.IsFalse(Directory.Exists(oldClassesDir));
+            Assert.IsFalse(File.Exists(oldClassesDir + ".meta"));
         }
     }
 }

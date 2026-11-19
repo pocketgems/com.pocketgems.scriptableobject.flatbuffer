@@ -33,10 +33,10 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         public override string FlatBufferPropertyImplementationCode(int propertyIndex)
         {
             if (HasLocalizationKeyAttribute)
-                return $"public {_typeKeyword} {PropertyName} => {nameof(ParameterLocalizationHandler)}.{nameof(ParameterLocalizationHandler.GetLocalizationKeyTranslation)}(TryGetOverride<{_typeKeyword}>({propertyIndex}, out var val) ? val : _fb.{FlatBufferStructPropertyName});";
+                return $"public {_typeKeyword} {PropertyName} => {nameof(ParameterLocalizationHandler)}.{nameof(ParameterLocalizationHandler.GetLocalizationKeyTranslation)}(TryGetOverride<{_typeKeyword}>({propertyIndex}, out var val) ? val : FlatBufferData().{FlatBufferStructPropertyName});";
 
             if (HasLocalizedScriptAttribute)
-                return $"public {_typeKeyword} {PropertyName} => {nameof(ParameterLocalizationHandler)}.{nameof(ParameterLocalizationHandler.GetLocalizableScriptTranslation)}(TryGetOverride<{_typeKeyword}>({propertyIndex}, out var val) ? val : _fb.{FlatBufferStructPropertyName});";
+                return $"public {_typeKeyword} {PropertyName} => {nameof(ParameterLocalizationHandler)}.{nameof(ParameterLocalizationHandler.GetLocalizableScriptTranslation)}(TryGetOverride<{_typeKeyword}>({propertyIndex}, out var val) ? val : FlatBufferData().{FlatBufferStructPropertyName});";
 
             return base.FlatBufferPropertyImplementationCode(propertyIndex);
         }

@@ -153,12 +153,21 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
         }
 
         [Test]
-        public void GenerateFlatBufferClassFile()
+        public void GenerateRuntimeInstanceFile()
         {
-            CodeGenerator.GenerateFlatBufferClassFile(_mockParameterInfo1, true, TestDirectoryName);
+            CodeGenerator.GenerateRuntimeInstanceFile(_mockParameterInfo1, true, TestDirectoryName);
 
             AssertFileCount(1);
-            AssertFileExists(_mockParameterInfo1.FlatBufferClassName(true));
+            AssertFileExists(_mockParameterInfo1.InstanceClassName(true));
+        }
+
+        [Test]
+        public void GenerateRuntimeInstanceFileForStruct()
+        {
+            CodeGenerator.GenerateRuntimeInstanceFile(_mockParameterStruct1, false, TestDirectoryName);
+
+            AssertFileCount(1);
+            AssertFileExists(_mockParameterStruct1.InstanceClassName(true));
         }
 
         [Test]
@@ -189,6 +198,16 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
         public void GenerateDataLoader()
         {
             CodeGenerator.GenerateDataLoader("some_hash", _mockParameterInfos, _mockParameterStructs, TestDirectoryName);
+
+            AssertFileCount(1);
+            AssertFileExists($"{EditorParameterConstants.DataLoaderClass.ClassName}.cs");
+        }
+
+        [Test]
+        public void GenerateEmptyDataLoader()
+        {
+            // the compile error recovery path generates a loader with no interfaces
+            CodeGenerator.GenerateDataLoader("", new List<IParameterInfo>(), new List<IParameterStruct>(), TestDirectoryName);
 
             AssertFileCount(1);
             AssertFileExists($"{EditorParameterConstants.DataLoaderClass.ClassName}.cs");

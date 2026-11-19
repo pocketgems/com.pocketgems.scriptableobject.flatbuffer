@@ -11,7 +11,7 @@ namespace PocketGems.Parameters.Common.PropertyTypes.Editor
         }
 
         public override string FlatBufferPropertyImplementationCode(int propertyIndex) =>
-            $"public {PropertyTypeName} {PropertyName} => TryGetOverride<{PropertyTypeName}>({propertyIndex}, out var val) ? val : ({PropertyTypeName})_fb.{FlatBufferStructPropertyName};";
+            $"public {PropertyTypeName} {PropertyName} => TryGetOverride<{PropertyTypeName}>({propertyIndex}, out var val) ? val : ({PropertyTypeName})FlatBufferData().{FlatBufferStructPropertyName};";
 
         public override string FlatBufferBuilderCode(string tableName) =>
             $"{tableName}.Add{FlatBufferStructPropertyName}(_builder, (long)data.{PropertyName});";

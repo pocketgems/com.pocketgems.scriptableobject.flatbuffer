@@ -77,7 +77,7 @@ namespace PocketGems.Parameters
 
         /// <summary>
         /// Gets or sets whether any ParameterManager's Get methods are safe to be called.  Get can be unsafe
-        /// if they're currently waiting to be modified via AB testing.
+        /// if they're currently waiting to be modified via overrides.
         /// </summary>
         private static bool s_isGettingSafe = true;
         public static bool IsGettingSafe

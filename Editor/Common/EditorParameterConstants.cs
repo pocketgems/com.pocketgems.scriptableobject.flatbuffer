@@ -18,7 +18,7 @@ namespace PocketGems.Parameters.Common.Editor
         /// Ideally it would be the most convenient to use the package version but that requires file I/O to
         /// the package.json which can be costly if we're doing it all of the time.
         /// </summary>
-        public const string InterfaceHashSalt = "3fe24bb5-049b-4405-a92c-c4022a9c4443";
+        public const string InterfaceHashSalt = "3b0d1ecc-5a8e-4bf9-aae8-e39c18369aca";
 
         public static string SanitizedDataPath()
         {
@@ -51,8 +51,8 @@ namespace PocketGems.Parameters.Common.Editor
             // directories
             public static string RootDir =>
                 Path.Combine(new[] { SanitizedDataPath(), "Parameters", "GeneratedCode" });
-            public static string FlatBufferClassesDir =>
-                Path.Combine(new[] { RootDir, "FlatBufferClasses" });
+            public static string RuntimeInstancesDir =>
+                Path.Combine(new[] { RootDir, "RuntimeInstances" });
             public static string FlatBufferStructsDir =>
                 Path.Combine(new[] { RootDir, "FlatBufferStructs" });
             public static string EditorDir =>
@@ -238,9 +238,9 @@ namespace PocketGems.Parameters.Common.Editor
             public const string TemplateFileName = "Struct.template";
         }
 
-        public static class FlatBufferClass
+        public static class RuntimeInstance
         {
-            public const string TemplateFileName = "FlatBufferClass.template";
+            public const string TemplateFileName = "RuntimeInstance.template";
         }
 
         public static class AssemblyInfo

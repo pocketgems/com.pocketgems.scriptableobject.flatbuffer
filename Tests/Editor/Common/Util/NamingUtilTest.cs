@@ -32,11 +32,11 @@ namespace PocketGems.Parameters.Common.Util.Editor
             Assert.AreEqual(baseName, NamingUtil.BaseNameFromCSVName(csvName));
             Assert.AreEqual(baseName, NamingUtil.BaseNameFromCSVName(csvNameExt));
 
-            // base name -> flat buffer
-            var fbClassName = NamingUtil.FlatBufferClassNameFromBaseName(baseName, false);
-            Assert.AreEqual($"{baseName}FlatBuffer", fbClassName);
-            var fbClassNameExt = NamingUtil.FlatBufferClassNameFromBaseName(baseName, true);
-            Assert.AreEqual($"{fbClassName}.cs", fbClassNameExt);
+            // base name -> instance class
+            var instanceClassName = NamingUtil.InstanceClassNameFromBaseName(baseName, false);
+            Assert.AreEqual($"{baseName}Instance", instanceClassName);
+            var instanceClassNameExt = NamingUtil.InstanceClassNameFromBaseName(baseName, true);
+            Assert.AreEqual($"{instanceClassName}.cs", instanceClassNameExt);
 
             // base name -> flat buffer struct
             var fbStructName = NamingUtil.FlatBufferStructNameFromBaseName(baseName, false);

@@ -13,7 +13,7 @@ namespace PocketGems.Parameters.CodeGeneration.Operation.Editor
         string GeneratedCodeDir { get; }
         string GeneratedCodeScriptableObjectsDir { get; }
         string GeneratedCodeStructsDir { get; }
-        string GeneratedCodeFlatBufferClassesDir { get; }
+        string GeneratedCodeRuntimeInstancesDir { get; }
         string GeneratedCodeFlatBufferStructsDir { get; }
         string GeneratedCodeFlatBufferBuilderDir { get; }
         string GeneratedCodeCSVBridgeDir { get; }

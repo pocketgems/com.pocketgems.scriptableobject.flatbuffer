@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using PocketGems.Parameters.AssetLoader;
 using PocketGems.Parameters.Common.Editor;
 using PocketGems.Parameters.Common.Models.Editor;
+using PocketGems.Parameters.Common.PropertyTypes.Editor;
 using PocketGems.Parameters.Common.Util.Editor;
 using PocketGems.Parameters.Interface;
 using UnityEngine.TestTools;
@@ -261,17 +262,18 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
         }
 
         /// <summary>
-        /// Generate the FlatBuffer class file that implements the interface.
+        /// Generate the instance class file that implements the interface.
         /// </summary>
         /// <param name="parameterInterface">Interface to write the class for.</param>
         /// <param name="outputDirectory">Directory to write the class to.</param>
         /// <returns>filepath of the file written</returns>
-        public static string GenerateFlatBufferClassFile(IParameterInterface parameterInterface, bool isInfo, string outputDirectory)
+        public static string GenerateRuntimeInstanceFile(IParameterInterface parameterInterface, bool isInfo, string outputDirectory)
         {
             if (!Directory.Exists(outputDirectory))
                 Directory.CreateDirectory(outputDirectory);
 
             var propertyTypeDicts = new List<Dictionary<string, string>>();
+            var addedColumns = new List<string>();
             var propertyTypes = parameterInterface.PropertyTypes;
             for (int i = 0; i < propertyTypes.Count; i++)
             {
@@ -292,7 +294,16 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
                 // edit property
                 propertyTypeDict["editPropertyCode"] = propertyType.FlatBufferEditPropertyCode(i, propertyTypes.Count, "value");
                 propertyTypeDict["revertEditPropertyCode"] = propertyType.FlatBufferRevertEditPropertyCode(i);
+
+                // the identifier of a row added by overrides comes from the add entry itself, so it isn't a column
+                if (!(propertyType is IdentifierPropertyType))
+                    addedColumns.Add(propertyType.PropertyInfo.Name);
             }
+
+            // infos register under their base interfaces then their own, the same as the data loader; structs only
+            // under their own
+            var addedInterfaceNames = isInfo ? new List<string>(BaseInterfaceNames(parameterInterface)) : new List<string>();
+            addedInterfaceNames.Add(parameterInterface.InterfaceName);
 
             var args = new Dictionary<string, object>
             {
@@ -300,16 +311,18 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
                 { "isInfo", isInfo },
                 { "disableSymbol", EditorParameterConstants.Interface.DisableImplementationSymbol },
                 { "namespace", parameterInterface.GeneratedNameSpace },
-                { "className", parameterInterface.FlatBufferClassName(false) },
+                { "className", parameterInterface.InstanceClassName(false) },
                 { "interfaceName", parameterInterface.InterfaceName },
                 { "flatBufferStructName", parameterInterface.FlatBufferStructName(false) },
                 { "propertyTypeDicts", propertyTypeDicts },
-                { "baseClassName", nameof(BaseInfoFlatBuffer) },
-                { "parameterManagerType", nameof(IParameterManager) }
+                { "mutableBaseClassName", nameof(BaseMutableParameter) },
+                { "parameterManagerType", nameof(IParameterManager) },
+                { "addedInterfaceNames", string.Join(", ", addedInterfaceNames.Select(name => $"\"{name}\"")) },
+                { "addedColumns", string.Join(", ", addedColumns.Select(name => $"\"{name}\"")) }
             };
-            var fileName = parameterInterface.FlatBufferClassName(true);
+            var fileName = parameterInterface.InstanceClassName(true);
             var filePath = Path.Combine(outputDirectory, fileName);
-            var templateFileName = EditorParameterConstants.FlatBufferClass.TemplateFileName;
+            var templateFileName = EditorParameterConstants.RuntimeInstance.TemplateFileName;
             ScribanHelper.GenerateClass(templateFileName, filePath, args);
             return fileName;
         }
@@ -614,17 +627,8 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
                 var dict = new Dictionary<string, object>();
                 dict["InterfaceName"] = parameterInterface.InterfaceName;
                 dict["FlatBufferStructName"] = parameterInterface.FlatBufferStructName(false);
-                dict["FlatBufferClassName"] = parameterInterface.FlatBufferClassName(false);
-
-                var baseInterfaceTypes = parameterInterface.OrderedBaseInterfaceTypes;
-                var baseInterfaceNames = new List<string>();
-                for (int j = 0; j < baseInterfaceTypes.Count; j++)
-                {
-                    var baseType = baseInterfaceTypes[j];
-                    if (baseType != typeof(IBaseInfo))
-                        baseInterfaceNames.Add(baseType.Name);
-                }
-                dict["BaseInterfaceNames"] = baseInterfaceNames;
+                dict["InstanceClassName"] = parameterInterface.InstanceClassName(false);
+                dict["BaseInterfaceNames"] = BaseInterfaceNames(parameterInterface);
 
                 infoInterfaces.Add(dict);
             }
@@ -637,7 +641,7 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
                 var dict = new Dictionary<string, object>();
                 dict["InterfaceName"] = parameterInterface.InterfaceName;
                 dict["FlatBufferStructName"] = parameterInterface.FlatBufferStructName(false);
-                dict["FlatBufferClassName"] = parameterInterface.FlatBufferClassName(false);
+                dict["InstanceClassName"] = parameterInterface.InstanceClassName(false);
                 structInterfaces.Add(dict);
             }
 
@@ -647,7 +651,10 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
                 { "namespace", ParameterConstants.GeneratedNamespace },
                 { "dataLoaderClassName", dataLoaderClassName },
                 { "interfaceType", typeof(IParameterDataLoader).ToString() },
+                { "factoryInterfaceType", typeof(IParameterFactory).ToString() },
                 { "parameterManagerType", typeof(IMutableParameterManager).ToString() },
+                { "factoryParameterManagerType", typeof(IParameterManager).ToString() },
+                { "createdParameterType", typeof(ICreatedParameter).ToString() },
                 { "hashFieldName", EditorParameterConstants.DataLoaderClass.HashFieldName },
                 { "hash", hash },
                 { "collectionStructName", ParameterConstants.CollectionTypeName },
@@ -658,6 +665,38 @@ namespace PocketGems.Parameters.CodeGeneration.Util.Editor
             var filePath = Path.Combine(outputDirectory, $"{dataLoaderClassName}.cs");
             var templateFileName = EditorParameterConstants.DataLoaderClass.TemplateFileName;
             ScribanHelper.GenerateClass(templateFileName, filePath, args);
+        }
+
+        /// <summary>
+        /// The interfaces an info is also registered under, other than IBaseInfo, in registration order.
+        /// </summary>
+        private static List<string> BaseInterfaceNames(IParameterInterface parameterInterface)
+        {
+            var baseInterfaceTypes = parameterInterface.OrderedBaseInterfaceTypes;
+            var baseInterfaceNames = new List<string>();
+            for (int j = 0; j < baseInterfaceTypes.Count; j++)
+            {
+                var baseType = baseInterfaceTypes[j];
+                if (baseType != typeof(IBaseInfo))
+                    baseInterfaceNames.Add(baseType.Name);
+            }
+            return baseInterfaceNames;
+        }
+
+        // code generated before 6.0.0 went to a FlatBufferClasses folder next to the RuntimeInstances one
+        public static string LegacyFlatBufferClassesDir(string runtimeInstancesDir) =>
+            Path.Combine(Path.GetDirectoryName(runtimeInstancesDir) ?? "", "FlatBufferClasses");
+
+        /// <summary>
+        /// Delete the classes generated before 6.0.0, which don't compile against it.
+        /// </summary>
+        public static void DeleteLegacyFlatBufferClassesDir(string runtimeInstancesDir)
+        {
+            var legacyDir = LegacyFlatBufferClassesDir(runtimeInstancesDir);
+            if (!Directory.Exists(legacyDir))
+                return;
+            Directory.Delete(legacyDir, true);
+            File.Delete(legacyDir + ".meta");
         }
 
         /// <summary>

@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using PocketGems.Parameters.Interface;
 using PocketGems.Parameters.Util;
@@ -59,7 +58,8 @@ namespace PocketGems.Parameters
         [SetUp]
         public void SetUp()
         {
-            _parameterManager = new ParameterManager();
+            // the linked managers copy the factory when they're built
+            _parameterManager = new ParameterManager { ParameterFactory = new FakeParameterFactory() };
 
             switch (_setUpType)
             {
@@ -219,7 +219,7 @@ namespace PocketGems.Parameters
         [Test]
         public void GetWithGUID()
         {
-            LogAssert.Expect(LogType.Error, $"Bug: Cannot find parameter by GUID NonExistentGuid for type {nameof(ISubInterfaceAInfo)}");
+            LogAssert.Expect(LogType.Error, $"Cannot find {nameof(ISubInterfaceAInfo)} with GUID NonExistentGuid: the row was removed, or its data isn't loaded");
             Assert.That(_linkedParameterManager.GetWithGUID<ISubInterfaceAInfo>("NonExistentGuid"), Is.Null);
 
             void GetWithGUID<T>(string identifier, string guid) where T : class, IBaseInfo
@@ -374,18 +374,10 @@ namespace PocketGems.Parameters
         public void ApplyAndClearOverrides()
         {
             // apply to one row & one struct
-            var success = _linkedParameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
-                                                                               "[" +
-                                                                               $"  [\"SubInterfaceAInfo.csv\"," +
-                                                                               $"  \"{Item1SubclassAId}\"," +
-                                                                               "   \"SomeColumnName1\"," +
-                                                                               "   \"SomeValue1\"]," +
-                                                                               "  [\"KeyValueStruct.csv\"," +
-                                                                               $"  \"{KeyValueStructKeyPath}\"," +
-                                                                               "   \"SomeColumnName2\"," +
-                                                                               "   \"SomeValue2\"]" +
-                                                                               "]" +
-                                                                               "}"), out IReadOnlyList<string> errors);
+            var success = _linkedParameterManager.ApplyOverrides("{'edit': {" +
+                                                                 $"'SubInterfaceAInfo.csv': {{'{Item1SubclassAId}': {{'SomeColumnName1': 'SomeValue1'}}}}, " +
+                                                                 $"'KeyValueStruct.csv': {{'{KeyValueStructKeyPath}': {{'SomeColumnName2': 'SomeValue2'}}}}" +
+                                                                 "}}", out IReadOnlyList<string> errors);
             Assert.That(success, Is.True);
             Assert.That(errors, Is.Null);
 
@@ -428,18 +420,10 @@ namespace PocketGems.Parameters
             Assert.That(mockedStructInfo.RemoveAllEditCalls, Is.EqualTo(1));
 
             // apply to both types
-            success = _linkedParameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
-                                                                     "[" +
-                                                                     "  [\"SubInterfaceAInfo.csv\"," +
-                                                                     $"  \"{Item1SubclassAId}\"," +
-                                                                     "   \"SomeColumnName\"," +
-                                                                     "   \"SomeValue\"]," +
-                                                                     "  [\"SubInterfaceBInfo.csv\"," +
-                                                                     $"  \"{Item2SubclassBId}\"," +
-                                                                     "   \"SomeColumnName2\"," +
-                                                                     "   \"SomeValue2\"]" +
-                                                                     "]" +
-                                                                     "}"), out errors);
+            success = _linkedParameterManager.ApplyOverrides("{'edit': {" +
+                                                             $"'SubInterfaceAInfo.csv': {{'{Item1SubclassAId}': {{'SomeColumnName': 'SomeValue'}}}}, " +
+                                                             $"'SubInterfaceBInfo.csv': {{'{Item2SubclassBId}': {{'SomeColumnName2': 'SomeValue2'}}}}" +
+                                                             "}}", out errors);
             Assert.That(success, Is.True);
             Assert.That(errors, Is.Null);
 
@@ -478,14 +462,9 @@ namespace PocketGems.Parameters
         public void ApplyAndClearOverridesNoOp()
         {
             // apply to one row
-            var success = _linkedParameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
-                                                                               "[" +
-                                                                               $"  [\"SubInterfaceAInfo.csv\"," +
-                                                                               $"  \"{Item1SubclassAId}\"," +
-                                                                               "   \"SomeColumnName1\"," +
-                                                                               "   \"SomeValue1\"]" +
-                                                                               "]" +
-                                                                               "}"), out IReadOnlyList<string> errors);
+            var success = _linkedParameterManager.ApplyOverrides(
+                $"{{'edit': {{'SubInterfaceAInfo.csv': {{'{Item1SubclassAId}': {{'SomeColumnName1': 'SomeValue1'}}}}}}}}",
+                out IReadOnlyList<string> errors);
             Assert.That(success, Is.True);
             Assert.That(errors, Is.Null);
 
@@ -502,14 +481,8 @@ namespace PocketGems.Parameters
         [Test]
         public void ApplyOverrides_MissingError()
         {
-            var success = _linkedParameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
-                                                                     "[" +
-                                                                     "  [\"MySpecialInfo.csv\"," +
-                                                                     $"  \"{Item1SubclassAId}\"," +
-                                                                     "   \"SomeColumnName\"," +
-                                                                     "   \"SomeValue\"]" +
-                                                                     "]" +
-                                                                     "}"), out var errors);
+            var success = _linkedParameterManager.ApplyOverrides(
+                $"{{'edit': {{'MySpecialInfo.csv': {{'{Item1SubclassAId}': {{'SomeColumnName': 'SomeValue'}}}}}}}}", out var errors);
             Assert.That(success, Is.False);
             Assert.That(errors.Count, Is.EqualTo(1));
             Assert.That(errors[0], Is.EqualTo($"Cannot find parameter for csv [MySpecialInfo.csv] and identifier/guid [{Item1SubclassAId}]."));
@@ -524,14 +497,8 @@ namespace PocketGems.Parameters
             var hashedStruct = new MockKeyValueStruct(_parameterManager, StructDesc, StructValue, "guid", new string[0]);
             _parameterManager.Load<IKeyValueStruct, MockKeyValueStruct>(hashedStruct, hashedGuid);
 
-            var success = _linkedParameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
-                                                                     "[" +
-                                                                     "  [\"KeyValueStruct.csv\"," +
-                                                                     $"  \"{keyPath}\"," +
-                                                                     "   \"SomeColumnName\"," +
-                                                                     "   \"SomeValue\"]" +
-                                                                     "]" +
-                                                                     "}"), out var errors);
+            var success = _linkedParameterManager.ApplyOverrides(
+                $"{{'edit': {{'KeyValueStruct.csv': {{'{keyPath}': {{'SomeColumnName': 'SomeValue'}}}}}}}}", out var errors);
             Assert.That(success, Is.True);
             Assert.That(errors, Is.Null);
 
@@ -549,26 +516,19 @@ namespace PocketGems.Parameters
         [Test]
         public void GetStructWithGuid_Missing()
         {
-            LogAssert.Expect(LogType.Error, $"Bug: Cannot find parameter by GUID NonExistentGuid for type {nameof(IKeyValueStruct)}");
+            LogAssert.Expect(LogType.Error, $"Cannot find {nameof(IKeyValueStruct)} with GUID NonExistentGuid: the row was removed, or its data isn't loaded");
             Assert.That(_linkedParameterManager.GetStructWithGuid<IKeyValueStruct>("NonExistentGuid"), Is.Null);
         }
 
         [Test]
         public void ApplyOverrides_DuplicatePropertyError()
         {
-            // two values for the same property on the same parameter
-            var success = _linkedParameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
-                                                                     "[" +
-                                                                     $"  [\"SubInterfaceAInfo.csv\"," +
-                                                                     $"  \"{Item1SubclassAId}\"," +
-                                                                     "   \"SomeColumnName\"," +
-                                                                     "   \"SomeValue1\"]," +
-                                                                     $"  [\"SubInterfaceAInfo.csv\"," +
-                                                                     $"  \"{Item1SubclassAId}\"," +
-                                                                     "   \"SomeColumnName\"," +
-                                                                     "   \"SomeValue2\"]" +
-                                                                     "]" +
-                                                                     "}"), out var errors);
+            // two values for the same property on the same parameter, by identifier and by guid.  Rows apply in
+            // ordinal order, so the guid row applies first and the identifier row fails.
+            var success = _linkedParameterManager.ApplyOverrides("{'edit': {'SubInterfaceAInfo.csv': {" +
+                                                                 $"'{Item1SubclassAId}': {{'SomeColumnName': 'SomeValue1'}}, " +
+                                                                 $"'{Item1SubclassAGuid}': {{'SomeColumnName': 'SomeValue2'}}" +
+                                                                 "}}}", out var errors);
             Assert.That(success, Is.False);
             Assert.That(errors.Count, Is.EqualTo(1));
             Assert.That(errors[0], Is.EqualTo($"({nameof(ISubInterfaceAInfo)})[{Item1SubclassAId}] has more than one value for [SomeColumnName] assigned "));
@@ -579,6 +539,13 @@ namespace PocketGems.Parameters
             Assert.That(mockedItem1Info.EditPropertyCalls, Is.EqualTo(0));
         }
 
+        // the same edit in a csv that has the row and one that doesn't
+        private static readonly string EditInTwoCsvs =
+            "{'edit': {" +
+            $"'SubInterfaceAInfo.csv': {{'{Item1SubclassAId}': {{'SomeColumnName': 'SomeValue'}}}}, " +
+            $"'MySpecialInfo.csv': {{'{Item1SubclassAId}': {{'SomeColumnName': 'SomeValue'}}}}" +
+            "}}";
+
         [Test]
         public void ApplyOverrides_RollbackRevertsCachedParameter()
         {
@@ -586,19 +553,8 @@ namespace PocketGems.Parameters
             var item1Info = _linkedParameterManager.Get<ISubInterfaceAInfo>(Item1SubclassAId);
             var mockedItem1Info = (MockSubclassAInfo)item1Info;
 
-            // first edit succeeds, second edit fails - triggering a revert of the first
-            var success = _linkedParameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
-                                                                     "[" +
-                                                                     $"  [\"SubInterfaceAInfo.csv\"," +
-                                                                     $"  \"{Item1SubclassAId}\"," +
-                                                                     "   \"SomeColumnName\"," +
-                                                                     "   \"SomeValue\"]," +
-                                                                     "  [\"MySpecialInfo.csv\"," +
-                                                                     $"  \"{Item1SubclassAId}\"," +
-                                                                     "   \"SomeColumnName\"," +
-                                                                     "   \"SomeValue\"]" +
-                                                                     "]" +
-                                                                     "}"), out var errors);
+            // the MySpecialInfo.csv edit fails and the SubInterfaceAInfo.csv edit succeeds, triggering a revert of it
+            var success = _linkedParameterManager.ApplyOverrides(EditInTwoCsvs, out var errors);
             Assert.That(success, Is.False);
             Assert.That(errors.Count, Is.EqualTo(1));
             Assert.That(errors[0], Is.EqualTo($"Cannot find parameter for csv [MySpecialInfo.csv] and identifier/guid [{Item1SubclassAId}]."));
@@ -619,24 +575,34 @@ namespace PocketGems.Parameters
             // set an error to be returned by the info when reverting
             mockedItem1Info.ReturnRevertEditPropertyError = "some revert error";
 
-            // first edit succeeds, second edit fails - the revert of the first also errors
-            var success = _linkedParameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
-                                                                     "[" +
-                                                                     $"  [\"SubInterfaceAInfo.csv\"," +
-                                                                     $"  \"{Item1SubclassAId}\"," +
-                                                                     "   \"SomeColumnName\"," +
-                                                                     "   \"SomeValue\"]," +
-                                                                     "  [\"MySpecialInfo.csv\"," +
-                                                                     $"  \"{Item1SubclassAId}\"," +
-                                                                     "   \"SomeColumnName\"," +
-                                                                     "   \"SomeValue\"]" +
-                                                                     "]" +
-                                                                     "}"), out var errors);
+            // the MySpecialInfo.csv edit fails and the SubInterfaceAInfo.csv edit succeeds, and reverting it also errors
+            var success = _linkedParameterManager.ApplyOverrides(EditInTwoCsvs, out var errors);
             Assert.That(success, Is.False);
             Assert.That(errors.Count, Is.EqualTo(2));
             Assert.That(errors[0], Is.EqualTo($"Cannot find parameter for csv [MySpecialInfo.csv] and identifier/guid [{Item1SubclassAId}]."));
             Assert.That(errors[1], Is.EqualTo($"Error reverting edit ({nameof(ISubInterfaceAInfo)})[{Item1SubclassAId}] property [SomeColumnName]: {mockedItem1Info.ReturnRevertEditPropertyError}"));
         }
+
+        [Test]
+        public void ApplyOverrides_FailedCachedEditIsNotKept()
+        {
+            // get info to pre-cache, and make its edit fail
+            var mockedItem1Info = (MockSubclassAInfo)_linkedParameterManager.Get<ISubInterfaceAInfo>(Item1SubclassAId);
+            mockedItem1Info.ReturnEditPropertyError = "some error";
+            string Edit(string value) =>
+                $"{{'edit': {{'SubInterfaceAInfo.csv': {{'{Item1SubclassAId}': {{'SomeColumnName': '{value}'}}}}}}}}";
+
+            Assert.That(_linkedParameterManager.ApplyOverrides(Edit("bad"), out _), Is.False);
+
+            // the failed edit left nothing behind, so the property can be edited again
+            mockedItem1Info.ReturnEditPropertyError = null;
+            var success = _linkedParameterManager.ApplyOverrides(Edit("good"), out var errors);
+            Assert.That(success, Is.True, errors == null ? null : string.Join("\n", errors));
+            Assert.That(mockedItem1Info.EditedValues["SomeColumnName"], Is.EqualTo("good"));
+        }
+
+        private static readonly string EditItem1 =
+            $"{{'edit': {{'SubInterfaceAInfo.csv': {{'{Item1SubclassAId}': {{'SomeColumnName': 'SomeValue'}}}}}}}}";
 
         [Test]
         public void ApplyOverrides_CachedParameterError()
@@ -649,14 +615,7 @@ namespace PocketGems.Parameters
             mockedItem1Info.ReturnEditPropertyError = "some error";
 
             // apply to one row
-            var success = _linkedParameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
-                                                                               "[" +
-                                                                               $"  [\"SubInterfaceAInfo.csv\"," +
-                                                                               $"  \"{Item1SubclassAId}\"," +
-                                                                               "   \"SomeColumnName\"," +
-                                                                               "   \"SomeValue\"]" +
-                                                                               "]" +
-                                                                               "}"), out IReadOnlyList<string> errors);
+            var success = _linkedParameterManager.ApplyOverrides(EditItem1, out IReadOnlyList<string> errors);
             Assert.That(success, Is.False);
             Assert.That(errors.Count, Is.EqualTo(1));
             Assert.That(errors[0], Is.EqualTo($"Error editing (ISubInterfaceAInfo)[{Item1SubclassAId}] property [SomeColumnName] with value [SomeValue]: {mockedItem1Info.ReturnEditPropertyError}"));
@@ -670,14 +629,7 @@ namespace PocketGems.Parameters
             _parameterManager.Load<ISubInterfaceAInfo, MockErrorSubclassAInfo>(originalItem1Info, originalItem1Info.Identifier, Item1SubclassAGuid);
 
             // apply to one row successfully since the adata isn't actually applied immediately
-            var success = _linkedParameterManager.ApplyOverrides(JObject.Parse("{\"edit\":" +
-                                                                               "[" +
-                                                                               $"  [\"SubInterfaceAInfo.csv\"," +
-                                                                               $"  \"{Item1SubclassAId}\"," +
-                                                                               "   \"SomeColumnName\"," +
-                                                                               "   \"SomeValue\"]" +
-                                                                               "]" +
-                                                                               "}"), out IReadOnlyList<string> errors);
+            var success = _linkedParameterManager.ApplyOverrides(EditItem1, out IReadOnlyList<string> errors);
             Assert.That(success, Is.True);
             Assert.That(errors, Is.Null);
 
@@ -688,6 +640,138 @@ namespace PocketGems.Parameters
             // sanity check that a new info was lazily created
             Assert.That(item1Info, Is.Not.EqualTo(originalItem1Info));
             Assert.That(item1Info.Identifier, Is.EqualTo(originalItem1Info.Identifier));
+        }
+
+        private const string AddedId = "addedId";
+        private static readonly string AddJson =
+            $"{{'add': {{'SubInterfaceAInfo.csv': {{'{AddedId}': {{'Name': 'added'}}}}}}}}";
+
+        [Test]
+        public void ApplyOverrides_AddIsLinked()
+        {
+            // the linked manager copied the source's factory when it was built, and keeps it
+            var sourceFactory = _parameterManager.ParameterFactory;
+            Assert.That(_linkedParameterManager.ParameterFactory, Is.SameAs(sourceFactory));
+            _parameterManager.ParameterFactory = new FakeParameterFactory();
+            Assert.That(_linkedParameterManager.ParameterFactory, Is.SameAs(sourceFactory));
+
+            var success = _linkedParameterManager.ApplyOverrides(AddJson, out IReadOnlyList<string> errors);
+            Assert.That(success, Is.True);
+            Assert.That(errors, Is.Null);
+
+            // the added row itself, with the added values
+            var added = (MockAddedSubclassAInfo)_linkedParameterManager.Get<ISubInterfaceAInfo>(AddedId);
+            Assert.That(added, Is.Not.Null);
+            Assert.That(added, Is.SameAs(_linkedParameterManager.Get<ISubInterfaceAInfo>(AddedId)));
+            Assert.That(added, Is.SameAs(_linkedParameterManager.Get<ISubInterfaceAInfo>().Single(info => info.Identifier == AddedId)));
+            Assert.That(added.EditedValues["Name"], Is.EqualTo("added"));
+
+            // read-only
+            success = _linkedParameterManager.ApplyOverrides(
+                $"{{'edit': {{'SubInterfaceAInfo.csv': {{'{AddedId}': {{'SomeColumnName': 'SomeValue'}}}}}}}}", out errors);
+            Assert.That(success, Is.False);
+            Assert.That(errors, Is.EqualTo(new[] { $"Cannot edit (ISubInterfaceAInfo)[{AddedId}] property [SomeColumnName]: rows added by overrides are read-only. Set the value in the add." }));
+            // only the add's own edit
+            Assert.That(added.EditPropertyCalls, Is.EqualTo(1));
+            Assert.That(_linkedParameterManager.Get<ISubInterfaceAInfo>().Count(), Is.EqualTo(2));
+
+            // not visible on the source or on another linked manager
+            Assert.That(_parameterManager.Get<ISubInterfaceAInfo>(AddedId), Is.Null);
+            Assert.That(new LinkedParameterManager(_parameterManager).Get<ISubInterfaceAInfo>(AddedId), Is.Null);
+        }
+
+        [Test]
+        public void ApplyOverrides_DeleteIsLinked()
+        {
+            var success = _linkedParameterManager.ApplyOverrides(
+                $"{{'delete': {{'SubInterfaceAInfo.csv': ['{Item1SubclassAId}']}}}}", out IReadOnlyList<string> errors);
+            Assert.That(success, Is.True);
+            Assert.That(errors, Is.Null);
+
+            Assert.That(_linkedParameterManager.Get<ISubInterfaceAInfo>(Item1SubclassAId), Is.Null);
+            Assert.That(_linkedParameterManager.Get<ISubInterfaceAInfo>(), Is.Empty);
+            Assert.That(_parameterManager.Get<ISubInterfaceAInfo>(Item1SubclassAId), Is.Not.Null);
+
+            // an edit on the deleted row names it, rather than reporting a missing row
+            success = _linkedParameterManager.ApplyOverrides(EditItem1, out errors);
+            Assert.That(success, Is.False);
+            Assert.That(errors, Is.EqualTo(new[] { $"Cannot edit (ISubInterfaceAInfo)[{Item1SubclassAId}] property [SomeColumnName]: the row is deleted by overrides." }));
+
+            _linkedParameterManager.ClearAllOverrides();
+            Assert.That(_linkedParameterManager.Get<ISubInterfaceAInfo>(Item1SubclassAId), Is.Not.Null);
+        }
+
+        [Test]
+        public void ApplyOverrides_DeleteAfterEditFails()
+        {
+            var delete = $"{{'delete': {{'SubInterfaceAInfo.csv': ['{Item1SubclassAId}']}}}}";
+            Assert.That(_linkedParameterManager.ApplyOverrides(EditItem1, out IReadOnlyList<string> errors), Is.True);
+
+            // an edit from an earlier call keeps the row
+            var success = _linkedParameterManager.ApplyOverrides(delete, out errors);
+            Assert.That(success, Is.False);
+            Assert.That(errors, Is.EqualTo(new[] { $"Cannot delete csv [SubInterfaceAInfo.csv] identifier/guid [{Item1SubclassAId}]: it's edited by overrides." }));
+            Assert.That(_linkedParameterManager.Get<ISubInterfaceAInfo>(Item1SubclassAId), Is.Not.Null);
+
+            // an edit on the source doesn't
+            _linkedParameterManager.ClearAllOverrides();
+            Assert.That(_parameterManager.ApplyOverrides(EditItem1, out errors), Is.True);
+            Assert.That(_linkedParameterManager.ApplyOverrides(delete, out errors), Is.True);
+            Assert.That(_linkedParameterManager.Get<ISubInterfaceAInfo>(Item1SubclassAId), Is.Null);
+        }
+
+        [Test]
+        public void ApplyOverrides_SourceAddsAndDeletesStayOnTheSource()
+        {
+            string Json(string name) => $"{{'delete': {{'SubInterfaceAInfo.csv': ['{Item1SubclassAId}']}}," +
+                                        $" 'add': {{'SubInterfaceAInfo.csv': {{'{AddedId}': {{'Name': '{name}'}}}}}}}}";
+
+            var success = _parameterManager.ApplyOverrides(Json("source"), out IReadOnlyList<string> errors);
+            Assert.That(success, Is.True);
+            Assert.That(errors, Is.Null);
+
+            // the linked manager still has the deleted row and doesn't have the added one
+            Assert.That(_linkedParameterManager.Get<ISubInterfaceAInfo>(Item1SubclassAId), Is.Not.Null);
+            Assert.That(_linkedParameterManager.Get<ISubInterfaceAInfo>(AddedId), Is.Null);
+
+            // so it can make the same changes on its own, once
+            success = _linkedParameterManager.ApplyOverrides(Json("linked"), out errors);
+            Assert.That(success, Is.True);
+            Assert.That(((MockAddedSubclassAInfo)_linkedParameterManager.Get<ISubInterfaceAInfo>(AddedId)).EditedValues["Name"], Is.EqualTo("linked"));
+            Assert.That(((MockAddedSubclassAInfo)_parameterManager.Get<ISubInterfaceAInfo>(AddedId)).EditedValues["Name"], Is.EqualTo("source"));
+            success = _linkedParameterManager.ApplyOverrides(Json("again"), out errors);
+            Assert.That(success, Is.False);
+            Assert.That(errors, Has.Member($"Cannot delete csv [SubInterfaceAInfo.csv] identifier/guid [{Item1SubclassAId}]: it's already deleted."));
+
+            // clearing the source leaves the linked manager's changes
+            _parameterManager.ClearAllOverrides();
+            Assert.That(_linkedParameterManager.Get<ISubInterfaceAInfo>(Item1SubclassAId), Is.Null);
+            Assert.That(_linkedParameterManager.Get<ISubInterfaceAInfo>(AddedId), Is.Not.Null);
+        }
+
+        [Test]
+        public void ApplyOverrides_AddedRowsAreNotCopied()
+        {
+            // the linked manager's own added rows need no copy, so they never enter its copy cache
+            var cacheCount = _linkedParameterManager.LinkedMutableParameterCacheCount;
+            var success = _linkedParameterManager.ApplyOverrides(AddJson, out IReadOnlyList<string> errors);
+            Assert.That(success, Is.True);
+            var added = (MockAddedSubclassAInfo)_linkedParameterManager.Get<ISubInterfaceAInfo>(AddedId);
+            Assert.That(added, Is.Not.Null);
+            Assert.That(_linkedParameterManager.LinkedMutableParameterCacheCount, Is.EqualTo(cacheCount));
+
+            // clearing removes the row, and its values, which are its edits, aren't cleared
+            _linkedParameterManager.ClearAllOverrides();
+            Assert.That(_linkedParameterManager.Get<ISubInterfaceAInfo>(AddedId), Is.Null);
+            Assert.That(added.RemoveAllEditCalls, Is.EqualTo(0));
+
+            // a failed call removes its added row
+            success = _linkedParameterManager.ApplyOverrides(
+                $"{{'add': {{'SubInterfaceAInfo.csv': {{'{AddedId}': {{'Name': 'added'}}}}}}," +
+                " 'edit': {'SubInterfaceAInfo.csv': {'missing': {'SomeColumnName': 'SomeValue'}}}}", out errors);
+            Assert.That(success, Is.False);
+            Assert.That(_linkedParameterManager.Get<ISubInterfaceAInfo>(AddedId), Is.Null);
+            Assert.That(_linkedParameterManager.LinkedMutableParameterCacheCount, Is.EqualTo(cacheCount));
         }
     }
 }
