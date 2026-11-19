@@ -71,13 +71,13 @@ namespace PocketGems.Parameters
 
         /// <summary>
         /// Gets or sets whether any ParameterManager's Get methods are safe to be called.  Get can be unsafe
-        /// if they're currently waiting to be modified via AB testing.
+        /// if they're currently waiting to be modified via overrides.
         /// </summary>
         bool IsGettingSafe { get; set; }
 
         /// <summary>
         /// Gets whether or not any parameter has ever been retrieved from this ParameterManager. The purpose of this
-        /// property is to know if it is safe to apply a parameter override (like from an AB Test). It would not be
+        /// property is to know if it is safe to apply a parameter override (like from `ApplyOverrides`). It would not be
         /// safe to apply a parameter override if this property is 'true', because we can't know if that parameter's
         /// value has been copied somewhere and so would be out-of-date if we applied an override.
         /// </summary>

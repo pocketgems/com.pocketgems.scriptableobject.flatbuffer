@@ -34,7 +34,7 @@ Validation code is not automatically ran at app runtime due to the performance o
 
 Debug code must be added at strategic times in order to run the validation code on debug/test builds.  Examples could be:
 - After `ParameterManager` is initalized for the first time on launch.
-- After AB Testing has been applied
+- After overrides have been applied
 
 ```C#
 if (areTestMenusEnabled)
