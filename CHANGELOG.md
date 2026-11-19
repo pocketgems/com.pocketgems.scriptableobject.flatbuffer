@@ -4,6 +4,25 @@ All package updates & migration steps will be listed in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.0] - 2026-11-19
+### Added
+- `ApplyOverrides` can now add read-only info and struct rows and delete info and struct rows; updating regenerates parameter code and data.
+- `edit` can now change single struct references.
+### Changed
+- `ApplyOverrides` now takes a json string instead of a `JObject`, and its json lists each action's rows by csv, so existing edit json must be updated.
+- `IMutableParameterManager` has a new `ParameterFactory` property, which creates the rows that overrides add, so classes that implement the interface must add it.
+- Generated parameter classes are now named `{Type}Instance` instead of `{Type}FlatBuffer`, in `GeneratedCode/RuntimeInstances` instead of `GeneratedCode/FlatBufferClasses`.
+- Editor code generation APIs say `Instance` instead of `FlatBufferClass`, for example `IParameterInterface.InstanceClassName`.
+- `ParameterManager.ApplyOverride` and `RemoveOverride` are now `ApplyEditOverride` and `RemoveEditOverride`.
+- `ApplyOverrides` applies csvs, rows and columns in ordinal order, so added rows and errors come out in the same order however the json is ordered.
+- Validation reports a missing parameter reference once, in its returned errors, instead of also logging an error for it.
+- The missing-GUID error now says why the row is missing instead of calling it a bug.
+### Removed
+- `BaseInfoFlatBuffer`; generated classes derive from `BaseMutableParameter`.
+### Fixed
+- `LinkedParameterManager` no longer keeps an edit that failed to apply.
+- The parameter code generation script no longer prints a nullable annotation warning.
+
 ## [5.6.0] - 2026-10-23
 ### Added
 - `CommandLineBuild.GenerateParameters` accepts `-generateCSVs` to also write the local CSVs in batch mode.
@@ -459,7 +478,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.2.0] - 2022-11-30
 ### Added
-- API to support A/B testing service
+- API to support parameter overrides
   - Additional APIs to apply json overrides to the `IMutableParameterManager`
   - Added `HasGetBeenCalled` getter to the `IParameterManager`
   - Added `IsGettingSafe()` API to `Params` to safe guard parameter changes
