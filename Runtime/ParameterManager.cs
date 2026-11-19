@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using PocketGems.Parameters.Interface;
 using PocketGems.Parameters.Util;
 using UnityEngine;
@@ -11,7 +10,7 @@ namespace PocketGems.Parameters
     /// <summary>
     /// Implementation fo IMutableParameterManager to add, remove, and query Flatbuffer objects.
     /// </summary>
-    public class ParameterManager : IMutableParameterManager
+    public partial class ParameterManager : IMutableParameterManager
     {
         #region Constructors
 
@@ -28,7 +27,6 @@ namespace PocketGems.Parameters
             Dictionary<string, Dictionary<string, IMutableParameter>> guidMappings)
         {
             IsGettingSafe = true;
-            _overriddenParameters = new();
             _identifierMappings = identifierMappings;
             _guidMappings = guidMappings;
             _guidConverter = new GuidConverter();
@@ -56,88 +54,8 @@ namespace PocketGems.Parameters
         {
             _identifierMappings.Clear();
             _guidMappings.Clear();
-        }
-
-        /// <inheritdoc cref="IMutableParameterManager.ApplyOverrides"/>
-        public virtual bool ApplyOverrides(JObject json, out IReadOnlyList<string> errors)
-        {
-            if (json == null || !json.HasValues)
-            {
-                errors = null;
-                return true;
-            }
-
-            List<string> localErrors = null;
-            bool success = true;
-            void Error(string error)
-            {
-                success = false;
-                if (localErrors == null)
-                    localErrors = new List<string>();
-                localErrors.Add(error);
-            }
-
-            JArray edits = null;
-            const string kAddKey = "add";
-            const string kDeleteKey = "delete";
-            const string kEditKey = "edit";
-            foreach (var overridesToken in json.Children())
-            {
-                var action = (JProperty)overridesToken;
-                if (action.Name == kEditKey)
-                    edits = (JArray)action.Value;
-                else if (action.Name == kAddKey || action.Name == kDeleteKey)
-                    Error($"Override action {action.Name} isn't supported yet.");
-                else
-                    Error($"Override action {action.Name} isn't valid.");
-            }
-
-            if (edits != null)
-            {
-                List<(string csvName, string identifierOrGuid, string propertyName, string interfaceType)> successfulOverrides = new();
-                foreach (var dataOverride in edits)
-                {
-                    var array = (JArray)dataOverride;
-                    if (array.Count != 4)
-                    {
-                        Error("ParameterManager expects 4 elements in the array of data.");
-                        break;
-                    }
-
-                    var csvName = (string)array[0];
-                    var identifierOrGuid = (string)array[1];
-                    var propertyName = (string)array[2];
-                    var value = (string)array[3];
-                    var interfaceType = LocalCSV.CSVUtil.CSVToInterfaceFileName(csvName);
-
-                    // apply all overrides even if an error occurs so we surface all errors for developers rather than one by one
-                    if (!ApplyOverride(csvName, interfaceType, identifierOrGuid, propertyName, value, out string error))
-                        Error(error);
-                    else
-                        successfulOverrides.Add((csvName, identifierOrGuid, propertyName, interfaceType));
-                }
-
-                if (!success)
-                {
-                    // revert changes if any of the overrides failed
-                    foreach (var (csvName, identifierOrGuid, propertyName, interfaceType) in successfulOverrides)
-                    {
-                        if (!RemoveOverride(csvName, interfaceType, identifierOrGuid, propertyName, out string error))
-                            Error(error);
-                    }
-                }
-            }
-
-            errors = localErrors;
-            return success;
-        }
-
-        /// <inheritdoc cref="IMutableParameterManager.ClearAllOverrides"/>
-        public virtual void ClearAllOverrides()
-        {
-            foreach (var info in _overriddenParameters)
-                info.RemoveAllEdits();
-            _overriddenParameters.Clear();
+            // the edited rows are gone too, so forget them rather than keep the old data in memory
+            ClearAllOverrides();
         }
 
         #endregion
@@ -183,11 +101,8 @@ namespace PocketGems.Parameters
                 yield break;
             }
 
-            if (_identifierMappings.TryGetValue(type.Name, out Dictionary<string, IMutableParameter> parameters))
-            {
-                foreach (var kvp in parameters)
-                    yield return (T)kvp.Value;
-            }
+            foreach (var kvp in GetCurrent(type.Name))
+                yield return (T)kvp.Value;
         }
 
         /// <inheritdoc cref="IParameterManager.GetSorted{T}()"/>
@@ -201,12 +116,8 @@ namespace PocketGems.Parameters
                 yield break;
             }
 
-            if (_identifierMappings.TryGetValue(type.Name, out Dictionary<string, IMutableParameter> parameters))
-            {
-                IOrderedEnumerable<string> sortedKeys = parameters.Keys.OrderBy(x => x, StringComparer.Ordinal);
-                foreach (var key in sortedKeys)
-                    yield return (T)parameters[key];
-            }
+            foreach (var kvp in GetCurrent(type.Name).OrderBy(x => x.Key, StringComparer.Ordinal))
+                yield return (T)kvp.Value;
         }
 
         /// <inheritdoc cref="IParameterManager.IsGettingSafe()"/>
@@ -217,7 +128,6 @@ namespace PocketGems.Parameters
 
         #endregion
 
-        private readonly HashSet<IMutableParameter> _overriddenParameters;
         protected internal readonly Dictionary<string, Dictionary<string, IMutableParameter>> _identifierMappings;
         protected internal readonly Dictionary<string, Dictionary<string, IMutableParameter>> _guidMappings;
         protected readonly GuidConverter _guidConverter;
@@ -300,11 +210,51 @@ namespace PocketGems.Parameters
 
         protected virtual IMutableParameter Get(string type, string identifier)
         {
+            return GetCurrent(type, identifier);
+        }
+
+        /*
+         * The GetLoaded methods return rows exactly as loaded, deleted ones included.  They know nothing about
+         * overrides: the GetCurrent methods in ParameterManager.Overrides.cs add the rows that overrides add and
+         * hide the ones they delete.
+         */
+
+        private IMutableParameter GetLoaded(string type, string identifier)
+        {
             if (!_identifierMappings.TryGetValue(type, out Dictionary<string, IMutableParameter> parameters))
                 return null;
             if (!parameters.TryGetValue(identifier, out IMutableParameter parameter))
                 return null;
             return parameter;
+        }
+
+        private IMutableParameter GetLoadedWithGUID(string typeName, string guid)
+        {
+            if (!_guidMappings.TryGetValue(typeName, out Dictionary<string, IMutableParameter> parameters))
+                return null;
+            if (!parameters.TryGetValue(guid, out IMutableParameter parameter))
+                return null;
+            return parameter;
+        }
+
+        // a struct by guid, or by key path, since structs are stored under the hash of their key path
+        private IMutableParameter GetLoadedStructWithGUID(string typeName, string guid)
+        {
+            if (!_guidMappings.TryGetValue(typeName, out Dictionary<string, IMutableParameter> parameters))
+                return null;
+            if (parameters.TryGetValue(guid, out IMutableParameter parameter))
+                return parameter;
+            if (!parameters.TryGetValue(_guidConverter.ToGuid(guid), out parameter))
+                return null;
+            return parameter;
+        }
+
+        // the loaded row an override names: by identifier, then guid, then struct key path
+        private IMutableParameter GetLoadedForOverride(string interfaceType, string identifierOrKeyPathOrGuid)
+        {
+            return GetLoaded(interfaceType, identifierOrKeyPathOrGuid) ??
+                   GetLoadedWithGUID(interfaceType, identifierOrKeyPathOrGuid) ??
+                   GetLoadedStructWithGUID(interfaceType, identifierOrKeyPathOrGuid);
         }
 
         private IMutableParameter GetWithGUID(Type type, string guid)
@@ -336,85 +286,12 @@ namespace PocketGems.Parameters
 
         protected virtual IMutableParameter GetStructWithGUID(string typeName, string guid, bool errorForMissing)
         {
-            if (!_guidMappings.TryGetValue(typeName, out Dictionary<string, IMutableParameter> parameters))
-            {
-                if (errorForMissing)
-                    Debug.LogError($"Missing: Cannot find parameter by GUID {guid} for type {typeName}");
-                return null;
-            }
-
-            if (parameters.TryGetValue(guid, out IMutableParameter parameter))
-                return parameter;
-
-            // the guid may be the keypath in some situations (e.g. overrides)
-            if (parameters.TryGetValue(_guidConverter.ToGuid(guid), out parameter))
-                return parameter;
-
-            if (errorForMissing)
-                Debug.LogError($"Bug: Cannot find parameter by GUID {guid} for type {typeName}");
-
-            return null;
+            return GetCurrentStructWithGUID(typeName, guid, errorForMissing);
         }
 
         protected virtual IMutableParameter GetWithGUID(string typeName, string guid, bool errorForMissing)
         {
-            if (!_guidMappings.TryGetValue(typeName, out Dictionary<string, IMutableParameter> parameters))
-            {
-                if (errorForMissing)
-                    Debug.LogError($"Missing: Cannot find parameter by GUID {guid} for type {typeName}");
-                return null;
-            }
-
-            if (!parameters.TryGetValue(guid, out IMutableParameter parameter))
-            {
-                if (errorForMissing)
-                    Debug.LogError($"Bug: Cannot find parameter by GUID {guid} for type {typeName}");
-                return null;
-            }
-
-            return parameter;
-        }
-
-        protected virtual bool ApplyOverride(string csvName, string interfaceType, string identifierOrKeyPathOrGuid, string propertyName, string value, out string error)
-        {
-            // resolve by identifier first, then raw guid, else treat the input as a struct key path
-            var mutableParameter = Get(interfaceType, identifierOrKeyPathOrGuid) ??
-                                    GetWithGUID(interfaceType, identifierOrKeyPathOrGuid, false) ??
-                                    GetStructWithGUID(interfaceType, identifierOrKeyPathOrGuid, false);
-            if (mutableParameter == null)
-            {
-                error = $"Cannot find parameter for csv [{csvName}] and identifier/guid [{identifierOrKeyPathOrGuid}].";
-                return false;
-            }
-
-            _overriddenParameters.Add(mutableParameter);
-            if (!mutableParameter.EditProperty(this, propertyName, value, out error))
-            {
-                error = $"Error editing ({interfaceType})[{identifierOrKeyPathOrGuid}] property [{propertyName}] with value [{value}]: {error}";
-                return false;
-            }
-
-            return true;
-        }
-
-        protected virtual bool RemoveOverride(string csvName, string interfaceType, string identifierOrKeyPathOrGuid, string propertyName, out string error)
-        {
-            // resolve by identifier first, then raw guid, else treat the input as a struct key path
-            var mutableParameter = Get(interfaceType, identifierOrKeyPathOrGuid) ??
-                                   GetWithGUID(interfaceType, identifierOrKeyPathOrGuid, false) ??
-                                   GetStructWithGUID(interfaceType, identifierOrKeyPathOrGuid, false);
-            if (mutableParameter == null)
-            {
-                error = $"Cannot find parameter for csv [{csvName}] and identifier/guid [{identifierOrKeyPathOrGuid}].";
-                return false;
-            }
-
-            if (!mutableParameter.RevertEditedProperty(propertyName, out error))
-            {
-                error = $"Error reverting edit ({interfaceType})[{identifierOrKeyPathOrGuid}] property [{propertyName}]: {error}";
-                return false;
-            }
-            return true;
+            return GetCurrentWithGUID(typeName, guid, errorForMissing);
         }
 
         // We need to call this every time a parameter is retrieved with one of the public Get methods above.
