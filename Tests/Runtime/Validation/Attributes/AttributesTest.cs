@@ -466,20 +466,17 @@ namespace PocketGems.Parameters.Validation.Attributes
             // AssertAttribute(attribute, nameof(AssetReferenceSprite), AssetReferenceSprite, true);
             // AssertAttribute(attribute, nameof(AssetReferenceSpriteArray), AssetReferenceSpriteArray, true);
 
-            // false
+            // false - reported as validation errors, without logging
             const string falseGuid = "abcd";
             ParameterReference = new ParameterReference<ISubInterfaceAInfo>(_parameterManager, falseGuid);
-            LogAssert.Expect(LogType.Error, new Regex(".*"));
             AssertAttribute(attribute, nameof(ParameterReference), ParameterReference, false);
             ParameterReference = new ParameterReference<ISubInterfaceAInfo>(_parameterManager, falseGuid, true);
-            LogAssert.Expect(LogType.Error, new Regex(".*"));
             AssertAttribute(attribute, nameof(ParameterReference), ParameterReference, false);
             ParameterReferenceArray = new[] { new ParameterReference<ISubInterfaceAInfo>(_parameterManager, falseGuid) };
-            LogAssert.Expect(LogType.Error, new Regex(".*"));
             AssertAttribute(attribute, nameof(ParameterReferenceArray), ParameterReferenceArray, false);
             ParameterReferenceArray = new[] { new ParameterReference<ISubInterfaceAInfo>(_parameterManager, falseGuid, true) };
-            LogAssert.Expect(LogType.Error, new Regex(".*"));
             AssertAttribute(attribute, nameof(ParameterReferenceArray), ParameterReferenceArray, false);
+            LogAssert.NoUnexpectedReceived();
 
 #if ADDRESSABLE_PARAMS
             AssetReference = new AssetReference(falseGuid);

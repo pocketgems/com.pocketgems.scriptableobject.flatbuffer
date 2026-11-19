@@ -15,7 +15,7 @@ namespace PocketGems.Parameters.CodeGeneration.Operation.Editor
             Assert.IsNotEmpty(context.GeneratedCodeDir);
             Assert.IsNotEmpty(context.GeneratedCodeScriptableObjectsDir);
             Assert.IsNotEmpty(context.GeneratedCodeStructsDir);
-            Assert.IsNotEmpty(context.GeneratedCodeFlatBufferClassesDir);
+            Assert.IsNotEmpty(context.GeneratedCodeRuntimeInstancesDir);
             Assert.IsNotEmpty(context.GeneratedCodeFlatBufferStructsDir);
             Assert.IsNotEmpty(context.GeneratedCodeFlatBufferBuilderDir);
             Assert.IsNotEmpty(context.GeneratedCodeCSVBridgeDir);
